@@ -1,0 +1,24 @@
+# node modules (Pflicht)
+node_modules/
+
+# Build output (z. B. bei tsc)
+dist/
+build/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Umgebungsvariablen
+.env
+
+# Firebase Admin SDK Schlüssel (sehr wichtig!)
+src/config/serviceAccountKey.json
+src/config/firebaseServiceAccount.json
+
+# VS Code Settings (optional)
+.vscode/
+
+# macOS system files (optional, aber nützlich)
+.DS_Store

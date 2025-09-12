@@ -1,0 +1,1 @@
+export const API_BASE = 'https://europe-west3-growgram-backend.cloudfunctions.net/api';
