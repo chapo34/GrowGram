@@ -1,4 +1,3 @@
-// src/navigation/AppNavigator.tsx
 import React, { useEffect, useState } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import { createNativeStackNavigator, type NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -6,6 +5,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
 import { useTheme } from '../theme/ThemeProvider';
+
+import IntroScreen from '../screens/IntroScreen';
 
 // Auth
 import LoginScreen from '../screens/LoginScreen';
@@ -31,8 +32,11 @@ export const STORAGE_KEYS = {
   USER: 'GG_USER',
 } as const;
 
+const INTRO_FLAG = 'growgram:intro:seen';
+const DEV_FORCE_INTRO = true; // <-- Für dich JETZT auf true, später auf false stellen
+
 /* ---------------- Typen ---------------- */
-export type RootStackParamList = { Auth: undefined; Main: undefined };
+export type RootStackParamList = { Intro: undefined; Auth: undefined; Main: undefined };
 export type AuthStackParamList = { Login: undefined; Register: undefined; ForgotPassword: undefined };
 
 type FeedPost = import('../utils/api').FeedPost;
@@ -168,7 +172,7 @@ function MainStackScreen() {
         <MainStack.Screen name="Profile" component={ProfileScreen as any} />
       </MainStack.Navigator>
 
-      {/* FIX TS(2322): pointerEvents nur auf View, nicht auf GrowDock */}
+      {/* Dock on top */}
       <View pointerEvents="box-none" style={{ position: 'absolute', left: 0, right: 0, bottom: 0 }}>
         <GrowDock />
       </View>
@@ -176,26 +180,29 @@ function MainStackScreen() {
   );
 }
 
-/* --------------- Root ------------------ */
+/* --------------- Root (Intro → Auth/Main) ------------------ */
 export default function AppNavigator() {
-  const [initial, setInitial] = useState<'Auth' | 'Main'>('Auth');
-  const [booting, setBooting] = useState(true);
+  const [initial, setInitial] = useState<'Intro' | 'Auth' | 'Main' | null>(null);
 
   useEffect(() => {
     (async () => {
       try {
+        if (DEV_FORCE_INTRO) { setInitial('Intro'); return; } // für den Test Intro erzwingen
+        const introSeen = await AsyncStorage.getItem(INTRO_FLAG);
+        if (!introSeen) { setInitial('Intro'); return; }
         const token = await AsyncStorage.getItem(STORAGE_KEYS.TOKEN);
         setInitial(token ? 'Main' : 'Auth');
-      } finally {
-        setBooting(false);
+      } catch {
+        setInitial('Auth');
       }
     })();
   }, []);
 
-  if (booting) return null;
+  if (!initial) return null;
 
   return (
     <RootStack.Navigator screenOptions={{ headerShown: false }} initialRouteName={initial}>
+      <RootStack.Screen name="Intro" component={IntroScreen as any} />
       <RootStack.Screen name="Auth" component={AuthStackScreen} />
       <RootStack.Screen name="Main" component={MainStackScreen} />
     </RootStack.Navigator>

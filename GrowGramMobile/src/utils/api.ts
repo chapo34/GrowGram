@@ -1,10 +1,18 @@
 // src/utils/api.ts
+// -----------------------------------------------------------------------------
+// Zentrale API-Hilfen für GrowGram (Expo/React-Native)
+// - axios-Client mit Token-Handling
+// - User/Feed/Posts
+// - Chat (Threads, Messages, Read, Media, Admin)
+// - Uploads kompatibel für verschiedene expo-file-system Versionen
+// -----------------------------------------------------------------------------
+
 import axios, { AxiosError, AxiosRequestHeaders } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from 'expo-constants';
 import * as FileSystem from 'expo-file-system';
 
-/* ================= Basis / Konfig ================= */
+/* ============================ Basis / Konfig ============================ */
 
 function trimSlash(s?: string | null) {
   const t = String(s || '').trim();
@@ -22,6 +30,15 @@ export const STORAGE_KEYS = {
 } as const;
 
 let inMemoryToken: string | null = null;
+
+// Upload-Type kompatibel zu alten/neuen expo-file-system Versionen
+const FS_BINARY_UPLOAD: any =
+  (FileSystem as any).FileSystemUploadType?.BINARY_CONTENT ??
+  (FileSystem as any).FileSystemUploadType?.BINARY ??
+  (FileSystem as any).UploadType?.BINARY_CONTENT ??
+  0;
+
+/* ============================== Auth-Helpers ============================== */
 
 export async function bootstrapAuthToken() {
   try {
@@ -42,7 +59,7 @@ export async function setAuthToken(token: string | null) {
   }
 }
 
-/* ================= Axios ================= */
+/* ================================= Axios ================================= */
 
 export const api = axios.create({
   baseURL: API_BASE,
@@ -60,8 +77,8 @@ api.interceptors.request.use(async (config) => {
   }
   const h = (config.headers ??= {} as AxiosRequestHeaders);
   h.Accept = 'application/json';
-  const isFormData = typeof FormData !== 'undefined' && config.data instanceof FormData;
-  if (!isFormData && !h['Content-Type']) h['Content-Type'] = 'application/json';
+  const isForm = typeof FormData !== 'undefined' && config.data instanceof FormData;
+  if (!isForm && !h['Content-Type']) h['Content-Type'] = 'application/json';
   h['X-Client'] = 'GrowGram-Mobile';
   return config;
 });
@@ -79,7 +96,7 @@ api.interceptors.response.use(
   }
 );
 
-/* ================= Types ================= */
+/* ================================= Types ================================= */
 
 export type FeedPost = {
   id: string;
@@ -119,7 +136,29 @@ export type UserMe = {
   pushOptIn?: boolean;
 };
 
-/* ================= Helpers ================= */
+export type Chat = {
+  id: string;
+  members: string[];
+  membersKey?: string;
+  lastMessage?: string;
+  lastSender?: string;
+  updatedAt?: any;
+  unread?: Record<string, number>;
+  peer?: { id: string; username?: string; firstName?: string; lastName?: string; avatarUrl?: string };
+};
+
+export type ChatMessage = {
+  id: string;
+  senderId: string;
+  type: 'text';
+  text: string;
+  createdAt: any;
+};
+
+/** Alias für dein ChatModule, das ApiChatMessage importiert */
+export type ApiChatMessage = ChatMessage;
+
+/* =============================== Helpers ================================= */
 
 export function parseApiError(e: any): string {
   const d = e?.response?.data;
@@ -134,7 +173,11 @@ async function tryJson<T>(fn: () => Promise<T>, fallback?: () => Promise<T>): Pr
   }
 }
 
-export function normalizeImageUrl(u?: string | null, bust?: number, opts?: { w?: number; q?: number; fm?: string }) {
+export function normalizeImageUrl(
+  u?: string | null,
+  bust?: number,
+  opts?: { w?: number; q?: number; fm?: string }
+) {
   if (!u) return '';
   try {
     const url = new URL(u);
@@ -149,7 +192,7 @@ export function normalizeImageUrl(u?: string | null, bust?: number, opts?: { w?:
   }
 }
 
-/* ================= Auth / User ================= */
+/* ============================== Auth / User ============================== */
 
 export async function me(): Promise<UserMe> {
   return tryJson(
@@ -184,7 +227,7 @@ export async function uploadAvatar(imageUri: string): Promise<{ url: string }> {
       imageUri,
       {
         httpMethod: 'POST',
-        uploadType: FileSystem.FileSystemUploadType.BINARY_CONTENT,
+        uploadType: FS_BINARY_UPLOAD,
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'image/jpeg',
@@ -193,8 +236,10 @@ export async function uploadAvatar(imageUri: string): Promise<{ url: string }> {
       }
     );
     if (res.status >= 200 && res.status < 300) {
-      const j = JSON.parse(res.body || '{}');
-      if (j?.url) return { url: j.url as string };
+      try {
+        const j = JSON.parse(res.body || '{}');
+        if (j?.url) return { url: String(j.url) };
+      } catch {}
     }
     let msg = res.body;
     try { const p = JSON.parse(res.body || '{}'); msg = p?.details || p?.message || p?.error || res.body; } catch {}
@@ -212,7 +257,7 @@ export async function uploadAvatar(imageUri: string): Promise<{ url: string }> {
   }
 }
 
-/* ================= Feed / Suche ================= */
+/* ============================= Feed / Suche ============================== */
 
 export async function fetchTrendingPage(
   limit = 20,
@@ -239,12 +284,13 @@ export async function fetchForYou(
   return data as { posts: FeedPost[]; nextCursor?: string | null };
 }
 
-/* ================= Likes / Comments ================= */
+/* =========================== Likes / Comments ============================ */
 
 export async function likePost(postId: string): Promise<{ likesCount?: number }> {
   try { const { data } = await api.post(`/posts/${postId}/like`); return data; }
   catch { return {}; }
 }
+
 export async function unlikePost(postId: string): Promise<{ likesCount?: number }> {
   try { const { data } = await api.post(`/posts/${postId}/unlike`); return data; }
   catch { return {}; }
@@ -294,7 +340,7 @@ export async function unlikeComment(postId: string, commentId: string) {
   catch { return {}; }
 }
 
-/* ================= Suche ================= */
+/* ================================ Suche ================================= */
 
 export async function searchPostsPage(
   q: string,
@@ -311,7 +357,7 @@ export async function searchPostsPage(
   if (tag) params.tag = tag;
 
   const tokens = query.toLowerCase().split(/\s+/).filter(Boolean);
-  const TAG_WORDS = new Set(['sativa','indica','hybrid','haze','kush','cali','indoor','outdoor']);
+  const TAG_WORDS = new Set(['sativa', 'indica', 'hybrid', 'haze', 'kush', 'cali', 'indoor', 'outdoor']);
   let finalMode = mode;
   if (finalMode === 'prefix' && tokens.length === 1 && TAG_WORDS.has(tokens[0])) finalMode = 'tag';
   params.mode = finalMode;
@@ -338,7 +384,7 @@ export async function searchPostsPage(
   }
 }
 
-/* ================= Health ================= */
+/* ================================ Health ================================ */
 
 export async function pingApi(): Promise<void> {
   try {
@@ -349,7 +395,7 @@ export async function pingApi(): Promise<void> {
   }
 }
 
-/* ================= Posts: Upload & Admin ================= */
+/* ========================= Posts: Upload & Admin ========================= */
 
 export async function createPost(input: {
   text: string;
@@ -376,7 +422,7 @@ export async function createPost(input: {
         'Content-Type': 'image/jpeg',
         Accept: 'application/json',
       },
-      uploadType: FileSystem.FileSystemUploadType.BINARY_CONTENT,
+      uploadType: FS_BINARY_UPLOAD,
     }
   );
 
@@ -427,29 +473,7 @@ export async function deletePost(postId: string) {
   await api.delete(`/posts/${postId}`);
 }
 
-/* ================= Chat API ================= */
-
-export type Chat = {
-  id: string;
-  members: string[];
-  membersKey?: string;
-  lastMessage?: string;
-  lastSender?: string;
-  updatedAt?: any;
-  unread?: Record<string, number>;
-  peer?: { id: string; username?: string; firstName?: string; lastName?: string; avatarUrl?: string };
-};
-
-export type ChatMessage = {
-  id: string;
-  senderId: string;
-  type: 'text';
-  text: string;
-  createdAt: any;
-};
-
-/** Alias für Kompatibilität zu deinem ChatModule */
-export type ApiChatMessage = ChatMessage;
+/* ================================ Chat API =============================== */
 
 // Liste (mit Server-Fallback)
 export async function chatList(): Promise<Chat[]> {
@@ -477,7 +501,7 @@ export async function chatOpen(peerId: string): Promise<Chat> {
   }
 }
 
-// User-Suche – robust
+// User-Suche – robust (mehrere Fallbacks)
 export async function chatSearchUsers(q: string): Promise<any[]> {
   const params = { q };
   try { return ((await api.get('/chat/users/search', { params })).data?.users ?? []) as any[]; } catch {}
@@ -487,7 +511,11 @@ export async function chatSearchUsers(q: string): Promise<any[]> {
 }
 
 // Nachrichten lesen
-export async function chatGetMessages(chatId: string, limit = 30, cursor?: string | number | null) {
+export async function chatGetMessages(
+  chatId: string,
+  limit = 30,
+  cursor?: string | number | null
+) {
   const params: any = { limit };
   if (cursor) params.cursor = cursor;
   try {
@@ -512,8 +540,8 @@ export async function chatSendMessageBasic(chatId: string, text: string): Promis
 
 /**
  * Nachricht senden – 3. Parameter flexibel:
- *  - string          → replyToId
- *  - { replyToId }   → Objekt mit optionalem replyToId
+ *  - string                → replyToId
+ *  - { replyToId?: string} → Objekt mit optionalem replyToId
  */
 export async function chatSendMessage(
   chatId: string,
@@ -521,11 +549,8 @@ export async function chatSendMessage(
   extra?: string | { replyToId?: string | null }
 ) {
   let replyToId: string | undefined;
-  if (typeof extra === 'string') {
-    replyToId = extra || undefined;
-  } else if (extra && typeof extra === 'object') {
-    replyToId = extra.replyToId ?? undefined;
-  }
+  if (typeof extra === 'string') replyToId = extra || undefined;
+  else if (extra && typeof extra === 'object') replyToId = extra.replyToId ?? undefined;
 
   const payload: any = { text };
   if (replyToId) payload.replyToId = replyToId;
@@ -539,7 +564,7 @@ export async function chatSendMessage(
   }
 }
 
-// Medien hochladen/senden (Bild/Audio)
+// Medien hochladen/senden (Bild/Audio/…)
 export type MediaPart = { uri: string; name: string; type: string };
 export async function chatSendMedia(chatId: string, file: MediaPart) {
   const fd = new FormData();
@@ -573,7 +598,7 @@ export async function chatMarkRead(chatId: string) {
   }
 }
 
-/* ====== Gruppen & Admin-Helpers ====== */
+/* ===================== Gruppen & Chat-Admin-Helpers ===================== */
 
 export async function groupCreate(name: string, memberIds: string[]) {
   try {
@@ -590,11 +615,11 @@ export async function groupCreate(name: string, memberIds: string[]) {
 export async function chatArchive(chatId: string, to = true): Promise<void> {
   try {
     if (to) await api.post('/chat/archive', { chatId });
-    else    await api.post('/chat/unarchive', { chatId });
+    else await api.post('/chat/unarchive', { chatId });
   } catch {
     try {
       if (to) await api.post(`/chat/${chatId}/archive`);
-      else    await api.post(`/chat/${chatId}/unarchive`);
+      else await api.post(`/chat/${chatId}/unarchive`);
     } catch (e) {
       throw e;
     }

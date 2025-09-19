@@ -21,4 +21,4 @@ src/config/firebaseServiceAccount.json
 .vscode/
 
 # macOS system files (optional, aber nützlich)
-.DS_Store
+.DS_Store_backups/
