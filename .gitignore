@@ -1,9 +1,19 @@
-# node modules (Pflicht)
-node_modules/
+# OS / IDE
+.DS_Store
+.vscode/
+.idea/
 
-# Build output (z. B. bei tsc)
+# Node / Build
+node_modules/
 dist/
 build/
+coverage/
+*.tsbuildinfo
+web-build/          # Expo Web Export
+.expo/
+.expo-shared/
+.cache/
+.tmp/
 
 # Logs
 npm-debug.log*
@@ -12,13 +22,18 @@ yarn-error.log*
 
 # Umgebungsvariablen
 .env
+.env.*
+app.config.local.*   # falls du lokale Secrets in separater Config hältst
 
-# Firebase Admin SDK Schlüssel (sehr wichtig!)
+# Firebase Admin SDK – gehört NIEMALS ins Frontend
 src/config/serviceAccountKey.json
 src/config/firebaseServiceAccount.json
 
-# VS Code Settings (optional)
-.vscode/
-
-# macOS system files (optional, aber nützlich)
-.DS_Store_backups/
+# Optionale große Assets (falls du sie nicht versionieren willst)
+# web/assets/3d/
+# *.blend
+# *.glb
+# Backups & Review
+/_archive/
+/_backup_review/
+/GrowGramBackend_review/
