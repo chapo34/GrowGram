@@ -7,15 +7,12 @@ import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-cont
 import { Provider as PaperProvider, MD3DarkTheme, MD3Theme } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import 'react-native-gesture-handler';
+
 import AppNavigator from './src/navigation/AppNavigator';
 import { AuthProvider } from './src/context/AuthContext';
 import { bootstrapAuthToken } from './src/utils/api';
-
-// Theme-Context
 import { ThemeProvider, useTheme } from './src/theme/ThemeProvider';
 
-/* ---------- Statusbar Gradient (oberes Padding) ---------- */
 function StatusBarGradient() {
   const insets = useSafeAreaInsets();
   const { colors } = useTheme();
@@ -30,7 +27,6 @@ function StatusBarGradient() {
   );
 }
 
-/* ---------- Innerer App-Shell: Theme -> Navigation & Paper ---------- */
 function AppShell() {
   const { colors, mode } = useTheme();
 
@@ -60,14 +56,11 @@ function AppShell() {
     },
   };
 
-  // Dunkles Design -> helle Symbole
-  const barStyle: 'light' | 'dark' = 'light';
-
   return (
     <PaperProvider theme={paperTheme}>
       <AuthProvider>
         <NavigationContainer theme={navTheme}>
-          <StatusBar style={barStyle} translucent backgroundColor="transparent" />
+          <StatusBar style="light" translucent backgroundColor="transparent" />
           <StatusBarGradient />
           <AppNavigator />
         </NavigationContainer>
@@ -76,7 +69,6 @@ function AppShell() {
   );
 }
 
-/* ---------- Root ---------- */
 export default function App() {
   const [ready, setReady] = useState(false);
 
@@ -92,7 +84,6 @@ export default function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        {/* Ganze App unter ThemeProvider legen */}
         <ThemeProvider>
           <AppShell />
         </ThemeProvider>

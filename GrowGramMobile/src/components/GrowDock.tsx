@@ -19,18 +19,19 @@ const ARC_START = -150;
 const ARC_END   = -30;
 const DIM_OPACITY = 0.55;
 
+// 👉 Export: Platz über dem Dock (für Screens)
 export const getGrowDockSpace = (bottomInset: number) =>
-  Math.max(bottomInset, 12) + BAR_H; // zur Nutzung in Screens für Padding
+  Math.max(bottomInset, 12) + BAR_H;
 
 type RootNav = NativeStackNavigationProp<RootStackParamList>;
 type Item = { key: string; route: keyof MainStackParamList; icon: any };
 
 const ITEMS: Item[] = [
-  { key: 'home',    route: 'Home',        icon: require('../assets/animations/home.json') },
-  { key: 'explore', route: 'Explore',     icon: require('../assets/animations/explore.json') },
-  { key: 'post',    route: 'PostCreate',  icon: require('../assets/animations/post.json') },
-  { key: 'chat',    route: 'Chat',        icon: require('../assets/animations/chat.json') },
-  { key: 'profile', route: 'Profile',     icon: require('../assets/animations/profile.json') },
+  { key: 'home',    route: 'Home',       icon: require('../assets/animations/home.json') },
+  { key: 'explore', route: 'Explore',    icon: require('../assets/animations/explore.json') },
+  { key: 'post',    route: 'PostCreate', icon: require('../assets/animations/post.json') },
+  { key: 'chat',    route: 'Chat',       icon: require('../assets/animations/chat.json') },
+  { key: 'profile', route: 'Profile',    icon: require('../assets/animations/profile.json') },
 ];
 
 export default function GrowDock() {
@@ -43,13 +44,13 @@ export default function GrowDock() {
     Haptics.selectionAsync();
     const next = !open;
     setOpen(next);
-    Animated.spring(prog, { toValue: next ? 1 : 0, useNativeDriver: true, friction: 7, tension: 90 }).start();
+    Animated.spring(prog, { toValue: next ? 1 : 0, useNativeDriver: false, friction: 7, tension: 90 }).start();
   };
 
   const go = (route: keyof MainStackParamList) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     setOpen(false);
-    Animated.spring(prog, { toValue: 0, useNativeDriver: true, friction: 8, tension: 90 }).start();
+    Animated.spring(prog, { toValue: 0, useNativeDriver: false, friction: 8, tension: 90 }).start();
     rootNav.navigate('Main', { screen: route } as never);
   };
 

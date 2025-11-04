@@ -1,4 +1,3 @@
-// src/components/SkeletonCard.tsx
 // Universelle Skeleton-/Shimmer-Karte auf Basis deines ThemeProviders.
 
 import React, { useEffect, useMemo, useRef } from 'react';
@@ -34,7 +33,7 @@ function ShimmerOverlay() {
       Animated.timing(anim, {
         toValue: 1,
         duration: 1300,
-        useNativeDriver: true,
+        useNativeDriver: false, // JS-driven → stabil
       })
     );
     loop.start();
@@ -50,7 +49,6 @@ function ShimmerOverlay() {
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
       <Animated.View style={{ ...StyleSheet.absoluteFillObject, transform: [{ translateX }] }}>
         <LinearGradient
-          // weicher „Wisch“-Glanz
           colors={['transparent', 'rgba(255,255,255,0.10)', 'transparent']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
@@ -72,13 +70,22 @@ export default function SkeletonCard({
   const { colors } = useTheme();
 
   // sanfte, theme-konsistente Töne
-  const base = useMemo(() => colors.card, [colors.card]);
-  const border = useMemo(() => colors.border ?? 'rgba(255,255,255,0.08)', [colors.border]);
-  const fill  = useMemo(() => 'rgba(255,255,255,0.06)', []);
-  const fill2 = useMemo(() => 'rgba(255,255,255,0.08)', []);
+  const base = useMemo(() => (colors as any).card ?? colors.panel, [colors]);
+  const borderColor = useMemo(
+    () => colors.glassBorder, // <- FIX: statt colors.border
+    [colors.glassBorder]
+  );
+  const fill  = 'rgba(255,255,255,0.06)';
+  const fill2 = 'rgba(255,255,255,0.08)';
 
   return (
-    <View style={[styles.card, { borderRadius: radius, backgroundColor: base, borderColor: border }, style]}>
+    <View
+      style={[
+        styles.card,
+        { borderRadius: radius, backgroundColor: base, borderColor },
+        style,
+      ]}
+    >
       <View style={styles.row}>
         {avatar && <View style={[styles.avatar, { backgroundColor: fill2 }]} />}
         <View style={{ flex: 1, gap: 8 }}>
@@ -98,7 +105,12 @@ export default function SkeletonCard({
       </View>
 
       {typeof mediaHeight === 'number' && mediaHeight > 0 && (
-        <View style={[styles.media, { height: mediaHeight, backgroundColor: fill, borderRadius: radius - 4 }]} />
+        <View
+          style={[
+            styles.media,
+            { height: mediaHeight, backgroundColor: fill, borderRadius: radius - 4 },
+          ]}
+        />
       )}
 
       <ShimmerOverlay />
@@ -109,14 +121,12 @@ export default function SkeletonCard({
 /** Varianten für Listen (z. B. als Chat-Row-Placeholder) */
 export function SkeletonRow({ style }: { style?: StyleProp<ViewStyle> }) {
   const { colors } = useTheme();
+  const base = (colors as any).card ?? colors.panel;
   return (
     <View
       style={[
         styles.rowOnly,
-        {
-          backgroundColor: colors.card,
-          borderColor: colors.border ?? 'rgba(255,255,255,0.08)',
-        },
+        { backgroundColor: base, borderColor: colors.glassBorder },
         style,
       ]}
     >

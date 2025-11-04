@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="color-scheme" content="dark light"/>
+<meta name="robots" content="noindex,nofollow"/>
+<title>GrowGram – Bereits verifiziert</title>
+<style>
+  :root{--bg:#111316;--card:#1A1F24;--ring:#26313A;--text:#E6EAEF;--muted:#9AA6B2;--brand:#4CAF50}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial;min-height:100svh;display:grid;place-items:center;padding:24px}
+  .card{max-width:680px;width:100%;background:var(--card);border:1px solid var(--ring);border-radius:16px;padding:28px;box-shadow:0 10px 35px rgba(0,0,0,.35)}
+  h1{margin:0 0 8px;font-size:clamp(22px,3.5vw,28px);background:linear-gradient(180deg,#fff,#d9e7dc);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  p{margin:0;color:var(--muted)}
+  .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}
+  a.btn,button.btn{background:var(--brand);color:#0c1a10;text-decoration:none;padding:12px 16px;border-radius:12px;font-weight:800;border:0;cursor:pointer}
+  .ghost{border:1px solid var(--ring);background:transparent;color:var(--muted)}
+  .brand{margin-bottom:10px;font-weight:800;color:#cfe9d4}
+  .foot{margin-top:16px;font-size:12px;color:#8fa2b2}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="brand">GrowGram™</div>
+    <h1>Schon verifiziert ✅</h1>
+    <p>Diese E-Mail-Adresse wurde bereits bestätigt. Du kannst dich direkt in der App anmelden.</p>
+    <div class="actions" style="margin-top:16px">
+      <a class="btn" href="https://growgram-app.com" rel="noopener">Zur App</a>
+      <button id="closeBtn" class="btn ghost" type="button">Fenster schließen</button>
+    </div>
+    <div class="foot">Ein Produkt von GrowGram Labs</div>
+  </div>
+  <script>
+    (function(){
+      const b=document.getElementById('closeBtn');
+      if(b){
+        b.addEventListener('click',function(e){
+          e.preventDefault();
+          try{ window.close(); }catch(_){}
+          setTimeout(()=>{ location.href='/' },120);
+        });
+      }
+    })();
+  </script>
+</body>
+</html>

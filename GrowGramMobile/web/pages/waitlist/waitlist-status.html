@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Beta-Status – GrowGram</title>
+<meta name="theme-color" content="#0d0f10">
+<link rel="canonical" href="https://growgram-app.com/pages/waitlist-status.html">
+<style>
+:root{ --bg:#0d0f10; --panel:#0f1316; --text:#e7f0e9; --muted:#a5b6ab; --border:#1c2428; --brand:#4CAF50; --accent:#ffa53a }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:400 16px/1.6 system-ui,-apple-system,Inter,Roboto,Segoe UI,Arial}
+a{color:inherit;text-decoration:none}
+.container{width:min(880px,92vw);margin:28px auto}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:18px;margin:12px 0;box-shadow:0 1px 0 #263137 inset,0 8px 18px rgba(0,0,0,.22)}
+h1{margin:.25rem 0 .6rem;font-size:clamp(26px,3.6vw,36px);line-height:1.1}
+.muted{color:var(--muted)}
+.row{display:grid;gap:12px;grid-template-columns:1.1fr .9fr}
+@media (max-width:860px){.row{grid-template-columns:1fr}}
+.form{display:flex;gap:10px;flex-wrap:wrap}
+input[type=text]{background:#0f1417;border:1px solid #243036;color:#e7f0e9;padding:10px 12px;border-radius:10px;outline:none;min-width:220px}
+.btn{display:inline-flex;align-items:center;gap:.6rem;padding:.72rem 1rem;border-radius:12px;border:1px solid var(--border);font-weight:800;cursor:pointer}
+.btn-primary{background:linear-gradient(180deg,#4CAF50,#2d8a43);color:#08150d;box-shadow:0 0 0 2px rgba(76,175,80,.35) inset}
+.badge{display:inline-flex;align-items:center;gap:8px;border:1px dashed #2a3731;border-radius:999px;padding:6px 10px}
+.grid-2{display:grid;gap:12px;grid-template-columns:repeat(2,1fr)}
+@media (max-width:860px){.grid-2{grid-template-columns:1fr}}
+.progress{display:flex;gap:8px;margin:.6rem 0}
+.step{flex:1;height:10px;background:#12181b;border:1px solid #263137;border-radius:999px;position:relative;overflow:hidden}
+.step.done::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#4CAF50,#7bd38a)}
+.hr{height:1px;background:var(--border);margin:14px 0}
+.small{font-size:.92rem;color:#9bb0a5}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <a href="/" class="small">← Zurück</a>
+    <div class="badge">Beta-Crew Status</div>
+  </div>
+
+  <div class="card">
+    <h1>Prüfe deinen Beta-Status</h1>
+    <p class="muted">Gib deine <b>Beta-ID</b> und dein <b>Ticket-Token</b> ein – oder öffne den Link aus der E-Mail (enthält beide).</p>
+    <div class="form">
+      <input id="inp-id" type="text" placeholder="Beta-ID (z. B. GG-7XK2QF)" autocomplete="off">
+      <input id="inp-token" type="text" placeholder="Ticket-Token" autocomplete="off">
+      <button id="btn-check" class="btn btn-primary">Status prüfen</button>
+    </div>
+  </div>
+
+  <div class="row">
+    <section class="card" id="status-card">
+      <h3 style="margin:.2rem 0 .4rem">Dein Fortschritt</h3>
+      <div class="progress">
+        <div class="step" id="st-1" title="Angemeldet"></div>
+        <div class="step" id="st-2" title="E-Mail bestätigt"></div>
+        <div class="step" id="st-3" title="Discord beigetreten"></div>
+        <div class="step" id="st-4" title="Zugang erteilt"></div>
+      </div>
+      <div id="status-text" class="small">Noch kein Status geladen.</div>
+      <div class="hr"></div>
+      <div class="grid-2">
+        <div>
+          <p class="small">Schritt 3 fehlt noch? Tritt unserer Beta-Crew auf Discord bei:</p>
+          <p><a class="btn" href="/discord" target="_blank" rel="noopener">Discord öffnen</a></p>
+          <p><button id="btn-joined" class="btn">Ich bin beigetreten ✓</button></p>
+          <p class="small">Hinweis: Dieser Knopf markiert deinen Beitritt. Eine echte Verifizierung kann optional per Bot folgen.</p>
+        </div>
+        <div>
+          <p class="small">Sichere dir mehr Chancen: Bestätige E-Mail & trete Discord bei. Plätze sind limitiert.</p>
+          <p class="small" id="ts"></p>
+        </div>
+      </div>
+    </section>
+
+    <aside class="card">
+      <h3 style="margin:.2rem 0 .4rem">Freie Plätze</h3>
+      <div id="seats" class="small">Lade…</div>
+      <div class="hr"></div>
+      <p class="small">Tipps, um früher reinzukommen:</p>
+      <ul class="small">
+        <li>Discord beitreten & positiv beitragen (Fragen, Learnings teilen).</li>
+        <li>E-Mail bestätigt halten (kein Bounce/Spam).</li>
+        <li>Deutschland/EU-Kontext beachten, keine Verkäufe/Preise.</li>
+      </ul>
+    </aside>
+  </div>
+
+  <div class="small" style="margin:12px 2px">© 2025 GrowGram · <a href="/pages/privacy.html">Datenschutz</a> · <a href="/pages/compliance.html">Compliance</a></div>
+</div>
+
+<script>
+const API = '/api/waitlist';
+
+const elId = document.getElementById('inp-id');
+const elTk = document.getElementById('inp-token');
+const elBtn = document.getElementById('btn-check');
+const st1 = document.getElementById('st-1');
+const st2 = document.getElementById('st-2');
+const st3 = document.getElementById('st-3');
+const st4 = document.getElementById('st-4');
+const stText = document.getElementById('status-text');
+const tsEl = document.getElementById('ts');
+const seatsEl = document.getElementById('seats');
+const btnJoined = document.getElementById('btn-joined');
+
+function setSteps(s){
+  st1.classList.toggle('done', !!(s?.registered));
+  st2.classList.toggle('done', !!(s?.confirmed));
+  st3.classList.toggle('done', !!(s?.discordJoined));
+  st4.classList.toggle('done', !!(s?.admitted));
+}
+
+async function fetchSeats(){
+  try{
+    const r = await fetch(API + '/metrics/public', { headers:{'Accept':'application/json'} });
+    const j = await r.json();
+    if(j?.ok){
+      seatsEl.textContent = `Cohort: ${j.seats.cohort} · Plätze gesamt: ${j.seats.total} · Vergeben: ${j.seats.admitted} · Frei: ${j.seats.remaining}`;
+    }else{
+      seatsEl.textContent = '—';
+    }
+  }catch{ seatsEl.textContent = '—'; }
+}
+fetchSeats(); setInterval(fetchSeats, 30000);
+
+async function check(){
+  const publicId = (elId.value || '').trim().toUpperCase();
+  const token = (elTk.value || '').trim();
+  if(!publicId || !token){
+    stText.textContent = 'Bitte ID und Token eingeben.';
+    return;
+  }
+  stText.textContent = 'Lade Status …';
+  try{
+    const r = await fetch(API + '/status', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ publicId, token })
+    });
+    const j = await r.json();
+    if(!j?.ok) throw new Error(j?.error || 'error');
+    setSteps(j.steps);
+    const parts = [];
+    if(j.steps.admitted){ parts.push('🎉 Zugang erteilt'); }
+    else if(j.steps.discordJoined){ parts.push('Fast da – Discord ✓, wir vergeben Plätze gestaffelt.'); }
+    else if(j.steps.confirmed){ parts.push('E-Mail bestätigt – tritt jetzt Discord bei, um bevorzugt zu werden.'); }
+    else { parts.push('Anmeldung eingegangen – bitte E-Mail bestätigen.'); }
+    stText.textContent = parts.join(' ');
+    const created = j.createdAt ? new Date(j.createdAt).toLocaleString() : '—';
+    const updated = j.updatedAt ? new Date(j.updatedAt).toLocaleString() : '—';
+    tsEl.textContent = `Angelegt: ${created} · Aktualisiert: ${updated}`;
+  }catch(e){
+    setSteps({}); stText.textContent = 'Fehler beim Laden (prüfe ID/Token).';
+  }
+}
+
+elBtn.addEventListener('click', check);
+
+// „Ich bin beigetreten“ → Discord-Ack
+btnJoined.addEventListener('click', async ()=>{
+  const publicId = (elId.value || '').trim().toUpperCase();
+  const token = (elTk.value || '').trim();
+  if(!publicId || !token){ stText.textContent = 'Bitte ID und Token eingeben.'; return; }
+  btnJoined.disabled = true;
+  try{
+    const r = await fetch(API + '/discord-ack', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ publicId, token })
+    });
+    const j = await r.json();
+    if(j?.ok){ stText.textContent = 'Discord-Beitritt markiert. Status wird aktualisiert …'; await check(); }
+    else{ stText.textContent = 'Konnte nicht markieren (ID/Token prüfen).'; }
+  }catch{ stText.textContent = 'Netzwerkfehler.'; }
+  finally{ btnJoined.disabled = false; }
+});
+
+// URL-Auto-Fill (?id=..&t=..)
+const usp = new URLSearchParams(location.search);
+if(usp.has('id')) elId.value = usp.get('id');
+if(usp.has('t'))  elTk.value = usp.get('t');
+if(elId.value && elTk.value){ check(); }
+</script>
+<script>
+  (function () {
+    const qs = new URLSearchParams(location.search);
+    const pid = qs.get('publicId') || qs.get('pid') || '';
+    const tok = qs.get('token')    || qs.get('t')   || '';
+    const idEl = document.querySelector('#betaId');     // dein Input für Beta-ID
+    const tkEl = document.querySelector('#ticketTok');  // dein Input für Token
+    const btn  = document.querySelector('#checkBtn');   // "Status prüfen"
+
+    if (pid) idEl && (idEl.value = pid);
+    if (tok) tkEl && (tkEl.value = tok);
+
+    // Wenn beides vorhanden → automatisch prüfen
+    if (pid && tok && btn) {
+      btn.click();
+    }
+  })();
+</script>
+</body>
+</html>

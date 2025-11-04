@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>GrowGram – Öffnen</title>
+  <style>
+    :root{--brand:#4CAF50;--bg:#111316;--card:#1A1F24;--ring:#26313A;--text:#E6EAEF;--muted:#9AA6B2}
+    *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Inter}
+    .wrap{min-height:100svh;display:grid;place-items:center;padding:24px}
+    .card{max-width:560px;width:100%;background:var(--card);border:1px solid var(--ring);border-radius:16px;padding:24px}
+    h1{margin:0 0 8px} p{margin:0 0 12px;color:var(--muted)}
+    .btn{display:inline-block;background:var(--brand);color:#0c1a10;padding:12px 16px;border-radius:12px;font-weight:800;text-decoration:none}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Link öffnen</h1>
+      <p id="info">Verarbeite Anfrage …</p>
+      <p><a id="fallback" class="btn" href="/">Zur Startseite</a></p>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      const p = new URLSearchParams(location.search);
+      const raw = p.get('url') || '';
+      const info = document.getElementById('info');
+      const fb = document.getElementById('fallback');
+
+      try {
+        const decoded = decodeURIComponent(raw);
+        // Nur sichere Protokolle erlauben
+        if (/^(https?|growgram):/i.test(decoded)) {
+          info.textContent = 'Öffne Link …';
+          fb.textContent = 'Falls nichts passiert: hier tippen';
+          fb.href = decoded;
+          // Versuch App-DeepLink zuerst
+          if (decoded.startsWith('growgram:')) {
+            location.href = decoded;
+            setTimeout(() => { location.href = 'https://growgram-app.com'; }, 1200);
+          } else {
+            location.href = decoded;
+          }
+        } else {
+          info.textContent = 'Ungültiges oder nicht erlaubtes Protokoll.';
+        }
+      } catch (e) {
+        info.textContent = 'Link konnte nicht verarbeitet werden.';
+      }
+    })();
+  </script>
+</body>
+</html>

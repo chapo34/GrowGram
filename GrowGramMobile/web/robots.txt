@@ -1,0 +1,29 @@
+# robots.txt — GrowGram (Dev)
+User-agent: *
+Allow: /
+
+# Server-/API-Endpunkte nicht indexieren
+Disallow: /api/
+Disallow: /auth/
+Disallow: /users/
+Disallow: /feed/
+Disallow: /posts/
+Disallow: /files/
+Disallow: /chat/
+Disallow: /admin/
+Disallow: /healthz
+Disallow: /version
+Disallow: /verify-email
+Disallow: /reset-password
+Disallow: /reset-error
+Disallow: /reset-done
+Disallow: /verified
+Disallow: /verify-error
+Disallow: /already-verified
+
+# Statische Service-Dateien (optional)
+Disallow: /sw.js
+
+# Sitemap (Dev-Domain). Bei Custom Domain unten umstellen.
+Sitemap: https://growgram-backend.web.app/sitemap.xml
+# Sitemap: https://growgram-app.com/sitemap.xml

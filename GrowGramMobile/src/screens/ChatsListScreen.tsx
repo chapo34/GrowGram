@@ -215,10 +215,10 @@ const SwipeableItem = memo(function SwipeableItem({
   const offset = reveal.interpolate({ inputRange: [0, 1], outputRange: [0, ACTION_W * 3 + 12] });
 
   const close = useCallback(() => {
-    Animated.timing(reveal, { toValue: 0, duration: 160, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
+    Animated.timing(reveal, { toValue: 0, duration: 160, easing: Easing.out(Easing.cubic), useNativeDriver: false }).start();
   }, [reveal]);
   const open = useCallback(() => {
-    Animated.timing(reveal, { toValue: 1, duration: 180, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
+    Animated.timing(reveal, { toValue: 1, duration: 180, easing: Easing.out(Easing.cubic), useNativeDriver: false }).start();
   }, [reveal]);
 
   const pan = useRef(
@@ -514,14 +514,14 @@ export default function ChatsListScreen() {
     slideY.setValue(200);
     fade.setValue(0);
     Animated.parallel([
-      Animated.timing(slideY, { toValue: 0, duration: 220, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
-      Animated.timing(fade,   { toValue: 1, duration: 200, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+      Animated.timing(slideY, { toValue: 0, duration: 220, easing: Easing.out(Easing.cubic), useNativeDriver: false }),
+      Animated.timing(fade,   { toValue: 1, duration: 200, easing: Easing.out(Easing.cubic), useNativeDriver: false }),
     ]).start();
   }, [fade, slideY]);
   const closeSearch = useCallback(() => {
     Animated.parallel([
-      Animated.timing(slideY, { toValue: 200, duration: 180, easing: Easing.in(Easing.cubic), useNativeDriver: true }),
-      Animated.timing(fade,   { toValue: 0,   duration: 160, easing: Easing.in(Easing.cubic), useNativeDriver: true }),
+      Animated.timing(slideY, { toValue: 200, duration: 180, easing: Easing.in(Easing.cubic), useNativeDriver: false }),
+      Animated.timing(fade,   { toValue: 0,   duration: 160, easing: Easing.in(Easing.cubic), useNativeDriver: false }),
     ]).start(({ finished }) => {
       if (finished) { setSearchOpen(false); setQuery(''); setResults([]); }
     });

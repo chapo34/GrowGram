@@ -1,10 +1,10 @@
-// src/utils/api.ts
 // -----------------------------------------------------------------------------
-// Zentrale API-Hilfen für GrowGram (Expo/React-Native)
-// - axios-Client mit Token-Handling
-// - User/Feed/Posts
-// - Chat (Threads, Messages, Read, Media, Admin)
-// - Uploads kompatibel für verschiedene expo-file-system Versionen
+// GrowGram · Expo/React Native
+// Enterprise API Helpers
+// - zentraler axios-Client mit Token-Handling & App-Headern
+// - Upload-Fallbacks für verschiedene expo-file-system Versionen
+// - Feed/Posts/Chat Endpunkte
+// - Compliance: lokale Persistenz + Server-Ack (idempotent) mit Versionierung
 // -----------------------------------------------------------------------------
 
 import axios, { AxiosError, AxiosRequestHeaders } from 'axios';
@@ -27,6 +27,8 @@ export const API_BASE: string =
 export const STORAGE_KEYS = {
   TOKEN: 'GG_TOKEN',
   USER: 'GG_USER',
+  COMPLIANCE_PREFIX: '@growgram/compliance_ack:', // pro UserId -> '<prefix><id>' = JSON
+  COMPLIANCE_ACK: '@growgram/compliance_ack',     // globaler Fallback (nicht verwendet)
 } as const;
 
 let inMemoryToken: string | null = null;
@@ -38,7 +40,35 @@ const FS_BINARY_UPLOAD: any =
   (FileSystem as any).UploadType?.BINARY_CONTENT ??
   0;
 
-/* ============================== Auth-Helpers ============================== */
+/* ============================ App-Metadaten ============================ */
+
+export function getAppComplianceVersion(): string {
+  // Hebe an, wenn sich der Text/Scope der Regeln ändert
+  // Optional: von Constants.expoConfig?.extra?.COMPLIANCE_VERSION lesen
+  return '1.0.0';
+}
+
+function appHeaders() {
+  const ver =
+    (Constants.expoConfig as any)?.version ||
+    (Constants.manifest2 as any)?.extra?.appVersion ||
+    'dev';
+  const runtime = Constants.executionEnvironment || 'standalone';
+  const platform = (Constants.platform as any)?.ios ? 'ios' : ((Constants.platform as any)?.android ? 'android' : 'web');
+  return {
+    'X-Client': 'GrowGram-Mobile',
+    'X-App-Version': String(ver),
+    'X-Platform': platform,
+    'X-Runtime': String(runtime),
+  } as Record<string, string>;
+}
+
+/* ================================= Axios ================================= */
+
+export const api = axios.create({
+  baseURL: API_BASE,
+  timeout: 15000,
+});
 
 export async function bootstrapAuthToken() {
   try {
@@ -59,13 +89,6 @@ export async function setAuthToken(token: string | null) {
   }
 }
 
-/* ================================= Axios ================================= */
-
-export const api = axios.create({
-  baseURL: API_BASE,
-  timeout: 15000,
-});
-
 api.interceptors.request.use(async (config) => {
   if (!inMemoryToken) {
     try {
@@ -79,7 +102,11 @@ api.interceptors.request.use(async (config) => {
   h.Accept = 'application/json';
   const isForm = typeof FormData !== 'undefined' && config.data instanceof FormData;
   if (!isForm && !h['Content-Type']) h['Content-Type'] = 'application/json';
-  h['X-Client'] = 'GrowGram-Mobile';
+
+  // App-Metadaten
+  const extra = appHeaders();
+  for (const k of Object.keys(extra)) (h as any)[k] = (extra as any)[k];
+
   return config;
 });
 
@@ -95,6 +122,93 @@ api.interceptors.response.use(
     return Promise.reject(err);
   }
 );
+
+/* =============================== Helpers ================================= */
+
+export function parseApiError(e: any): string {
+  const d = e?.response?.data;
+  return d?.details || d?.message || d?.error || e?.message || 'Unbekannter Fehler';
+}
+
+async function tryJson<T>(fn: () => Promise<T>, fallback?: () => Promise<T>): Promise<T> {
+  try { return await fn(); }
+  catch (e: any) {
+    if (e?.response?.status === 404 && fallback) return await fallback();
+    throw e;
+  }
+}
+
+export function normalizeImageUrl(
+  u?: string | null,
+  bust?: number,
+  opts?: { w?: number; q?: number; fm?: string }
+) {
+  if (!u) return '';
+  try {
+    const url = new URL(u);
+    if (opts?.fm && !url.searchParams.get('fm')) url.searchParams.set('fm', opts.fm);
+    if (opts?.w && !url.searchParams.get('w')) url.searchParams.set('w', String(opts.w));
+    if (opts?.q && !url.searchParams.get('q')) url.searchParams.set('q', String(opts.q));
+    if (bust) url.searchParams.set('t', String(bust));
+    return url.toString();
+  } catch {
+    const sep = u.includes('?') ? '&' : '?';
+    return bust ? `${u}${sep}t=${bust}` : u;
+  }
+}
+
+/* =========================== Compliance-Helfer ============================ */
+
+export async function getComplianceAck(userId: string | undefined | null): Promise<boolean> {
+  if (!userId) return false;
+
+  const keysToCheck = [
+    `${STORAGE_KEYS.COMPLIANCE_PREFIX}${userId}`,
+    // Altvarianten (Migration)
+    `GG_COMPLIANCE_${userId}`,
+    `GG_COMPLIANCE_ACK_${userId}`,
+  ];
+
+  for (const k of keysToCheck) {
+    try {
+      const v = await AsyncStorage.getItem(k);
+      if (!v) continue;
+      if (v === '1') return true;
+      try {
+        const j = JSON.parse(v);
+        if (j && (j.agreed === true || j.accepted === true)) return true;
+      } catch {}
+    } catch {}
+  }
+  return false;
+}
+
+export async function setComplianceAck(
+  userId: string | undefined | null,
+  opts?: { version?: string }
+): Promise<void> {
+  if (!userId) return;
+  const payload = JSON.stringify({
+    agreed: true,
+    over18: true,
+    version: opts?.version ?? getAppComplianceVersion(),
+    at: Date.now(),
+  });
+  await AsyncStorage.setItem(`${STORAGE_KEYS.COMPLIANCE_PREFIX}${userId}`, payload);
+}
+
+/** optional: an Server melden; idempotent */
+export async function sendComplianceAckToServer(
+  params: { agree: boolean; over18: boolean; version: string },
+  opts?: { signal?: AbortSignal }
+): Promise<{ ok: boolean; error?: string }> {
+  try {
+    await api.post('/compliance/ack', params, { signal: opts?.signal });
+    return { ok: true };
+  } catch (e: any) {
+    return { ok: false, error: parseApiError(e) };
+  }
+}
 
 /* ================================= Types ================================= */
 
@@ -155,43 +269,6 @@ export type ChatMessage = {
   createdAt: any;
 };
 
-/** Alias für dein ChatModule, das ApiChatMessage importiert */
-export type ApiChatMessage = ChatMessage;
-
-/* =============================== Helpers ================================= */
-
-export function parseApiError(e: any): string {
-  const d = e?.response?.data;
-  return d?.details || d?.message || d?.error || e?.message || 'Unbekannter Fehler';
-}
-
-async function tryJson<T>(fn: () => Promise<T>, fallback?: () => Promise<T>): Promise<T> {
-  try { return await fn(); }
-  catch (e: any) {
-    if (e?.response?.status === 404 && fallback) return await fallback();
-    throw e;
-  }
-}
-
-export function normalizeImageUrl(
-  u?: string | null,
-  bust?: number,
-  opts?: { w?: number; q?: number; fm?: string }
-) {
-  if (!u) return '';
-  try {
-    const url = new URL(u);
-    if (opts?.fm && !url.searchParams.get('fm')) url.searchParams.set('fm', opts.fm);
-    if (opts?.w && !url.searchParams.get('w')) url.searchParams.set('w', String(opts.w));
-    if (opts?.q && !url.searchParams.get('q')) url.searchParams.set('q', String(opts.q));
-    if (bust) url.searchParams.set('t', String(bust));
-    return url.toString();
-  } catch {
-    const sep = u.includes('?') ? '&' : '?';
-    return bust ? `${u}${sep}t=${bust}` : u;
-  }
-}
-
 /* ============================== Auth / User ============================== */
 
 export async function me(): Promise<UserMe> {
@@ -217,6 +294,8 @@ export async function updateAccountSettings(patch: Partial<UserMe>): Promise<Use
     async () => (await api.patch('/auth/me', patch)).data as UserMe
   );
 }
+
+/* ========================= Avatar Upload (binary) ======================== */
 
 export async function uploadAvatar(imageUri: string): Promise<{ url: string }> {
   const token = (await AsyncStorage.getItem(STORAGE_KEYS.TOKEN)) ?? '';
@@ -436,46 +515,10 @@ export async function createPost(input: {
   throw new Error(`Upload failed (${result.status}): ${msg}`);
 }
 
-export async function fetchMyPosts(
-  limit = 24,
-  cursor?: string,
-  visibility?: 'public' | 'private'
-): Promise<{ posts: FeedPost[]; nextCursor: string | null }> {
-  const params: any = { limit };
-  if (cursor) params.cursor = cursor;
-  if (visibility) params.visibility = visibility;
-  const { data } = await api.get('/posts/mine', { params });
-  return data as { posts: FeedPost[]; nextCursor: string | null };
-}
-
-export async function fetchPostsByUser(
-  userId: string,
-  limit = 24,
-  cursor?: string,
-  visibility?: 'public' | 'private'
-): Promise<{ posts: FeedPost[]; nextCursor: string | null }> {
-  const params: any = { limit };
-  if (cursor) params.cursor = cursor;
-  if (visibility) params.visibility = visibility;
-  const { data } = await api.get(`/posts/by-user/${userId}`, { params });
-  return data as { posts: FeedPost[]; nextCursor: string | null };
-}
-
-export async function setPostVisibility(postId: string, visibility: 'public' | 'private') {
-  try {
-    await api.patch(`/posts/${postId}`, { visibility });
-  } catch {
-    await api.post(`/posts/${postId}/visibility`, { visibility });
-  }
-}
-
-export async function deletePost(postId: string) {
-  await api.delete(`/posts/${postId}`);
-}
-
 /* ================================ Chat API =============================== */
 
-// Liste (mit Server-Fallback)
+export type ApiChatMessage = ChatMessage;
+
 export async function chatList(): Promise<Chat[]> {
   try {
     const { data } = await api.get('/chat/list');
@@ -490,7 +533,6 @@ export async function chatList(): Promise<Chat[]> {
   }
 }
 
-// Thread öffnen/erstellen
 export async function chatOpen(peerId: string): Promise<Chat> {
   try {
     const { data } = await api.post('/chat/open', { peerId });
@@ -501,7 +543,6 @@ export async function chatOpen(peerId: string): Promise<Chat> {
   }
 }
 
-// User-Suche – robust (mehrere Fallbacks)
 export async function chatSearchUsers(q: string): Promise<any[]> {
   const params = { q };
   try { return ((await api.get('/chat/users/search', { params })).data?.users ?? []) as any[]; } catch {}
@@ -510,7 +551,6 @@ export async function chatSearchUsers(q: string): Promise<any[]> {
   return [];
 }
 
-// Nachrichten lesen
 export async function chatGetMessages(
   chatId: string,
   limit = 30,
@@ -527,7 +567,6 @@ export async function chatGetMessages(
   }
 }
 
-// Nachricht senden (einfach)
 export async function chatSendMessageBasic(chatId: string, text: string): Promise<ChatMessage> {
   try {
     const { data } = await api.post(`/chat/${chatId}/messages`, { text });
@@ -538,11 +577,6 @@ export async function chatSendMessageBasic(chatId: string, text: string): Promis
   }
 }
 
-/**
- * Nachricht senden – 3. Parameter flexibel:
- *  - string                → replyToId
- *  - { replyToId?: string} → Objekt mit optionalem replyToId
- */
 export async function chatSendMessage(
   chatId: string,
   text: string,
@@ -564,7 +598,6 @@ export async function chatSendMessage(
   }
 }
 
-// Medien hochladen/senden (Bild/Audio/…)
 export type MediaPart = { uri: string; name: string; type: string };
 export async function chatSendMedia(chatId: string, file: MediaPart) {
   const fd = new FormData();
@@ -577,19 +610,16 @@ export async function chatSendMedia(chatId: string, file: MediaPart) {
   return data?.message || data;
 }
 
-// Bearbeiten
 export async function chatEditMessage(chatId: string, messageId: string, text: string) {
   const { data } = await api.post(`/chat/${chatId}/messages/${messageId}/edit`, { text });
   return data?.message || data;
 }
 
-// Zurückziehen (Unsend)
 export async function chatUnsendMessage(chatId: string, messageId: string) {
   const { data } = await api.post(`/chat/${chatId}/messages/${messageId}/unsend`, {});
   return data?.ok ?? true;
 }
 
-// Gelesen markieren
 export async function chatMarkRead(chatId: string) {
   try {
     await api.post(`/chat/${chatId}/read`);

@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Growi Test</title>
+  <script type="module" src="https://unpkg.com/@google/model-viewer@4"></script>
+  <style>
+    html,body{height:100%;margin:0;background:#0d1117;color:#e8f1ff;font-family:system-ui}
+    .stage{display:grid;place-items:center;height:100%}
+    model-viewer{width:min(560px,90vw);height:min(560px,80vh);--poster-color:transparent}
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <model-viewer src="/assets/3d/growi.glb"
+      alt="Growi 3D" camera-controls auto-rotate exposure="1.1"
+      shadow-intensity="0.7" environment-image="neutral"
+      ar ar-modes="webxr quick-look scene-viewer"></model-viewer>
+  </div>
+</body>
+</html>

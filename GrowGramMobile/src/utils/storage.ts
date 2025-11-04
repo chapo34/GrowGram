@@ -13,7 +13,7 @@ export async function getPinnedChats(uid: string): Promise<Set<string>> {
 
 export async function setPinnedChats(uid: string, pinned: Set<string>) {
   try {
-    await AsyncStorage.setItem(storageKeyPinned(uid), JSON.stringify([...pinned]));
+    await AsyncStorage.setItem(storageKeyPinned(uid), JSON.stringify(Array.from(pinned)));
   } catch (e) {
     console.error('Failed to save pinned chats:', e);
   }

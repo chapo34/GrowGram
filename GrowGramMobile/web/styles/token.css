@@ -1,0 +1,313 @@
+/* ==========================================================================
+   GrowGram — Design Tokens
+   File: /web/styles/token.css
+   Purpose: Zentrales, theming-fähiges Token-Set (Light/Dark)
+   Usage:   In allen Styles nur mit var(--token) arbeiten.
+   ========================================================================== */
+
+/* -------------------------------------------------------
+   Cascade Layer: tokens zuerst, damit überschreibbar bleibt
+   ------------------------------------------------------- */
+@layer tokens {
+  /* =====================================================
+     0) Custom Media Queries (Breakpoints & Motion)
+     ===================================================== */
+  @custom-media --sm (width >= 480px);
+  @custom-media --md (width >= 768px);
+  @custom-media --lg (width >= 1024px);
+  @custom-media --xl (width >= 1280px);
+  @custom-media --xxl (width >= 1536px);
+  @custom-media --hires (resolution >= 2dppx);
+  @custom-media --reduced (prefers-reduced-motion: reduce);
+
+  /* =====================================================
+     1) Root Defaults (Dark ist die Primär-Ästhetik)
+     ===================================================== */
+  :root {
+    color-scheme: dark light;
+
+    /* Brand Core */
+    --gg-green: #4caf50;         /* Primary */
+    --gg-green-600: #3f9a44;
+    --gg-green-700: #2f7a34;
+    --gg-green-800: #225a27;
+
+    --gg-orange: #ff7a18;        /* Accent */
+    --gg-orange-600: #e56c12;
+    --gg-orange-700: #c15a0e;
+
+    --gg-ink-0: #0c0f10;         /* Background (deep) */
+    --gg-ink-1: #121415;         /* Ink */
+    --gg-ink-2: #1a1d1e;         /* Surface */
+    --gg-ink-3: #232729;         /* Surface-2 */
+    --gg-offwhite: #f7f8f8;
+
+    /* ===== Semantic (Dark Baseline) ===== */
+    --color-bg: var(--gg-ink-0);
+    --color-surface: var(--gg-ink-2);
+    --color-surface-2: var(--gg-ink-3);
+    --color-elev: rgba(255,255,255,0.04);
+
+    --color-text: #e9eeeb;
+    --color-text-strong: #ffffff;
+    --color-text-muted: #8a9499;
+    --color-text-inverse: #0d1110;
+
+    --color-border: rgba(255,255,255,0.08);
+
+    --color-primary: var(--gg-green);
+    --color-primary-600: var(--gg-green-600);
+    --color-primary-700: var(--gg-green-700);
+
+    --color-accent: var(--gg-orange);
+    --color-accent-600: var(--gg-orange-600);
+    --color-accent-700: var(--gg-orange-700);
+
+    --color-success: #37d67a;
+    --color-danger:  #ff5252;
+    --color-warning: #ffd166;
+    --color-info:    #4dabf7;
+
+    /* Status/State (transparente Layer) */
+    --state-hover: rgba(255,255,255,0.06);
+    --state-active: rgba(255,255,255,0.10);
+    --state-selected: color-mix(in oklab, var(--color-primary) 16%, transparent);
+    --state-focus-ring: color-mix(in oklab, var(--color-primary) 65%, white);
+
+    /* ===== Typography ===== */
+    --ff-sans: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    --ff-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+
+    /* Fluid Scale (clamp) */
+    --fs-xxl: clamp(2.4rem, 2.1rem + 1.8vw, 4rem);
+    --fs-xl:  clamp(2rem, 1.7rem + 1.2vw, 3rem);
+    --fs-lg:  clamp(1.25rem, 1.1rem + .6vw, 1.6rem);
+    --fs-md:  1rem;
+    --fs-sm:  .9rem;
+    --fs-xs:  .8rem;
+
+    --lh-tight: 1.15;
+    --lh-base:  1.6;
+    --ls-tight: -0.02em;
+    --ls-wide:  0.02em;
+
+    /* ===== Spacing (8px baseline) ===== */
+    --sp-0: 0;
+    --sp-1: .25rem;   /* 4px  */
+    --sp-2: .5rem;    /* 8px  */
+    --sp-3: .75rem;   /* 12px */
+    --sp-4: 1rem;     /* 16px */
+    --sp-5: 1.5rem;   /* 24px */
+    --sp-6: 2rem;     /* 32px */
+    --sp-7: 3rem;     /* 48px */
+    --sp-8: 4rem;     /* 64px */
+    --sp-9: 6rem;     /* 96px */
+
+    /* ===== Radii ===== */
+    --radius-1: .5rem;
+    --radius-2: .8rem;
+    --radius-3: 1.2rem;
+    --radius-round: 999rem;
+
+    /* ===== Shadows / Elevation ===== */
+    --shadow-1: 0 2px 10px rgba(0,0,0,.25);
+    --shadow-2: 0 10px 30px rgba(0,0,0,.35);
+    --shadow-3: 0 20px 50px rgba(0,0,0,.45);
+
+    /* Soft glows (Brand) */
+    --glow-primary: 0 0 35px rgba(76,175,80,.45), 0 0 12px rgba(76,175,80,.35);
+    --glow-accent:  0 0 24px rgba(255,122,24,.4), 0 0 10px rgba(255,122,24,.35);
+
+    /* ===== Z-Index ===== */
+    --z-base: 0;
+    --z-nav:  50;
+    --z-sticky: 60;
+    --z-overlay: 100;
+    --z-toast: 200;
+    --z-max:  9999;
+
+    /* ===== Motion ===== */
+    --ease-smooth: cubic-bezier(.2, .8, .2, 1);
+    --ease-bounce: cubic-bezier(.34, 1.56, .64, 1);
+    --ease-snappy: cubic-bezier(.2, .9, .1, 1);
+
+    --dur-fast: 160ms;
+    --dur-base: 280ms;
+    --dur-slow: 480ms;
+    --dur-hero: 900ms;
+
+    /* ===== Borders & Opacity ===== */
+    --border-default: 1px solid var(--color-border);
+    --opacity-disabled: .55;
+    --opacity-muted: .75;
+
+    /* ===== Containers & Breakpoints ===== */
+    --container-xs: 560px;
+    --container-sm: 760px;
+    --container-md: 1024px;
+    --container-lg: 1240px;
+    --container-xl: 1440px;
+
+    --bp-sm: 480px;
+    --bp-md: 768px;
+    --bp-lg: 1024px;
+    --bp-xl: 1280px;
+    --bp-xxl: 1536px;
+
+    /* ===== Gradients ===== */
+    --grad-primary: linear-gradient(135deg, #2f7a34 0%, #4caf50 45%, #74d680 100%);
+    --grad-accent:  linear-gradient(135deg, #ff7a18 0%, #ffb86c 100%);
+    --grad-ink:     linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.01));
+
+    /* ===== Overlays / Scrims ===== */
+    --overlay-scrim: rgba(0,0,0,.55);
+    --overlay-backdrop: blur(10px) saturate(120%);
+
+    /* ===== Focus Ring ===== */
+    --focus-ring: 0 0 0 4px color-mix(in oklab, var(--color-primary) 28%, transparent);
+
+    /* ===== Component Tokens (shared) ===== */
+    /* Buttons */
+    --btn-bg: var(--color-primary);
+    --btn-bg-hover: var(--color-primary-600);
+    --btn-fg: #0c120d;
+    --btn-radius: .9rem;
+    --btn-shadow: 0 6px 22px rgba(76,175,80,.22), inset 0 1px 0 rgba(255,255,255,.28);
+
+    /* Inputs */
+    --input-bg: var(--color-surface);
+    --input-fg: var(--color-text);
+    --input-placeholder: var(--color-text-muted);
+    --input-border: var(--color-border);
+    --input-radius: .8rem;
+    --input-focus-border: color-mix(in oklab, var(--color-primary) 70%, white);
+    --input-focus-ring: 0 0 0 4px color-mix(in oklab, var(--color-primary) 24%, transparent);
+
+    /* Cards */
+    --card-bg: linear-gradient(180deg, var(--color-surface), var(--color-surface-2));
+    --card-border: var(--color-border);
+    --card-radius: var(--radius-2);
+    --card-shadow: var(--shadow-1);
+
+    /* Navbar */
+    --nav-height: 64px;
+    --nav-backdrop: saturate(140%) blur(8px);
+    --nav-bg: linear-gradient(180deg, rgba(12,15,16,.6), rgba(12,15,16,.2));
+
+    /* Hero deco */
+    --orb-green: rgba(76,175,80,.4);
+    --orb-orange: rgba(255,122,24,.35);
+  }
+
+  /* =====================================================
+     2) Light Theme (opt-in via data-theme="light")
+     ===================================================== */
+  [data-theme="light"] {
+    color-scheme: light;
+
+    --color-bg: #ffffff;
+    --color-surface: #f4f6f5;
+    --color-surface-2: #eef1ef;
+    --color-elev: rgba(0,0,0,0.04);
+
+    --color-text: #121415;
+    --color-text-strong: #0a0d0c;
+    --color-text-muted: #475055;
+    --color-text-inverse: #ffffff;
+
+    --color-border: rgba(0,0,0,0.08);
+
+    --overlay-scrim: rgba(0,0,0,.45);
+
+    /* Light-specific subtle tweaks */
+    --btn-fg: #0b110c;
+    --card-shadow: 0 8px 24px rgba(0,0,0,.08);
+    --nav-bg: linear-gradient(180deg, rgba(255,255,255,.7), rgba(255,255,255,.35));
+  }
+
+  /* =====================================================
+     3) Auto Respect prefers-color-scheme
+     (Anwenden nur wenn kein data-theme gesetzt ist)
+     ===================================================== */
+    /* defaults already dark — below only adjust for light pref */
+
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme]) {
+      color-scheme: light;
+
+      --color-bg: #ffffff;
+      --color-surface: #f4f6f5;
+      --color-surface-2: #eef1ef;
+      --color-elev: rgba(0,0,0,0.04);
+
+      --color-text: #121415;
+      --color-text-strong: #0a0d0c;
+      --color-text-muted: #475055;
+      --color-text-inverse: #ffffff;
+
+      --color-border: rgba(0,0,0,0.08);
+
+      --overlay-scrim: rgba(0,0,0,.45);
+
+      --btn-fg: #0b110c;
+      --card-shadow: 0 8px 24px rgba(0,0,0,.08);
+      --nav-bg: linear-gradient(180deg, rgba(255,255,255,.7), rgba(255,255,255,.35));
+    }
+  }
+
+  /* =====================================================
+     4) Motion Safe Defaults
+     ===================================================== */
+  @media (--reduced) {
+    :root {
+      --dur-fast: 1ms;
+      --dur-base: 1ms;
+      --dur-slow: 1ms;
+      --dur-hero: 1ms;
+      --ease-smooth: linear;
+      --ease-bounce: linear;
+      --ease-snappy: linear;
+    }
+  }
+
+  /* =====================================================
+     5) Helper Token Aliases (for utilities)
+     ===================================================== */
+  :root {
+    /* Text color aliases */
+    --tx-1: var(--color-text);
+    --tx-2: var(--color-text-muted);
+    --tx-inv: var(--color-text-inverse);
+
+    /* Surface aliases */
+    --bg-0: var(--color-bg);
+    --bg-1: var(--color-surface);
+    --bg-2: var(--color-surface-2);
+
+    /* Borders */
+    --bd-1: var(--color-border);
+
+    /* Brand gradient alias */
+    --grad-brand: var(--grad-primary);
+  }
+
+  /* =====================================================
+     6) Token Sanity (optional debug class)
+     ===================================================== */
+  ._debug-tokens {
+    position: fixed;
+    inset: auto 12px 12px auto;
+    z-index: var(--z-max);
+    padding: .5rem .75rem;
+    border-radius: .5rem;
+    background: var(--bg-1);
+    border: 1px solid var(--bd-1);
+    color: var(--tx-1);
+    font-family: var(--ff-mono);
+    font-size: .8rem;
+    box-shadow: var(--shadow-2);
+    opacity: .85;
+    pointer-events: none;
+  }
+}
+/* end @layer tokens */

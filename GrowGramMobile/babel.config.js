@@ -5,7 +5,8 @@ module.exports = function (api) {
     presets: ['babel-preset-expo'],
     plugins: [
       ['module-resolver', { alias: { '@': './src' } }],
-      'react-native-worklets/plugin', // <<< wichtig: NICHT mehr react-native-reanimated/plugin
+      // WICHTIG: das Reanimated-Plugin MUSS als letztes stehen
+      'react-native-reanimated/plugin',
     ],
   };
 };

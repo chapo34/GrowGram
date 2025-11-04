@@ -257,7 +257,7 @@ const SwipeChatRow = memo(function SwipeChatRow({
 
   const animateTo = (x: number) =>
     Animated.timing(tx, {
-      toValue: x, duration: 140, easing: Easing.out(Easing.cubic), useNativeDriver: true,
+      toValue: x, duration: 140, easing: Easing.out(Easing.cubic), useNativeDriver: false,
     }).start();
 
   const pan = useMemo(
@@ -846,7 +846,7 @@ export function ChatThreadScreen() {
 
   const [isPeerTyping, setIsPeerTyping] = useState(false);
   const typingSinceRef = useRef<number>(0);
-  const typingPingRef = useRef<number | NodeJS.Timeout | null>(null);
+  const typingPingRef = useRef<number | ReturnType<typeof setTimeout> | null>(null);
 
   const listRef = useRef<FlatList<ChatMessage>>(null);
   const fetchingMoreRef = useRef(false);

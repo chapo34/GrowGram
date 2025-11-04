@@ -1,0 +1,87 @@
+{
+  "id": "/",
+  "name": "GrowGram",
+  "short_name": "GrowGram",
+  "description": "Social-Media-App für die Cannabis-Community: Posts, Feed, Likes, Kommentare – schnell, schön und verantwortungsvoll.",
+  "lang": "de-DE",
+  "dir": "ltr",
+
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait",
+
+  "theme_color": "#121415",
+  "background_color": "#0C0F10",
+  "categories": ["social", "photo", "video", "entertainment"],
+
+  "icons": [
+    { "src": "/assets/icons/growgram-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/assets/icons/growgram-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/assets/icons/growgram-monochrome.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "monochrome" }
+  ],
+
+  "shortcuts": [
+    {
+      "name": "Explore",
+      "short_name": "Explore",
+      "url": "/explore?source=shortcut",
+      "icons": [{ "src": "/assets/icons/shortcut-explore.png", "sizes": "96x96", "type": "image/png" }]
+    },
+    {
+      "name": "Neuer Post",
+      "short_name": "Posten",
+      "url": "/app/new?source=shortcut",
+      "icons": [{ "src": "/assets/icons/shortcut-new.png", "sizes": "96x96", "type": "image/png" }]
+    },
+    {
+      "name": "Benachrichtigungen",
+      "short_name": "Inbox",
+      "url": "/notifications?source=shortcut",
+      "icons": [{ "src": "/assets/icons/shortcut-inbox.png", "sizes": "96x96", "type": "image/png" }]
+    }
+  ],
+
+  "screenshots": [
+    {
+      "src": "/assets/screenshots/home-dark-1280x720.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Home / Feed"
+    },
+    {
+      "src": "/assets/screenshots/post-720x1280.png",
+      "sizes": "720x1280",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Post erstellen"
+    }
+  ],
+
+  "protocol_handlers": [
+    { "protocol": "web+growgram", "url": "/open?url=%s" }
+  ],
+
+  "share_target": {
+    "action": "/share/receive",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url",
+      "files": [
+        { "name": "files", "accept": ["image/*", "video/*"] }
+      ]
+    }
+  },
+
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+
+  "prefer_related_applications": false,
+  "related_applications": []
+}

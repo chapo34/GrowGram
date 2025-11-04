@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>GrowGram 🌿</title>
+    <meta name="theme-color" content="#0f241b" />
+    <meta name="description" content="GrowGram – die grüne Social-Media-Community für Grower, Enthusiasten und Gleichgesinnte." />
+
+    <style>
+      :root {
+        color-scheme: dark;
+        --gg-green: #1db954;
+        --gg-bg: #0f241b;
+        --gg-text: #e8f5ed;
+        --gg-muted: #a5c4b8;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background: var(--gg-bg);
+        color: var(--gg-text);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        text-align: center;
+      }
+      .card {
+        max-width: 500px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 16px;
+        padding: 40px 24px;
+        box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        animation: fadeIn 0.8s ease-out;
+      }
+      h1 {
+        font-size: 28px;
+        margin-bottom: 10px;
+        letter-spacing: 0.3px;
+      }
+      p {
+        margin: 8px 0 20px;
+        color: var(--gg-muted);
+        font-size: 15px;
+        line-height: 1.5;
+      }
+      .btn {
+        display: inline-block;
+        padding: 14px 22px;
+        border-radius: 12px;
+        background: var(--gg-green);
+        color: #08130e;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.2s ease-in-out;
+      }
+      .btn:hover {
+        background: #24e063;
+        transform: translateY(-2px);
+      }
+      .status {
+        font-size: 16px;
+        margin-top: 8px;
+      }
+      .err {
+        color: #ff9a9a;
+        font-weight: 600;
+      }
+      footer {
+        margin-top: 30px;
+        font-size: 13px;
+        color: var(--gg-muted);
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="card">
+      <h1>🌿 Willkommen bei GrowGram</h1>
+      <p>Die Social-Media-Plattform für die Cannabis-Community.<br />
+         Authentisch. Sicher. Gemeinschaftlich.</p>
+
+      <p id="state" class="status">Dein Verifizierungslink wird geprüft …</p>
+
+      <a class="btn" href="growgram://auth/verify">In der App öffnen</a>
+
+      <footer>© 2025 GrowGram – All rights reserved.</footer>
+    </div>
+
+    <script>
+      // Diese Seite dient als Fallback für E-Mail-Links (verify-email).
+      const url = new URL(window.location.href);
+      const state = document.getElementById("state");
+
+      if (url.searchParams.get("invalid") === "1") {
+        state.innerHTML = '<span class="err">Der Link ist ungültig oder abgelaufen.</span>';
+      } else if (url.searchParams.get("verified") === "1") {
+        state.innerHTML = '🎉 <b>Deine E-Mail wurde erfolgreich bestätigt!</b>';
+      } else {
+        state.innerHTML = '⏳ Überprüfung läuft …';
+      }
+    </script>
+  </body>
+</html>

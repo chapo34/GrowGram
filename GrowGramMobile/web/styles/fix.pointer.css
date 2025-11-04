@@ -1,0 +1,102 @@
+/* ==========================================================================
+   fix.pointer.css — Klickbarkeit & Layer-Fixes für GrowGram Marketing-Site
+   Zweck:
+   - Deko-Layer (Ringe, Shimmer, Sparkles, Marquee) fangen KEINE Klicks mehr ab
+   - Saubere Stacking-Contexts: Navbar/Links immer über Deko
+   - Mobile-Menü zuverlässig klickbar
+   - Keine Layout-Änderungen, nur Interaktions-/z-index-Korrekturen
+   ========================================================================== */
+
+/* 1) Navbar IMMER oben und klickbar */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  isolation: isolate;            /* eigener Stacking-Context */
+}
+.navbar__menu,
+.navbar__toggle,
+.navbar__brand {
+  position: relative;
+  z-index: 1001;
+  pointer-events: auto;
+}
+
+/* 2) Seiten-Sektionen trennen sich von Deko-Layern */
+.hero,
+.section,
+.footer-accent {
+  position: relative;
+  isolation: isolate;            /* verhindert, dass absolute Deko darüber greift */
+  z-index: 1;
+}
+
+/* 3) Deko-Elemente: rein visuell, keine Maus-Events */
+.hero__ring,
+.hero__shimmer,
+.hero__sparkles,
+.cta-band__ring,
+.marquee,
+.marquee__track,
+.marquee__item {
+  pointer-events: none !important;
+}
+
+/* Falls Deko pseudo-Elemente nutzt, sicherheitshalber abschalten */
+.hero__visual::before,
+.hero__visual::after,
+.hero__card::before,
+.hero__card::after {
+  pointer-events: none !important;
+}
+
+/* 4) Karten/Interaktionen liegen über Deko */
+.hero__card,
+.card,
+.feature,
+.cta-band,
+.footer-accent .stack,
+.footer-accent a,
+.footer-accent button {
+  position: relative;
+  z-index: 2;
+  pointer-events: auto;
+}
+
+/* 5) Globale Interactables: explizit erlauben */
+a,
+button,
+[role="button"],
+[tabindex]:not([tabindex="-1"]) {
+  position: relative;
+  z-index: 2;
+  pointer-events: auto;
+}
+
+/* 6) Mobile-Menü im offenen Zustand über allem */
+.navbar.is-open .navbar__menu {
+  position: relative;
+  z-index: 1100;
+  pointer-events: auto;
+}
+
+/* 7) Optional: Focus sichtbar & schön (Barrierefreiheit) */
+:focus-visible {
+  outline: 2px solid var(--brand-500, #4CAF50);
+  outline-offset: 2px;
+}
+
+/* 8) Safety: kein unsichtbarer Fullscreen-Layer blockiert Clicks */
+[data-overlay],
+[data-deco],
+.bg-deco,
+.fx-layer {
+  pointer-events: none !important;
+  z-index: 0 !important;
+}
+
+/* 9) Marquee bleibt animiert, aber un-klickbar; Inhalt darüber bleibt klickbar */
+.marquee {
+  position: relative;
+  z-index: 0;
+}

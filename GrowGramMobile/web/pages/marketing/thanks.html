@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Danke – Beta-Crew | GrowGram</title>
+<link rel="canonical" href="/thanks">
+<meta name="description" content="Vielen Dank! Du stehst auf der GrowGram Warteliste für den exklusiven Beta-Zugang. Tritt unserer Beta-Crew bei – sicher, respektvoll, EU-Hosting.">
+<meta name="theme-color" content="#0d0f10">
+<style>
+:root{
+  --bg:#0d0f10; --panel:#0f1316; --text:#e7f0e9; --muted:#a5b6ab; --border:#1c2428;
+  --brand:#4CAF50; --accent:#ffa53a; --ring:rgba(76,175,80,.35);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; background:
+    radial-gradient(1200px 520px at 60% -10%, rgba(76,175,80,.10), transparent 60%),
+    var(--bg);
+  color:var(--text);
+  font:400 16px/1.6 system-ui,-apple-system,Inter,Roboto,Segoe UI,Arial;
+  -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+}
+a{color:inherit;text-decoration:none}
+.container{width:min(860px,92vw); margin:28px auto}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.btn{display:inline-flex;align-items:center;gap:.6rem;padding:.78rem 1rem;border-radius:12px;border:1px solid var(--border);font-weight:800;cursor:pointer}
+.btn-primary{background:linear-gradient(180deg,#4CAF50,#2d8a43); color:#08150d; box-shadow:0 0 0 2px var(--ring) inset}
+.btn-ghost{background:#0e1316; color:#dfe9e3}
+
+.card{
+  background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:22px;
+  box-shadow:0 1px 0 #263137 inset, 0 12px 24px rgba(0,0,0,.24);
+}
+h1{margin:.25rem 0 .35rem; font-size:clamp(28px,4.2vw,42px); line-height:1.08}
+.lead{color:#cfe0d3; margin:0 0 .8rem}
+.small{font-size:.9rem; color:var(--muted)}
+.hr{height:1px;background:var(--border);margin:16px 0}
+
+.badge{display:inline-flex;align-items:center;gap:.5rem;background:#10171a;border:1px dashed #2a3531;border-radius:999px;padding:.5rem .8rem;margin:.3rem 0}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+
+.list{display:grid;gap:10px}
+.item{display:flex;gap:10px;align-items:flex-start;background:#0e1316;border:1px solid #1c2428;border-radius:12px;padding:10px 12px}
+.item b{white-space:nowrap}
+
+.copy{
+  display:inline-flex;align-items:center;gap:.5rem;padding:.45rem .7rem;border-radius:10px;
+  border:1px dashed #2a3531;background:#0f1417; cursor:pointer; font-weight:700;
+}
+.copy.ok{border-color:#1f3b24; box-shadow:0 0 0 2px var(--ring) inset}
+
+#confetti{position:fixed; inset:0; pointer-events:none}
+
+/* Success mark */
+.icon-wrap{display:inline-grid;place-items:center; width:62px; height:62px; border-radius:999px;
+  background:radial-gradient(120% 120% at 30% 20%, rgba(76,175,80,.25), rgba(76,175,80,.05));
+  border:1px solid #24402b; box-shadow:0 0 0 6px rgba(76,175,80,.08);
+  margin-bottom:8px;
+}
+.check{
+  width:28px; height:14px; border:4px solid #7fe398; border-top:0; border-right:0;
+  transform:rotate(-45deg) translateY(-2px); border-radius:3px;
+  animation:pop .45s ease-out both;
+}
+@keyframes pop{ from{opacity:0; transform:scale(.6) rotate(-45deg) translateY(-2px)} to{opacity:1; transform:scale(1) rotate(-45deg) translateY(-2px)} }
+</style>
+</head>
+<body>
+<canvas id="confetti"></canvas>
+
+<div class="container">
+  <div class="header">
+    <a class="btn btn-ghost" href="/">← Zur Startseite</a>
+    <a class="btn btn-ghost" href="/pages/privacy.html">Datenschutz</a>
+  </div>
+
+  <div class="card">
+    <div class="icon-wrap"><div class="check" aria-hidden="true"></div></div>
+    <h1>Willkommen in der Beta-Crew!</h1>
+    <p class="lead">Dein Platz auf der Warteliste ist reserviert. Du erhältst frühen Zugang und das <span class="badge">🏅 Beta-Crew Badge</span> in der App.</p>
+
+    <p id="p-mail" class="small"></p>
+
+    <div class="hr"></div>
+
+    <div class="list" aria-labelledby="next-steps">
+      <div class="item"><b>1) Discord beitreten</b><span>Hier treffen sich alle Tester:innen, Changelogs & Support.</span></div>
+      <div class="item"><b>2) E-Mail im Blick</b><span>Wir informieren dich, sobald die nächste Invite-Welle startet.</span></div>
+      <div class="item"><b>3) Safe & fair</b><span>18+, keine Verkäufe/Preise, Moderation & EU-Hosting.</span></div>
+    </div>
+
+    <div class="actions">
+      <a class="btn btn-primary" href="/discord" id="discord-btn">Discord beitreten</a>
+      <button class="btn btn-ghost" id="copy-btn" type="button" aria-label="Discord-Link kopieren">
+        Link kopieren
+      </button>
+      <a class="btn btn-ghost" href="/pages/mehr.html">Mehr über Growi/Features</a>
+    </div>
+
+    <div class="hr"></div>
+    <p class="small">
+      Hinweis: „Beta-Crew“ ist die Bezeichnung für frühe Tester:innen. Es handelt sich <b>nicht</b> um eine finanzielle Beteiligung oder Gegenleistung.
+    </p>
+  </div>
+</div>
+
+<script>
+(function(){
+  /* Confetti */
+  const cv = document.getElementById('confetti');
+  const c  = cv.getContext('2d');
+  function rs(){ cv.width = innerWidth; cv.height = innerHeight; }
+  addEventListener('resize', rs); rs();
+  const items = Array.from({length:140}, ()=>({
+    x: Math.random()*innerWidth,
+    y: -20 - Math.random()*80,
+    r: 3 + Math.random()*4,
+    s: 1 + Math.random()*2,
+    h: 120 + Math.random()*120,
+    a: Math.random()*Math.PI*2
+  }));
+  let t=0;
+  (function tick(){
+    c.clearRect(0,0,innerWidth,innerHeight);
+    for(const p of items){
+      p.y += p.s; p.x += Math.sin((t+p.a)*0.06);
+      c.fillStyle = `hsl(${p.h} 80% 60% / ${Math.max(0,1-p.y/innerHeight)})`;
+      c.beginPath(); c.arc(p.x,p.y,p.r,0,Math.PI*2); c.fill();
+    }
+    t++; if(t<260) requestAnimationFrame(tick);
+  })();
+
+  /* E-Mail anzeigen (maskiert) + kurze Referenz-ID */
+  const q  = new URL(location.href).searchParams;
+  const em = q.get('e') || '';
+  function maskEmail(s){
+    const m = String(s).split('@');
+    if (m.length!==2) return '';
+    const name = m[0]; const dom = m[1];
+    return name.slice(0,1) + '***@' + dom;
+  }
+  function shortId(s){
+    let h=0; for(let i=0;i<s.length;i++) h = Math.imul(31,h) + s.charCodeAt(i) | 0;
+    return (h>>>0).toString(36).slice(0,6);
+  }
+  if (em){
+    const p = document.getElementById('p-mail');
+    p.textContent = `Bestätigung an: ${maskEmail(em)} · Referenz: ${shortId(em)}`;
+  }
+
+  /* Copy Discord link */
+  const COPY_TXT = location.origin + '/discord';
+  const btn = document.getElementById('copy-btn');
+  btn?.addEventListener('click', async ()=>{
+    try{
+      await navigator.clipboard.writeText(COPY_TXT);
+      btn.classList.add('ok'); btn.textContent='Kopiert ✓';
+      setTimeout(()=>{ btn.classList.remove('ok'); btn.textContent='Link kopieren'; }, 2200);
+    }catch(_e){ btn.textContent='Kopieren fehlgeschlagen'; }
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,6 +1,8 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
     "jsx": "react-native",
     "moduleResolution": "bundler",
     "strict": true,
@@ -10,19 +12,52 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-
-    /* Aliasse – Basis ist das Projekt-Root */
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"],
-      "@components/*": ["src/components/*"],
-      "@screens/*": ["src/screens/*"],
-      "@context/*": ["src/context/*"],
-      "@navigation/*": ["src/navigation/*"],
-      "@assets/*": ["src/assets/*"],
-      "@utils/*": ["src/utils/*"]
-    }
+      "@/*": [
+        "src/*"
+      ],
+      "@components/*": [
+        "src/components/*"
+      ],
+      "@screens/*": [
+        "src/screens/*"
+      ],
+      "@context/*": [
+        "src/context/*"
+      ],
+      "@navigation/*": [
+        "src/navigation/*"
+      ],
+      "@assets/*": [
+        "src/assets/*"
+      ],
+      "@utils/*": [
+        "src/utils/*"
+      ],
+      "@": [
+        "src"
+      ]
+    },
+    "types": [
+      "react",
+      "react-native"
+    ]
   },
-  "include": ["App.tsx", "src/**/*"],
-  "exclude": ["**/node_modules/**", "babel.config.js", "metro.config.js", "jest.config.js"]
+  "include": [
+    "src",
+    "App.tsx",
+    "index.ts",
+    "index.tsx",
+    "index.js",
+    "app.config.ts",
+    "app.config.js",
+    "babel.config.js",
+    "expo/AppEntry.js"
+  ],
+  "exclude": [
+    "node_modules",
+    "ios",
+    "android"
+  ]
 }

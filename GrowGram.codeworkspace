@@ -1,0 +1,52 @@
+{
+  "folders": [
+    { "path": "GrowGramMobile" },
+    { "path": "GrowGramBackend" }
+  ],
+  "settings": {
+    // 🧠 TypeScript + Editor Performance
+    "typescript.tsserver.maxTsServerMemory": 4096,
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "files.autoSave": "onWindowChange",
+    "explorer.confirmDelete": false,
+
+    // 🚫 Backup-Ordner und temporäre Dateien ausblenden
+    "files.exclude": {
+      "_archive": true,
+      "_backup_review": true,
+      "**/_archive": true,
+      "**/_backup_review": true,
+      "**/dist": true,
+      "**/node_modules": true
+    },
+    "search.exclude": {
+      "_archive": true,
+      "_backup_review": true,
+      "**/_archive": true,
+      "**/_backup_review": true,
+      "**/dist": true,
+      "**/node_modules": true
+    },
+    "files.watcherExclude": {
+      "**/_archive/**": true,
+      "**/_backup_review/**": true,
+      "**/dist/**": true,
+      "**/node_modules/**": true
+    },
+
+    // 🌍 Terminal / Encoding
+    "files.encoding": "utf8",
+    "terminal.integrated.defaultProfile.osx": "zsh",
+
+    // 🌿 Git & Copilot
+    "git.confirmSync": false,
+    "github.copilot.enable": {
+      "*": true,
+      "plaintext": false,
+      "markdown": true,
+      "typescript": true,
+      "javascript": true
+    }
+  }
+}

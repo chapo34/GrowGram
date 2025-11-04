@@ -1,12 +1,16 @@
+// src/navigation/AppNavigator.tsx
 import React, { useEffect, useState } from 'react';
-import { View, Text, Pressable } from 'react-native';
+import { View, Text, Pressable, Alert } from 'react-native';
 import { createNativeStackNavigator, type NativeStackNavigationProp } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'expo-image';
 import { useTheme } from '../theme/ThemeProvider';
 
+// Intro / Compliance / Legal
 import IntroScreen from '../screens/IntroScreen';
+import WelcomeComplianceScreen from '../screens/WelcomeComplianceScreen';
+import LegalTextScreen from '../features/legal/LegalTextScreen';
 
 // Auth
 import LoginScreen from '../screens/LoginScreen';
@@ -27,19 +31,35 @@ import { ChatListScreen, ChatThreadScreen } from '../features/chat/ChatModule';
 // Dock
 import GrowDock from '../components/GrowDock';
 
-export const STORAGE_KEYS = {
-  TOKEN: 'GG_TOKEN',
-  USER: 'GG_USER',
-} as const;
+// Waitlist (achte auf exakte Dateinamen)
+import WaitlistSignupScreen from '../screens/waitlistSignupScreen';
+import WaitlistStatusScreen from '../screens/waitlistSignupScreen';
+
+// API & Compliance
+import { STORAGE_KEYS, getComplianceAck } from '../utils/api';
+import type { FeedPost } from '../utils/api';
 
 const INTRO_FLAG = 'growgram:intro:seen';
-const DEV_FORCE_INTRO = true; // <-- Für dich JETZT auf true, später auf false stellen
+const DEV_FORCE_INTRO = false;
 
-/* ---------------- Typen ---------------- */
-export type RootStackParamList = { Intro: undefined; Auth: undefined; Main: undefined };
-export type AuthStackParamList = { Login: undefined; Register: undefined; ForgotPassword: undefined };
+/* ----- Typen ----- */
+export type RootStackParamList = {
+  Intro: undefined;
+  Auth: undefined;
+  Main: undefined;
+  WelcomeCompliance?: { userId?: string };
+  Terms?: { kind?: 'terms'; title?: string };
+  Guidelines?: { kind?: 'guidelines'; title?: string };
+  // Waitlist
+  WaitlistSignup: undefined;
+  WaitlistStatus: { publicId?: string; viewerToken?: string } | undefined;
+};
 
-type FeedPost = import('../utils/api').FeedPost;
+export type AuthStackParamList = {
+  Login: undefined;
+  Register: undefined;
+  ForgotPassword: undefined;
+};
 
 export type MainStackParamList = {
   Home: undefined;
@@ -51,13 +71,14 @@ export type MainStackParamList = {
   Profile: undefined;
   ProfileSetup: undefined;
 };
+
 export type MainNav = NativeStackNavigationProp<MainStackParamList>;
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 const MainStack = createNativeStackNavigator<MainStackParamList>();
 
-/* --------------- Auth Stack ---------------- */
+/* ----- Auth-Stack ----- */
 function AuthStackScreen() {
   return (
     <AuthStack.Navigator screenOptions={{ headerShown: false }}>
@@ -68,9 +89,10 @@ function AuthStackScreen() {
   );
 }
 
-/* --------------- Main Stack ---------------- */
+/* ----- Main-Stack ----- */
 function MainStackScreen() {
   const { colors } = useTheme();
+  const surface = colors.panel;
 
   return (
     <>
@@ -107,7 +129,9 @@ function MainStackScreen() {
                         backgroundColor: '#133625', alignItems: 'center', justifyContent: 'center',
                       }}
                     >
-                      <Text style={{ color: '#b6ffc3', fontWeight: '900' }}>{(title?.[0] || 'C').toUpperCase()}</Text>
+                      <Text style={{ color: '#b6ffc3', fontWeight: '900' }}>
+                        {(title?.[0] || 'C').toUpperCase()}
+                      </Text>
                     </View>
                   )}
                   <Text numberOfLines={1} style={{ color: colors.text, fontSize: 16, fontWeight: '800', maxWidth: 220 }}>
@@ -121,7 +145,7 @@ function MainStackScreen() {
                 </Pressable>
               ),
               headerBackground: () => (
-                <LinearGradient colors={[colors.card, colors.bg]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ flex: 1 }} />
+                <LinearGradient colors={[surface, colors.bg]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ flex: 1 }} />
               ),
             };
           }}
@@ -136,7 +160,7 @@ function MainStackScreen() {
             title: 'Beitrag',
             headerTintColor: colors.text,
             headerBackground: () => (
-              <LinearGradient colors={[colors.card, colors.bg]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ flex: 1 }} />
+              <LinearGradient colors={[surface, colors.bg]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ flex: 1 }} />
             ),
           }}
         />
@@ -151,7 +175,7 @@ function MainStackScreen() {
             presentation: 'modal',
             headerTintColor: colors.text,
             headerBackground: () => (
-              <LinearGradient colors={[colors.card, colors.bg]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ flex: 1 }} />
+              <LinearGradient colors={[surface, colors.bg]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ flex: 1 }} />
             ),
           }}
         />
@@ -164,7 +188,7 @@ function MainStackScreen() {
             presentation: 'modal',
             headerTintColor: colors.text,
             headerBackground: () => (
-              <LinearGradient colors={[colors.card, colors.bg]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ flex: 1 }} />
+              <LinearGradient colors={[surface, colors.bg]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ flex: 1 }} />
             ),
           }}
         />
@@ -180,19 +204,29 @@ function MainStackScreen() {
   );
 }
 
-/* --------------- Root (Intro → Auth/Main) ------------------ */
+/* ----- Root (Intro → Auth/Main/Compliance/Legal/Waitlist) ----- */
 export default function AppNavigator() {
-  const [initial, setInitial] = useState<'Intro' | 'Auth' | 'Main' | null>(null);
+  type RootRouteName = keyof RootStackParamList;
+  const [initial, setInitial] = useState<RootRouteName | null>(null);
 
   useEffect(() => {
     (async () => {
       try {
-        if (DEV_FORCE_INTRO) { setInitial('Intro'); return; } // für den Test Intro erzwingen
+        if (DEV_FORCE_INTRO) { setInitial('Intro'); return; }
+
         const introSeen = await AsyncStorage.getItem(INTRO_FLAG);
         if (!introSeen) { setInitial('Intro'); return; }
+
         const token = await AsyncStorage.getItem(STORAGE_KEYS.TOKEN);
-        setInitial(token ? 'Main' : 'Auth');
-      } catch {
+        if (!token) { setInitial('Auth'); return; }
+
+        const rawUser = await AsyncStorage.getItem(STORAGE_KEYS.USER);
+        const userId = rawUser ? (JSON.parse(rawUser)?.id as string | undefined) : undefined;
+        const ack = await getComplianceAck(userId ?? null);
+
+        setInitial(ack ? 'Main' : 'WelcomeCompliance');
+      } catch (e: any) {
+        console.warn('boot route failed:', e?.message || e);
         setInitial('Auth');
       }
     })();
@@ -204,7 +238,34 @@ export default function AppNavigator() {
     <RootStack.Navigator screenOptions={{ headerShown: false }} initialRouteName={initial}>
       <RootStack.Screen name="Intro" component={IntroScreen as any} />
       <RootStack.Screen name="Auth" component={AuthStackScreen} />
+      <RootStack.Screen name="WelcomeCompliance" component={WelcomeComplianceScreen as any} />
       <RootStack.Screen name="Main" component={MainStackScreen} />
+
+      {/* Waitlist */}
+      <RootStack.Screen
+        name="WaitlistSignup"
+        component={WaitlistSignupScreen as any}
+        options={{ headerShown: true, title: 'GrowGram Waitlist' }}
+      />
+      <RootStack.Screen
+        name="WaitlistStatus"
+        component={WaitlistStatusScreen as any}
+        options={{ headerShown: true, title: 'Waitlist Status' }}
+      />
+
+      {/* Rechtliches */}
+      <RootStack.Screen
+        name="Terms"
+        component={LegalTextScreen as any}
+        options={{ headerShown: true, title: 'Nutzungsbedingungen' }}
+        initialParams={{ kind: 'terms', title: 'Nutzungsbedingungen' }}
+      />
+      <RootStack.Screen
+        name="Guidelines"
+        component={LegalTextScreen as any}
+        options={{ headerShown: true, title: 'Community-Richtlinien' }}
+        initialParams={{ kind: 'guidelines', title: 'Community-Richtlinien' }}
+      />
     </RootStack.Navigator>
   );
 }

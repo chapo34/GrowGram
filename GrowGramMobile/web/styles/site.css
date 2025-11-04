@@ -1,0 +1,119 @@
+/* ==========================================================================
+   site.css — Landing-Polish für GrowGram (führt NICHT das gesamte Design ein,
+   sondern verfeinert nur die Marketing-Seite ohne Klassen-Explosion)
+   ========================================================================== */
+
+:root {
+  --brand: #4CAF50;
+  --bg: #0C0F10;
+  --surface: #121415;
+  --text: #EAECEF;
+  --muted: #9aa3a7;
+  --accent: #ff8a3d; /* dezenter Orange-Akzent */
+  --radius: 14px;
+  --shadow-1: 0 6px 24px rgba(0,0,0,.28);
+  --shadow-2: 0 10px 40px rgba(0,0,0,.35);
+}
+
+html[data-theme="light"] {
+  --bg: #ffffff;
+  --surface: #f7f9fb;
+  --text: #101114;
+  --muted: #5b646b;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Container-Breite leicht entschlackt */
+.container { max-width: 1120px; }
+
+/* ===== Navbar (klar, ohne Spielereien) */
+.navbar {
+  backdrop-filter: saturate(140%) blur(8px);
+  background: color-mix(in oklab, var(--surface) 88%, transparent);
+  border-bottom: 1px solid color-mix(in oklab, var(--text) 10%, transparent);
+}
+.navbar__brand { gap: .6rem; font-weight: 700; letter-spacing: .2px; }
+.navbar__menu .navbar__link { opacity: .9; }
+.navbar__menu .navbar__link:hover { opacity: 1; color: var(--text); }
+.btn--accent { background: var(--brand); border-color: var(--brand); }
+.btn--glow { box-shadow: 0 8px 24px color-mix(in oklab, var(--brand) 35%, transparent); }
+
+/* ===== Hero (ruhig, wertig) */
+.hero { padding: 56px 0 28px; }
+.hero__inner { align-items: center; }
+.hero .hero__title { line-height: 1.08; letter-spacing: .2px; }
+.hero .hero__subtitle { color: var(--muted); max-width: 58ch; }
+.hero__visual .hero__card {
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, color-mix(in oklab, var(--surface) 90%, transparent), transparent),
+              radial-gradient(1200px 600px at 10% -20%, color-mix(in oklab, var(--brand) 12%, transparent), transparent);
+  box-shadow: var(--shadow-2);
+  border: 1px solid color-mix(in oklab, var(--text) 10%, transparent);
+}
+.hero__ring, .hero__shimmer, .hero__sparkles { display: none !important; } /* Deko raus */
+
+/* ===== Sektionen & Typo */
+.section { padding: 64px 0; }
+.section .text-muted { color: var(--muted); }
+.h2, h2 { font-size: clamp(1.6rem, 1.2rem + 1.2vw, 2.2rem); }
+h3 { font-size: clamp(1.2rem, 1rem + .6vw, 1.4rem); }
+
+.card { background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow-1); }
+.card__body { padding: 1.1rem 1.2rem; }
+
+/* ===== Features */
+.features .feature {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 18px;
+  border: 1px solid color-mix(in oklab, var(--text) 8%, transparent);
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.features .feature:hover { transform: translateY(-2px); box-shadow: var(--shadow-1); }
+.feature__icon { font-size: 22px; opacity: .95; }
+.feature__title { margin: .4rem 0 .25rem; }
+
+/* ===== Safety Cards */
+#safety .card { border: 1px solid color-mix(in oklab, var(--text) 8%, transparent); }
+#safety .card__title { font-weight: 600; }
+
+/* ===== How (Steps) */
+#how .badge {
+  display: inline-grid; place-items: center;
+  width: 28px; height: 28px; border-radius: 999px;
+  background: color-mix(in oklab, var(--brand) 18%, var(--surface));
+  color: var(--text); font-weight: 700;
+  border: 1px solid color-mix(in oklab, var(--brand) 60%, transparent);
+}
+
+/* ===== CTA */
+.cta-band {
+  background: linear-gradient(145deg, color-mix(in oklab, var(--brand) 8%, var(--surface)), var(--surface));
+  border-radius: calc(var(--radius) + 2px);
+  border: 1px solid color-mix(in oklab, var(--text) 10%, transparent);
+  box-shadow: var(--shadow-1);
+}
+.cta-band__ring { display: none !important; } /* sicherheitshalber */
+
+/* ===== Footer */
+.footer-accent { border-top: 1px solid color-mix(in oklab, var(--text) 10%, transparent); }
+
+/* ===== Micro-Interactions (dezent) */
+[data-reveal] { opacity: 0; transform: translateY(8px); }
+.is-visible[data-reveal] { opacity: 1; transform: none; transition: opacity .36s ease, transform .36s ease; }
+
+/* ===== Links sichtbar & klickbar (Sicherheitsnetz) */
+a, button { pointer-events: auto; position: relative; z-index: 2; }
+
+/* ===== Responsiv-Details */
+@media (max-width: 960px) {
+  .hero { padding: 44px 0 8px; }
+  .section { padding: 52px 0; }
+  .navbar__menu .btn { margin-top: 8px; }
+}

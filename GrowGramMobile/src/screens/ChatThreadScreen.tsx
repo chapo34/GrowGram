@@ -69,14 +69,19 @@ function linkifySegments(t: string): { kind: 'text'|'link'|'mail'; text: string;
   const URL_RE  = /\b((https?:\/\/|www\.)[^\s<]+[^<.,:;"')\]\s])/gi;
   const MAIL_RE = /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/gi;
   const matches: Array<{ s: number; e: number; url: string; kind: 'link'|'mail' }> = [];
-  for (const m of t.matchAll(URL_RE)) {
-    const s = m.index ?? 0, raw = m[0] ?? '', e = s + raw.length;
+  let urlMatch;
+  while ((urlMatch = URL_RE.exec(t)) !== null) {
+    const s = urlMatch.index ?? 0, raw = urlMatch[0] ?? '', e = s + raw.length;
     matches.push({ s, e, url: raw.startsWith('http') ? raw : `https://${raw}`, kind: 'link' });
   }
-  for (const m of t.matchAll(MAIL_RE)) {
-    const s = m.index ?? 0, raw = m[0] ?? '', e = s + raw.length;
+  URL_RE.lastIndex = 0; // Reset regex state
+
+  let mailMatch;
+  while ((mailMatch = MAIL_RE.exec(t)) !== null) {
+    const s = mailMatch.index ?? 0, raw = mailMatch[0] ?? '', e = s + raw.length;
     matches.push({ s, e, url: `mailto:${raw}`, kind: 'mail' });
   }
+  MAIL_RE.lastIndex = 0; // Reset regex state
   matches.sort((a,b)=>a.s-b.s);
   let cur = 0;
   for (const m of matches) {

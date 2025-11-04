@@ -42,7 +42,7 @@ export default function PostCreateScreen() {
   const pulse = useRef(new Animated.Value(0)).current;
   const doPulse = () => {
     pulse.setValue(0);
-    Animated.timing(pulse, { toValue: 1, duration: 350, useNativeDriver: true }).start();
+    Animated.timing(pulse, { toValue: 1, duration: 350, useNativeDriver: false }).start();
   };
 
   // ⚠️ Lokale URIs niemals verändern!

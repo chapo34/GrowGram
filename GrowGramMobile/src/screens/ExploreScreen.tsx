@@ -71,10 +71,10 @@ export default function ExploreScreen() {
     const dy = y - lastY.current; lastY.current = y;
     if (dy > 8 && y > 80 && headerShownRef.current) {
       headerShownRef.current = false;
-      Animated.timing(headerAnim, { toValue: 1, duration: 160, useNativeDriver: true }).start();
+      Animated.timing(headerAnim, { toValue: 1, duration: 160, useNativeDriver: false }).start();
     } else if (dy < -8 && !headerShownRef.current) {
       headerShownRef.current = true;
-      Animated.timing(headerAnim, { toValue: 0, duration: 160, useNativeDriver: true }).start();
+      Animated.timing(headerAnim, { toValue: 0, duration: 160, useNativeDriver: false }).start();
     }
   }, [headerAnim]);
   const headerTranslateY = headerAnim.interpolate({ inputRange: [0,1], outputRange: [0,-HEADER_H], extrapolate: 'clamp' });

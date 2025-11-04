@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Mehr über GrowGram – Status, Journal, Beta & Sicherheit</title>
+<meta name="description" content="Erfahre, was GrowGram besonders macht: Status-Badges, Grow-Journal mit Zeitraffer, limitierter Beta-Zugang, klare Regeln & EU-Hosting."/>
+<link rel="canonical" href="https://growgram-app.com/pages/mehr.html"/>
+<meta name="theme-color" content="#0d0f10"/>
+
+<style>
+:root{
+  --bg:#0d0f10; --panel:#0f1316; --text:#e7f0e9; --muted:#a5b6ab; --border:#1c2428;
+  --brand:#4CAF50; --accent:#ffa53a; --ring:rgba(76,175,80,.35);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font:400 16px/1.6 system-ui,-apple-system,Inter,Roboto,Segoe UI,Arial;
+  -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+}
+a{color:inherit; text-decoration:none}
+.container{width:min(1080px,92vw); margin:28px auto}
+
+/* Header */
+.header{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px}
+.back{color:#cfe0d3}
+.nav{display:flex; gap:10px; flex-wrap:wrap}
+.btn{display:inline-flex; align-items:center; gap:.6rem; padding:.72rem 1rem; border-radius:12px; border:1px solid var(--border); font-weight:800; cursor:pointer; background:#0e1316; color:#dfe9e3}
+.btn-primary{background:linear-gradient(180deg,#4CAF50,#2d8a43); color:#08150d; box-shadow:0 0 0 2px var(--ring) inset}
+
+/* Hero */
+.kicker{color:#c8d7cd; text-transform:uppercase; letter-spacing:.16em; font-weight:800; font-size:.72rem}
+h1{margin:.25rem 0 .6rem; font-size:clamp(28px,4.6vw,46px); line-height:1.08}
+.lead{color:#cfe0d3; margin:0 0 1rem}
+.pills{display:flex; gap:10px; flex-wrap:wrap}
+.pill{background:#10171a; border:1px dashed #2a3531; border-radius:999px; padding:6px 10px; font-size:.9rem}
+
+/* Cards + Grids */
+.section{margin:18px 0 26px}
+.grid-2{display:grid; gap:14px; grid-template-columns:repeat(2,1fr)}
+@media (max-width:960px){ .grid-2{grid-template-columns:1fr} }
+.grid-3{display:grid; gap:14px; grid-template-columns:repeat(3,1fr)}
+@media (max-width:1024px){ .grid-3{grid-template-columns:1fr} }
+
+.card{
+  position:relative;
+  background:linear-gradient(180deg, rgba(76,175,80,.06), rgba(10,12,13,0)), var(--panel);
+  border:1px solid var(--border); border-radius:14px; padding:18px;
+  box-shadow:0 1px 0 #263137 inset, 0 10px 20px rgba(0,0,0,.22);
+  transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease, background .25s ease;
+}
+.card:hover{
+  transform: translateY(-2px);
+  box-shadow:0 12px 28px rgba(0,0,0,.28);
+  border-color:#263730;
+}
+.card.clickable{cursor:pointer}
+.card h2, .card h3{margin:.25rem 0 .35rem}
+.card .muted{color:var(--muted)}
+.hr{height:1px; background:var(--border); margin:14px 0}
+
+/* Status-Card (psychologische Verstärker) */
+.status-card{display:flex; gap:12px; align-items:flex-start}
+.status-emph{font-weight:800}
+.badges{display:flex; gap:8px; flex-wrap:wrap; margin:.4rem 0}
+.badge{background:#10171a; border:1px dashed #2a3531; border-radius:999px; padding:6px 10px}
+
+/* Counter (FOMO/Knappheit) */
+.kpis{display:flex; gap:10px; flex-wrap:wrap}
+.kpi{
+  background:#0f1417; border:1px solid #223036; border-radius:12px; padding:10px 12px;
+  min-width:160px; text-align:center
+}
+.kpi .num{font-size:1.6rem; font-weight:900}
+.kpi .label{color:#a7bbb0; font-size:.9rem}
+
+/* CTA Bar */
+.cta-bar{
+  display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+  background:#0f1316; border:1px solid var(--border); border-radius:14px; padding:14px;
+  box-shadow:0 10px 24px rgba(0,0,0,.28)
+}
+
+/* Info blocks */
+.info{
+  display:flex; gap:12px; align-items:flex-start;
+  background:#10171a; border:1px solid #2a3531; border-left:4px solid var(--accent);
+  border-radius:12px; padding:12px
+}
+
+/* Footer */
+footer{margin:24px 0 8px; color:#9bb0a5}
+small{color:#a5b6ab}
+
+/* Hover-Highlight (Orange) für „Erfahre mehr“-Karten */
+.highlight:hover{background:linear-gradient(180deg, rgba(255,165,58,.10), rgba(10,12,13,0)), var(--panel); border-color:#3a2a18}
+.highlight .cta-link{color:#ffbf7a; text-decoration:underline}
+
+/* Confetti Canvas */
+#confetti{position:fixed; inset:0; pointer-events:none}
+</style>
+</head>
+<body>
+<canvas id="confetti"></canvas>
+
+<div class="container">
+  <!-- Header -->
+  <div class="header">
+    <a class="back" href="/">← Zurück</a>
+    <div class="nav">
+      <a class="btn" href="/pages/sicherheit.html">Sicherheit</a>
+      <a class="btn" href="/pages/kultur.html">Kultur</a>
+      <a class="btn" href="/pages/compliance.html">Compliance</a>
+      <a class="btn btn-primary" id="btn-beta-top" href="mailto:beta@growgram-app.com?subject=Beta%20Invite">Frühen Zugang sichern</a>
+    </div>
+  </div>
+
+  <!-- Hero -->
+  <div class="kicker">Mehr erfahren · Status · Journal · Beta</div>
+  <h1>Was dich bei GrowGram wirklich erwartet.</h1>
+  <p class="lead">Wir verkaufen nicht nur Features – wir belohnen <b>Wert</b>: hilfreiche Inhalte, dokumentierter Fortschritt und respektvolle Kultur. So fühlt sich Anerkennung an.</p>
+  <div class="pills">
+    <span class="pill">🏆 Sichtbarer Status</span>
+    <span class="pill">🎞️ Journal → Zeitraffer</span>
+    <span class="pill">🛡️ EU-Hosting & DSGVO</span>
+    <span class="pill">🔔 Kuratierte Highlights</span>
+  </div>
+
+  <!-- Section: Status/Badges -->
+  <section class="section grid-2">
+    <div class="card">
+      <h2>Dein Status zählt – nicht der Lärm.</h2>
+      <p class="muted status-card">
+        <span class="status-emph">Badges, Featurings & Mentions</span> sind unsere Währung für Qualität.
+        Hilf anderen, dokumentiere sauber, und du wirst sichtbar – ohne Clickbait.
+      </p>
+      <div class="badges">
+        <span class="badge">🏅 Founder</span>
+        <span class="badge">🧩 Community-Helper</span>
+        <span class="badge">🧠 Expert</span>
+        <span class="badge">🌱 Grow der Woche</span>
+      </div>
+      <div class="hr"></div>
+      <div class="kpis">
+        <!-- Passe die Ziele über data-target an -->
+        <div class="kpi">
+          <div class="num" data-countup="true" data-target="500">0</div>
+          <div class="label">limitierte Beta-Plätze</div>
+        </div>
+        <div class="kpi">
+          <div class="num" data-countup="true" data-target="1200">0</div>
+          <div class="label">Wartelisten-Anmeldungen</div>
+        </div>
+        <div class="kpi">
+          <div class="num" data-countup="true" data-target="7">0</div>
+          <div class="label">Founder-Vorteile</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Journal -->
+    <div class="card highlight clickable" id="card-journal">
+      <h2>Grow-Journal → dein Zeitraffer der Anerkennung</h2>
+      <p class="muted">Mach 3–4 Fotos über Wochen. Tippe auf „Generate“. Dein Journal wird zum Zeitraffer – dein Fortschritt wird sichtbar (und gefeiert).</p>
+      <div class="hr"></div>
+      <p class="cta-link">Erfahre mehr in „Features“ →</p>
+    </div>
+  </section>
+
+  <!-- Section: Micro-Moments & Variable Belohnung -->
+  <section class="section grid-3">
+    <a class="card clickable highlight" href="/pages/kultur.html" style="text-decoration:none">
+      <h3>„Grow der Woche“</h3>
+      <p class="muted">Kuratierte Highlights – jede Woche neu. Inspiration ohne Lärm.</p>
+      <div class="hr"></div>
+      <p class="cta-link">Zur Kultur-Seite</p>
+    </a>
+
+    <a class="card clickable" href="/pages/sicherheit.html" style="text-decoration:none">
+      <h3>Tipps des Tages</h3>
+      <p class="muted">Kleine, nützliche Impulse direkt in deinen Feed – ethisch & transparent.</p>
+      <div class="hr"></div>
+      <p class="cta-link">Zu Sicherheit & Moderation</p>
+    </a>
+
+    <a class="card clickable" href="/pages/compliance.html" style="text-decoration:none">
+      <h3>Kein Verkauf. Keine Preise.</h3>
+      <p class="muted">Strikte Compliance schützt die Community & hält die Feeds sauber.</p>
+      <div class="hr"></div>
+      <p class="cta-link">Zu Compliance</p>
+    </a>
+  </section>
+
+  <!-- Section: Was ist Growi? -->
+  <section class="section grid-2">
+    <div class="card">
+      <h2>Wer ist Growi?</h2>
+      <p class="muted">Growi ist unser freundlicher Guide – das Gesicht der App. Er erklärt Features, gibt Sicherheitstipps und feiert deine Micro-Erfolge (Onboarding, Uploads, Badges).</p>
+      <ul class="muted" style="margin-left:1.1rem">
+        <li>Begrüßt neue Nutzer:innen, erklärt Journal & Badges</li>
+        <li>Motiviert zu respektvollem Umgang & hilfreichen Antworten</li>
+        <li>Erscheint in leichten Micro-Animationen (Glücks-Moment)</li>
+      </ul>
+      <div class="hr"></div>
+      <div class="info">
+        <div>ℹ️</div>
+        <div>Auf der Startseite kannst du Growi in 3D drehen – sogar von unten. „Was ist Growi?“ öffnet ein kurzes Info-Modal.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Sicher, fair & in Europa gehostet</h2>
+      <p class="muted">EU-Hosting, DSGVO, klare Regeln, aktives Reporting. Kein Streak-Druck, keine Black-Box-Tricks. Bei uns zählt, was hilft.</p>
+      <div class="hr"></div>
+      <div class="pills">
+        <span class="pill">🇪🇺 EU-Hosting</span>
+        <span class="pill">🔒 DSGVO</span>
+        <span class="pill">🛡️ Moderation</span>
+        <span class="pill">🧭 Transparenz</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="section">
+    <div class="card cta-bar">
+      <div style="flex:1; min-width:220px">
+        <h3 style="margin:.25rem 0 .35rem">Werde Gründungsmitglied</h3>
+        <p class="muted" style="margin:0">Sichere dir einen der limitierten Beta-Plätze & erhalte das exklusive <b>Founder-Badge</b> in deinem Profil.</p>
+      </div>
+      <a class="btn btn-primary" id="btn-beta-bottom" href="mailto:beta@growgram-app.com?subject=Beta%20Invite">Jetzt anmelden</a>
+      <a class="btn" href="/">Zur Startseite</a>
+    </div>
+  </section>
+
+  <footer>
+    <small>© 2025 GrowGram · <a href="/pages/impressum.html">Impressum</a> · <a href="/pages/privacy.html">Datenschutz</a></small>
+  </footer>
+</div>
+
+<!-- Micro-JS: Count-Up + Konfetti + Journal-Nudge -->
+<script>
+/* ---- sanftes Konfetti (Canvas) ---- */
+const confettiCanvas = document.getElementById('confetti');
+const cfx = confettiCanvas.getContext('2d');
+function sizeCanvas(){ confettiCanvas.width = innerWidth; confettiCanvas.height = innerHeight; }
+addEventListener('resize', sizeCanvas); sizeCanvas();
+
+function dropConfetti(n=120){
+  const parts = Array.from({length:n}, () => ({
+    x: Math.random()*innerWidth,
+    y: -20 - Math.random()*60,
+    r: 3+Math.random()*4,
+    s: 1+Math.random()*2,
+    h: Math.floor(120+Math.random()*120), // grün→orange
+    a: Math.random()*Math.PI*2
+  }));
+  let t=0;
+  (function tick(){
+    cfx.clearRect(0,0,innerWidth,innerHeight);
+    parts.forEach(p=>{
+      p.y += p.s; p.x += Math.sin((t+p.a)*0.06);
+      cfx.fillStyle = `hsl(${p.h} 80% 60% / ${Math.max(0,1 - p.y/innerHeight)})`;
+      cfx.beginPath(); cfx.arc(p.x, p.y, p.r, 0, Math.PI*2); cfx.fill();
+    });
+    t++; if (t<220) requestAnimationFrame(tick); else cfx.clearRect(0,0,innerWidth,innerHeight);
+  })();
+}
+
+/* ---- Count-Up, wenn sichtbar ---- */
+const counters = [...document.querySelectorAll('[data-countup]')];
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach(entry=>{
+    if (!entry.isIntersecting) return;
+    const el = entry.target;
+    const target = +el.dataset.target || 0;
+    const dur = 900 + Math.random()*600;
+    const start = performance.now();
+    function step(now){
+      const p = Math.min(1, (now - start)/dur);
+      const val = Math.floor(target * (0.1 + 0.9*p*p)); // ease-out
+      el.textContent = val.toLocaleString('de-DE');
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+    io.unobserve(el);
+  });
+},{threshold:0.4});
+counters.forEach(el=>io.observe(el));
+
+/* ---- CTAs → kleiner Glücksmoment ---- */
+['btn-beta-top','btn-beta-bottom'].forEach(id=>{
+  const b=document.getElementById(id);
+  b?.addEventListener('click', ()=> {
+    dropConfetti(120);
+    const old=b.textContent; b.textContent='Danke! 🎉 Wir melden uns.';
+    setTimeout(()=>{ b.textContent=old; }, 3200);
+  });
+});
+
+/* ---- Journal-Card Nudge ---- */
+document.getElementById('card-journal')?.addEventListener('click', ()=>{
+  dropConfetti(60);
+  location.href='/pages/features.html';
+});
+</script>
+</body>
+</html>

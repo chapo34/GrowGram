@@ -1,10 +1,72 @@
 {
   "hosting": {
+    "site": "growgram2025-230c0",
     "public": "web",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "cleanUrls": true,
+    "trailingSlash": false,
+
+    "rewrites": [
+      { "source": "/waitlist",         "destination": "/pages/waitlist/waitlist.html" },
+      { "source": "/waitlist-status",  "destination": "/pages/waitlist/waitlist-status.html" },
+
+      { "source": "/verified",         "destination": "/pages/verify/verify-success.html" },
+      { "source": "/verify-error",     "destination": "/pages/verify/verify-invalid.html" },
+      { "source": "/already-verified", "destination": "/pages/verify/verify-already.html" },
+
+      { "source": "/reset-password",   "destination": "/pages/reset/reset-form.html" },
+      { "source": "/reset-error",      "destination": "/pages/reset/reset-invalid.html" },
+      { "source": "/reset-done",       "destination": "/pages/reset/reset-success.html" },
+
+      { "source": "/impressum",        "destination": "/pages/legal/impressum.html" },
+      { "source": "/privacy",          "destination": "/pages/legal/privacy.html" },
+      { "source": "/compliance",       "destination": "/pages/legal/compliance.html" },
+
+      { "source": "/features",         "destination": "/pages/marketing/features.html" },
+      { "source": "/kultur",           "destination": "/pages/marketing/kultur.html" },
+      { "source": "/creator-tools",    "destination": "/pages/marketing/creator-tools.html" },
+      { "source": "/mehr",             "destination": "/pages/marketing/mehr.html" },
+
+      { "source": "/open{,/**}",       "destination": "/open/index.html" },
+
+      { "source": "**",                "destination": "/index.html" }
+    ],
+
+    "redirects": [
+      { "source": "/verify-email",      "destination": "https://europe-west3-growgram-backend.cloudfunctions.net/api/auth/verify-email", "type": 302 },
+      { "source": "/auth/verify-email", "destination": "https://europe-west3-growgram-backend.cloudfunctions.net/api/auth/verify-email", "type": 302 },
+
+      { "source": "/api{,/**}",         "destination": "https://europe-west3-growgram-backend.cloudfunctions.net/api", "type": 302 },
+      { "source": "/healthz",           "destination": "https://europe-west3-growgram-backend.cloudfunctions.net/api/healthz", "type": 302 },
+      { "source": "/version",           "destination": "https://europe-west3-growgram-backend.cloudfunctions.net/api/version", "type": 302 },
+
+      { "source": "/discord{,/**}",     "destination": "https://discord.gg/JgXsnEKRQr", "type": 302 }
+    ],
+
+    "headers": [
+      { "source": "**/*.html", "headers": [ { "key": "Cache-Control", "value": "no-cache, max-age=0" } ] },
+      { "source": "**/*.@(css|js|png|jpg|jpeg|gif|svg|webp|ico|woff|woff2)",
+        "headers": [ { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" } ] },
+      { "source": "/manifest.webmanifest",
+        "headers": [
+          { "key": "Content-Type", "value": "application/manifest+json; charset=utf-8" },
+          { "key": "Cache-Control", "value": "public, max-age=3600" }
+        ] },
+      { "source": "/sw.js",
+        "headers": [
+          { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
+          { "key": "Service-Worker-Allowed", "value": "/" }
+        ] },
+      { "source": "**/*.glb",  "headers": [ { "key": "Content-Type", "value": "model/gltf-binary" } ] },
+      { "source": "**/*.gltf", "headers": [ { "key": "Content-Type", "value": "model/gltf+json; charset=utf-8" } ] },
+      { "source": "**/*.hdr",  "headers": [ { "key": "Content-Type", "value": "image/vnd.radiance" } ] },
+      { "source": "**",
+        "headers": [
+          { "key": "X-Content-Type-Options", "value": "nosniff" },
+          { "key": "Referrer-Policy", "value": "no-referrer" },
+          { "key": "Strict-Transport-Security", "value": "max-age=63072000; includeSubDomains; preload" },
+          { "key": "Permissions-Policy", "value": "geolocation=(), microphone=(), camera=()" }
+        ] }
     ]
   }
 }

@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Three Cube – GrowGram</title>
+<meta name="theme-color" content="#0d0f10"/>
+<link rel="preconnect" href="https://esm.sh" crossorigin>
+
+<style>
+:root{
+  --bg:#0d0f10; --panel:#0f1316; --grid:#1b2226; --text:#e7f0e9; --muted:#a5b6ab;
+  --brand:#4CAF50; --border:#1c2428; --ring:rgba(76,175,80,.35);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; background:
+    radial-gradient(1200px 520px at 60% -10%, rgba(76,175,80,.10), transparent 60%),
+    var(--bg);
+  color:var(--text);
+  font:400 16px/1.6 system-ui,-apple-system,Inter,Roboto,Segoe UI,Arial;
+  -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+}
+a{color:inherit; text-decoration:none}
+.container{width:min(1120px,92vw); margin:24px auto}
+
+.header{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px}
+.btn{display:inline-flex; align-items:center; gap:.6rem; padding:.72rem 1rem; border-radius:12px; border:1px solid var(--border); font-weight:800; cursor:pointer; background:#0e1316; color:#dfe9e3}
+.btn-primary{background:linear-gradient(180deg,#4CAF50,#2d8a43); color:#08150d; box-shadow:0 0 0 2px var(--ring) inset}
+
+.panel{
+  position:relative; min-height:520px; border-radius:16px; overflow:hidden;
+  background:
+    linear-gradient(180deg, rgba(76,175,80,.08), rgba(10,12,13,0)),
+    radial-gradient(800px 420px at 30% 0%, rgba(76,175,80,.06), transparent 60%),
+    var(--panel);
+  border:1px solid var(--border);
+  box-shadow:0 1px 0 #263137 inset, 0 12px 24px rgba(0,0,0,.25);
+}
+.grid-overlay{
+  position:absolute; inset:0; pointer-events:none; opacity:.18;
+  background-image: radial-gradient(circle at 1px 1px, var(--grid) 1px, transparent 0);
+  background-size: 18px 18px;
+}
+#cube-wrap{position:absolute; inset:0}
+canvas{display:block; width:100%; height:100%}
+
+.badge{
+  position:absolute; top:10px; left:10px;
+  background:rgba(12,16,18,.66); border:1px solid var(--border);
+  padding:8px 10px; border-radius:999px; font-weight:800; font-size:.88rem;
+  box-shadow:0 8px 18px rgba(0,0,0,.28); backdrop-filter: blur(6px);
+}
+.status{
+  position:absolute; right:12px; bottom:12px; min-width:200px;
+  font-size:.9rem; color:var(--muted); background:#0f1417; border:1px solid var(--border);
+  padding:.45rem .6rem; border-radius:8px; box-shadow:0 8px 18px rgba(0,0,0,.25);
+}
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <a class="btn" href="/">← Zurück</a>
+      <a class="btn btn-primary" href="mailto:beta@growgram-app.com?subject=Beta%20Invite">Frühen Zugang sichern</a>
+    </div>
+
+    <h1 style="margin:.25rem 0 .6rem">Three.js – Testwürfel</h1>
+    <p style="color:#cfe0d3; margin:0 0 1rem">Schneller Funktionstest für Three.js (Orbit, Resize, Beleuchtung). Wenn das läuft, läuft auch dein GLB-Pipeline.</p>
+
+    <aside class="panel" aria-label="Three Cube">
+      <div class="grid-overlay"></div>
+      <div id="cube-wrap"></div>
+      <div class="badge">Interaktiv · Dreh mich</div>
+      <div class="status" id="status">Renderer initialisiert…</div>
+    </aside>
+  </div>
+
+<script type="module">
+import * as THREE from 'https://esm.sh/three@0.160.0';
+import { OrbitControls } from 'https://esm.sh/three@0.160.0/examples/jsm/controls/OrbitControls.js?deps=three@0.160.0';
+
+const wrap = document.getElementById('cube-wrap');
+const statusEl = document.getElementById('status');
+
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 200);
+
+const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.05;
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+wrap.appendChild(renderer.domElement);
+
+// Licht
+scene.add(new THREE.AmbientLight(0xffffff, 0.9));
+const key = new THREE.DirectionalLight(0xffffff, 1.1);
+key.position.set(2.6, 3.4, 2.2);
+scene.add(key);
+const rim = new THREE.DirectionalLight(0x9ce6b1, 0.35);
+rim.position.set(-2.2, 1.6, -1.4);
+scene.add(rim);
+
+// Fake-Bodenschatten (weich)
+function softShadow(size=2.8, strength=1){
+  const c=document.createElement('canvas'); c.width=c.height=256; const g=c.getContext('2d');
+  const grd=g.createRadialGradient(128,128,18,128,128,120);
+  grd.addColorStop(0, `rgba(0,0,0,${0.22*strength})`); grd.addColorStop(1,'rgba(0,0,0,0)');
+  g.fillStyle=grd; g.fillRect(0,0,256,256);
+  const tex=new THREE.CanvasTexture(c); tex.anisotropy=8;
+  const geo=new THREE.PlaneGeometry(size,size);
+  const mat=new THREE.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false});
+  const m=new THREE.Mesh(geo,mat); m.rotation.x=-Math.PI/2; m.position.y=-0.02; return m;
+}
+const shadow = softShadow(); scene.add(shadow);
+
+// Würfel
+const geo = new THREE.BoxGeometry(1,1,1);
+const mat = new THREE.MeshStandardMaterial({
+  color: 0x4CAF50, metalness: 0.15, roughness: 0.4,
+});
+const cube = new THREE.Mesh(geo, mat);
+scene.add(cube);
+
+// feine Kanten
+const edges = new THREE.EdgesGeometry(geo);
+const line = new THREE.LineSegments(
+  edges,
+  new THREE.LineBasicMaterial({ color: 0x1f2a22, linewidth: 1 })
+);
+cube.add(line);
+
+// Controls
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.enablePan = false;
+controls.autoRotate = true;
+controls.autoRotateSpeed = 0.9;
+controls.minDistance = 1.2;
+controls.maxDistance = 6;
+
+// Resize + Framing
+function resize(){
+  const r = wrap.getBoundingClientRect();
+  const w = Math.max(320, r.width);
+  const h = Math.max(520, r.height);
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+function frameCube(){
+  const size = 1; // Kantenlänge
+  const half = size * Math.sqrt(3) / 2; // Diagonale/2
+  const fov = THREE.MathUtils.degToRad(camera.fov);
+  const dist = (half / Math.tan(fov/2)) * 1.6; // padding
+  camera.position.set(dist*0.8, dist*0.66, dist*0.9);
+  controls.target.set(0, 0, 0);
+  controls.update();
+  shadow.scale.setScalar(2.2);
+}
+resize(); frameCube();
+addEventListener('resize', ()=>{ resize(); });
+
+// Animation
+renderer.setAnimationLoop(()=>{
+  cube.rotation.x += 0.005;
+  cube.rotation.y += 0.01;
+  controls.update();
+  renderer.render(scene, camera);
+});
+
+statusEl.textContent = 'Bereit ✓ – dreh & pinch/zoom';
+</script>
+</body>
+</html>
