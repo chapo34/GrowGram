@@ -37,3 +37,8 @@ src/config/firebaseServiceAccount.json
 /_archive/
 /_backup_review/
 /GrowGramBackend_review/
+
+# Backups
+_archive/
+_backup_review/
+_backups/
