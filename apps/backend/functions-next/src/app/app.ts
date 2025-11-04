@@ -4,6 +4,7 @@ import express, {
   type Request,
   type Response,
   type NextFunction,
+  type RequestHandler,
 } from 'express';
 import compression from 'compression';
 import path from 'path';
@@ -83,11 +84,11 @@ export function createApp(opts: AppOptions = {}): Express {
   const app = express();
   app.disable('x-powered-by');
   app.set('trust proxy', true);
-
   // Security / Compression / CORS
   attachSecurity(app);
-  app.use(compression());
+  app.use(compression() as unknown as RequestHandler);
   app.use(buildCors(allowedOrigins));
+  addPreflight(app, allowedOrigins);
   addPreflight(app, allowedOrigins);
 
   // Request-ID + Logger

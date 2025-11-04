@@ -1,14 +1,14 @@
 import { Router } from 'express';
-import trending from './trending.routes.js';
-import forYou from './for-you.routes.js';
-import tags from './tags.routes.js';
-import search from './search.routes.js';
+import trendingRoutes from './trending.routes.js';
+import forYouRoutes from './for-you.routes.js';
+import tagsRoutes from './tags.routes.js';
+import searchRoutes from './search.routes.js';
 
-const r = Router();
+const router = Router();
 
-r.use(trending);
-r.use(forYou);
-r.use(tags);
-r.use(search); // /feed/search
+router.use('/trending', trendingRoutes);
+router.use('/for-you', forYouRoutes);
+router.use('/tags', tagsRoutes);
+router.use('/search', searchRoutes);
 
-export default r;
+export default router;

@@ -1,5 +1,5 @@
 // Express-Augmentation (Request.user, res.locals.requestId, etc.)
-import type { UserDoc } from './domain';
+import type { UserDoc } from './domain.js';
 
 declare global {
   namespace Express {

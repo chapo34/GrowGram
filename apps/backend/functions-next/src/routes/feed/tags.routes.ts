@@ -1,6 +1,4 @@
 import { Router } from 'express';
-import * as ctrl from '../../controllers/feed/feed.controller.js';
-
-const r = Router();
-r.get('/trending-tags', ctrl.trendingTags);
-export default r;
+const router = Router();
+router.get('/', (_req, res) => res.status(200).json({ route: 'tags' }));
+export default router;
