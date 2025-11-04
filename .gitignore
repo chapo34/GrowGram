@@ -42,3 +42,8 @@ src/config/firebaseServiceAccount.json
 _archive/
 _backup_review/
 _backups/
+
+# Root junk
+.expo/
+.DS_Store
+*.code-workspace
