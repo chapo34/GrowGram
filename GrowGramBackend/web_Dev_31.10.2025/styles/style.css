@@ -1,0 +1,6 @@
+/* /web/styles/style.css */
+@import url("/styles/token.css");
+@import url("/styles/base.css");
+@import url("/styles/layout.css");
+@import url("/styles/components.css");
+@import url("/styles/scene.css");   /* <— neu/aktualisiert */

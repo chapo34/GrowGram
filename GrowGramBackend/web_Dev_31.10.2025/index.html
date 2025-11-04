@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>GrowGram – Verantwortungsvoll. Respektvoll. EU-Hosting.</title>
+<meta name="description" content="GrowGram ist die Social-App für verantwortungsvolle Cannabis-Kultur. Sicher moderiert, DSGVO-konform, in der EU gehostet.">
+<meta name="theme-color" content="#0d0f10">
+<link rel="preconnect" href="https://esm.sh" crossorigin>
+
+<style>
+:root{
+  --bg:#0d0f10; --panel:#0f1316; --grid:#1b2226; --text:#e7f0e9; --muted:#a5b6ab;
+  --brand:#4CAF50; --accent:#ffa53a; --border:#1c2428; --ring:rgba(76,175,80,.35);
+}
+*{box-sizing:border-box} html,body{height:100%}
+body{
+  margin:0; color:var(--text);
+  background:
+    radial-gradient(1200px 520px at 60% -10%, rgba(76,175,80,.10), transparent 60%),
+    var(--bg);
+  font:400 16px/1.6 system-ui,-apple-system,Inter,Roboto,Segoe UI,Arial;
+  -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+}
+a{color:inherit; text-decoration:none}
+.container{width:min(1120px,92vw); margin-inline:auto}
+
+/* Header */
+header{position:sticky; top:0; z-index:40; backdrop-filter:saturate(1.1) blur(8px);
+  background:linear-gradient(180deg,rgba(10,12,13,.86),rgba(10,12,13,.55));
+  border-bottom:1px solid var(--border)}
+.head-inner{display:flex; align-items:center; gap:16px; padding:12px 0}
+.brand{font-weight:800; letter-spacing:.25px}
+nav{margin-left:auto; display:flex; gap:12px; align-items:center; flex-wrap:wrap}
+.btn{display:inline-flex; align-items:center; gap:.6rem; padding:.72rem 1rem; border-radius:12px; border:1px solid var(--border); font-weight:700; cursor:pointer; white-space:nowrap}
+.btn-primary{background:linear-gradient(180deg,#4CAF50,#2d8a43); color:#08150d; box-shadow:0 0 0 2px var(--ring) inset}
+.btn-ghost{background:#0e1316; color:#dfe9e3}
+
+/* Hero */
+.hero{display:grid; grid-template-columns:1.1fr .9fr; gap:28px; padding:24px 0 18px}
+@media (max-width:980px){ .hero{grid-template-columns:1fr; gap:18px} }
+.eyebrow{color:#c8d7cd; text-transform:uppercase; letter-spacing:.16em; font-weight:800; font-size:.72rem}
+h1{font-size:clamp(28px,4.6vw,48px); line-height:1.08; margin:.25rem 0 .5rem}
+.lead{color:#cfe0d3; margin:0 0 1rem}
+.sub{color:#9fb2a7; font-size:.92rem}
+.cta{display:flex; gap:12px; flex-wrap:wrap; margin-top:.8rem}
+
+/* 3D Panel */
+.panel{
+  min-height:540px; border-radius:16px; position:relative; overflow:hidden;
+  background:
+    linear-gradient(180deg, rgba(76,175,80,.08), rgba(10,12,13,.0)),
+    radial-gradient(800px 420px at 30% 0%, rgba(76,175,80,.06), transparent 60%),
+    var(--panel);
+  border:1px solid var(--border);
+  box-shadow:0 1px 0 #263137 inset, 0 12px 24px rgba(0,0,0,.25);
+}
+.grid-overlay{position:absolute; inset:0; pointer-events:none; opacity:.18;
+  background-image: radial-gradient(circle at 1px 1px, var(--grid) 1px, transparent 0);
+  background-size: 18px 18px}
+#growi-wrap{position:absolute; inset:0}
+canvas{display:block; width:100%; height:100%}
+
+/* Chips / Status */
+.chips{
+  position:absolute; top:10px; left:10px; display:flex; gap:8px; flex-wrap:wrap;
+}
+.chip{
+  display:inline-flex; align-items:center; gap:8px;
+  background:rgba(12,16,18,.66); border:1px solid var(--border);
+  padding:8px 10px; border-radius:999px; font-weight:700; font-size:.88rem;
+  box-shadow:0 8px 18px rgba(0,0,0,.28); backdrop-filter: blur(6px);
+}
+.chip .dot{width:8px; height:8px; border-radius:50%; background:var(--brand); box-shadow:0 0 0 2px var(--ring)}
+.chip a{text-decoration:underline; color:#b5f0c1}
+.status{
+  position:absolute; inset:auto 12px 12px auto; min-width:220px;
+  font-size:.9rem; color:var(--muted); background:#0f1417; border:1px solid var(--border);
+  padding:.45rem .6rem; border-radius:8px; box-shadow:0 8px 18px rgba(0,0,0,.25);
+}
+.status.error{color:#ffd1c0; border-color:#5b2b2b; background:#211214}
+
+/* Content-Karten */
+.section{border-top:1px solid var(--border); padding:18px 0 28px}
+.features{display:grid; gap:12px; grid-template-columns:repeat(3,1fr)}
+@media (max-width:980px){ .features{grid-template-columns:1fr} }
+.card{
+  background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:16px;
+  box-shadow:0 1px 0 #263137 inset, 0 8px 18px rgba(0,0,0,.22);
+  transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease, background .2s ease;
+  cursor:pointer; position:relative; overflow:hidden;
+}
+.card:hover{
+  transform:translateY(-2px);
+  border-color:#3a2a12;
+  background:linear-gradient(180deg, rgba(255,165,58,.09), rgba(10,12,13,0)), var(--panel);
+  box-shadow:0 0 0 1px rgba(255,165,58,.28) inset, 0 16px 34px rgba(0,0,0,.35);
+}
+.card::after{
+  content:"Erfahre mehr →"; position:absolute; right:12px; bottom:12px;
+  color:#ffc37a; font-weight:800; opacity:.0; transition:opacity .2s ease;
+}
+.card:hover::after{ opacity:1; }
+.card h3{margin:.25rem 0 .25rem; font-size:1.1rem}
+.muted{color:var(--muted)}
+footer{border-top:1px solid var(--border); margin-top:28px}
+footer .inner{padding:16px 0; color:#9bb0a5}
+
+/* Modal */
+.modal{display:none; position:fixed; inset:0; place-items:center; background:rgba(0,0,0,.55)}
+.sheet{width:min(820px,92vw); background:#0f1316; border:1px solid var(--border); border-radius:14px; padding:18px; box-shadow:0 24px 60px rgba(0,0,0,.5)}
+.close{float:right}
+
+/* Konfetti Canvas */
+#confetti{position:fixed; inset:0; pointer-events:none}
+</style>
+</head>
+<body>
+<header>
+  <div class="container head-inner">
+    <a class="brand" href="/">GrowGram</a>
+    <nav>
+      <a href="#features">Features</a>
+      <a href="/pages/privacy.html">Datenschutz</a>
+      <a href="/discord" class="btn btn-ghost">Discord</a>
+      <a class="btn btn-primary" href="/waitlist">Exklusiver Beta-Zugang</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+  <section class="hero">
+    <div>
+      <p class="eyebrow">Verantwortungsvoll · Respektvoll · EU-Hosting</p>
+      <h1>Die Social-App für verantwortungsvolle Cannabis-Kultur.</h1>
+      <p class="lead">Verbinde dich mit Menschen, teile Erfahrungen und lerne – sicher, moderiert und in Europa gehostet.</p>
+      <div class="cta">
+        <a class="btn btn-primary" href="/waitlist" id="btn-beta-hero">Jetzt anmelden</a>
+        <!-- KEIN zweiter Growi-Button links -->
+      </div>
+      <p class="sub">18+ · Keine Verkäufe/Preise · Klare Community-Guidelines</p>
+      <p class="sub" style="margin-top:.35rem; color:#b7cabc"><b>1.200+ auf der Warteliste</b> · <b>500</b> lim. Beta-Plätze · Founder-Badge für frühe Mitglieder 🏆</p>
+    </div>
+
+    <aside class="panel" aria-label="Growi 3D">
+      <div class="grid-overlay"></div>
+      <div id="growi-wrap"></div>
+
+      <!-- Nur hier: Was ist Growi? -->
+      <div class="chips">
+        <div class="chip"><span class="dot"></span> Interaktiv · Dreh mich!</div>
+        <div class="chip">Was ist Growi? <a href="/pages/mehr.html">Erfahre es</a></div>
+      </div>
+
+      <div class="status" id="growi-status">Growi wird geladen…</div>
+    </aside>
+  </section>
+
+  <section id="features" class="section">
+    <div class="features">
+      <a class="card" href="/pages/sicherheit.html" aria-label="Mehr zu Sicherheit">
+        <h3>Sicherheit zuerst</h3><p class="muted">Moderation, Meldesysteme, DSGVO, EU-Server.</p>
+      </a>
+      <a class="card" href="/pages/kultur.html" aria-label="Mehr zu Kultur">
+        <h3>Respektvolle Kultur</h3><p class="muted">Klare Regeln & positive Bestärkung statt Chaos.</p>
+      </a>
+      <a class="card" href="/pages/creator-tools.html" aria-label="Mehr zu Creator-Tools">
+        <h3>Creator-Tools</h3><p class="muted">Profile, Journal-Zeitraffer, Insights – Qualität vor Hype.</p>
+      </a>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="card" style="text-align:center">
+      <h3>Exklusiver Beta-Zugang</h3>
+      <p class="muted">Sichere dir einen von <b>500</b> Beta-Plätzen. Warte­liste ist offen – Founder-Badge inklusive.</p>
+      <a class="btn btn-primary" href="/waitlist">Zur Warteliste</a>
+      <a class="btn btn-ghost" href="/discord">Discord beitreten</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="container inner">
+    <small>© 2025 GrowGram · <a href="/pages/impressum.html">Impressum</a> · <a href="/pages/privacy.html">Datenschutz</a> · <a href="/pages/compliance.html">Compliance</a></small>
+  </div>
+</footer>
+
+<!-- Info-Modal (öffnet über /pages/mehr.html, daher hier nur für spätere Nutzung vorbereitet) -->
+<div class="modal" id="growi-modal" aria-hidden="true">
+  <div class="sheet">
+    <button class="btn close" id="btn-close-info">Schließen</button>
+    <h3 style="margin:.25rem 0 .5rem">Wer ist Growi?</h3>
+    <p style="color:#cfe0d3">Growi ist das freundliche Gesicht von GrowGram – Maskottchen für Respekt, Verantwortung & Community.</p>
+  </div>
+</div>
+
+<!-- Konfetti -->
+<canvas id="confetti"></canvas>
+
+<!-- Einziges Modulskript -->
+<script type="module">
+import * as THREE from 'https://esm.sh/three@0.160.0';
+import { OrbitControls } from 'https://esm.sh/three@0.160.0/examples/jsm/controls/OrbitControls.js?deps=three@0.160.0';
+import { GLTFLoader }   from 'https://esm.sh/three@0.160.0/examples/jsm/loaders/GLTFLoader.js?deps=three@0.160.0';
+
+const wrap = document.getElementById('growi-wrap');
+const statusEl = document.getElementById('growi-status');
+
+/* ---------- sanftes Konfetti ---------- */
+const confettiCanvas = document.getElementById('confetti');
+const cfx = confettiCanvas.getContext('2d');
+let confettiItems = [];
+function resizeConfetti(){ confettiCanvas.width = innerWidth; confettiCanvas.height = innerHeight; }
+addEventListener('resize', resizeConfetti); resizeConfetti();
+function dropConfetti(n=100){
+  confettiItems = Array.from({length:n}, () => ({
+    x: Math.random()*innerWidth,
+    y: -20 - Math.random()*60,
+    r: 3+Math.random()*4,
+    s: 1+Math.random()*2,
+    h: Math.floor(120+Math.random()*120),
+    a: Math.random()*Math.PI*2
+  }));
+  let t=0; (function tick(){
+    cfx.clearRect(0,0,innerWidth,innerHeight);
+    confettiItems.forEach(p=>{
+      p.y += p.s; p.x += Math.sin((t+p.a)*0.06);
+      cfx.fillStyle = `hsl(${p.h} 80% 60% / ${Math.max(0,1 - p.y/innerHeight)})`;
+      cfx.beginPath(); cfx.arc(p.x, p.y, p.r, 0, Math.PI*2); cfx.fill();
+    });
+    t++; if (t<220) requestAnimationFrame(tick); else cfx.clearRect(0,0,innerWidth,innerHeight);
+  })();
+}
+
+/* ---------- 3D ---------- */
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 400);
+const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.1;
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+wrap.appendChild(renderer.domElement);
+
+scene.add(new THREE.AmbientLight(0xffffff, 1.0));
+const key = new THREE.DirectionalLight(0xffffff, 1.15); key.position.set(2.6,3.6,2.4); scene.add(key);
+const fill = new THREE.DirectionalLight(0x9ce6b1, 0.35); fill.position.set(-2.5,1.6,-1.4); scene.add(fill);
+
+// weicher Bodenschatten
+function softShadow(size=2.8, strength=1){
+  const c=document.createElement('canvas'); c.width=c.height=256; const g=c.getContext('2d');
+  const grd=g.createRadialGradient(128,128,18,128,128,120);
+  grd.addColorStop(0, `rgba(0,0,0,${0.22*strength})`); grd.addColorStop(1,'rgba(0,0,0,0)');
+  g.fillStyle=grd; g.fillRect(0,0,256,256);
+  const tex=new THREE.CanvasTexture(c); tex.anisotropy=8;
+  const geo=new THREE.PlaneGeometry(size,size);
+  const mat=new THREE.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false});
+  const m=new THREE.Mesh(geo,mat); m.rotation.x=-Math.PI/2; m.position.y=-0.02; return m;
+}
+const shadow = softShadow(); scene.add(shadow);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.enablePan = false;
+controls.autoRotate = true; controls.autoRotateSpeed = 0.7;
+controls.minPolarAngle = 0.01; controls.maxPolarAngle = Math.PI - 0.01; controls.rotateSpeed = 0.9;
+
+function resize(){
+  const r = wrap.getBoundingClientRect();
+  const w = Math.max(320, r.width);
+  const h = Math.max(520, r.height);
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h; camera.updateProjectionMatrix();
+}
+resize(); addEventListener('resize', resize);
+
+function frameObject(object, cam, ctrls, {padding=1.35, lift=0.12}={}){
+  const box = new THREE.Box3().setFromObject(object);
+  const size = box.getSize(new THREE.Vector3());
+  const maxSize = Math.max(size.x,size.y,size.z);
+  const half = maxSize*0.5;
+  const dist = (half / Math.tan(THREE.MathUtils.degToRad(cam.fov)/2)) * padding;
+  cam.position.set(dist*0.7, dist*0.65, dist*0.92);
+  cam.near = Math.max(0.01, dist/100); cam.far = dist*15; cam.updateProjectionMatrix();
+  ctrls.target.set(0, size.y*lift, 0);
+  ctrls.minDistance = dist*0.55; ctrls.maxDistance = dist*2.0;
+  shadow.scale.setScalar(maxSize*0.95);
+}
+function updateShadowVisibility(){
+  const v = new THREE.Vector3().copy(camera.position).sub(controls.target);
+  shadow.visible = v.y > 0.05;
+}
+
+const loader = new GLTFLoader();
+const MODEL_URL = '/assets/3d/growi.glb?v=' + Date.now();
+
+try{
+  const head = await fetch(MODEL_URL,{method:'HEAD'});
+  if(!head.ok) throw new Error(`HTTP ${head.status} für ${MODEL_URL}`);
+}catch(e){
+  statusEl.classList.add('error');
+  statusEl.textContent='Growi-Datei nicht gefunden: '+e.message;
+  console.error(e);
+  throw e;
+}
+loader.load(
+  MODEL_URL,
+  (gltf)=>{
+    const model = gltf.scene;
+    model.rotation.y = Math.PI;
+    const box = new THREE.Box3().setFromObject(model);
+    const center = box.getCenter(new THREE.Vector3());
+    model.position.sub(center);
+    scene.add(model);
+    frameObject(model, camera, controls, {padding:1.32, lift:0.12});
+    statusEl.remove();
+    dropConfetti(70);
+    renderer.setAnimationLoop(()=>{
+      controls.update(); updateShadowVisibility(); renderer.render(scene,camera);
+    });
+  },
+  (e)=>{ const pct = e.total ? Math.round((e.loaded/e.total)*100) : null; statusEl.textContent = pct ? `Growi lädt… ${pct}%` : 'Growi lädt…'; },
+  (err)=>{ statusEl.classList.add('error'); statusEl.textContent='Ladefehler – Details in Konsole.'; console.error('GLB Load Error:', err); }
+);
+
+// „Zur Warteliste“ Feedback (keine Blockade der Navigation)
+document.querySelectorAll('a[href="/waitlist"]').forEach(a=>{
+  a.addEventListener('click', ()=>{ dropConfetti(100); });
+});
+</script>
+</body>
+</html>

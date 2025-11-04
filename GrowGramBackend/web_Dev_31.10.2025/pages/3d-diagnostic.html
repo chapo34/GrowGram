@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>3D Diagnostic</title>
+  <script type="module" src="https://unpkg.com/@google/model-viewer@4"></script>
+  <style>
+    html,body{margin:0;font-family:system-ui;background:#0d1117;color:#e8f1ff}
+    h1{font-size:18px;margin:16px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;padding:12px}
+    .card{border:1px solid #223049;border-radius:10px;padding:10px;background:#0f1623}
+    .ok{color:#8df5be} .fail{color:#ff9aa2}
+    model-viewer{width:100%;aspect-ratio:1/1;--poster-color:transparent;background:#0b1220;border-radius:8px}
+    .url{font-size:12px;color:#9cb2cc;word-break:break-all;margin:6px 0}
+  </style>
+</head>
+<body>
+  <h1>3D Diagnostic</h1>
+  <div class="grid" id="grid"></div>
+
+  <script>
+    const CANDIDATES = [
+      '/assets/3d/growi.glb',
+      '/assets/3d/Growi.glb',
+      '/assets/3d/mascot.glb',
+      '/assets/3d/Mascot.glb'
+    ];
+    const grid = document.getElementById('grid');
+
+    async function head(u){
+      try{
+        const r = await fetch(u, {method:'HEAD', cache:'no-store'});
+        return {ok:r.ok, status:r.status, type:r.headers.get('content-type')||'-'};
+      }catch(e){ return {ok:false, status:'ERR', type:String(e)};}
+    }
+
+    (async ()=>{
+      for(const u of CANDIDATES){
+        const res = await head(u);
+        const card = document.createElement('div'); card.className='card';
+        card.innerHTML = `
+          <div class="${res.ok?'ok':'fail'}"><strong>${res.ok?'✔️ erreichbar':'❌ nicht erreichbar'}</strong> — Status: ${res.status} — Type: ${res.type}</div>
+          <div class="url">${location.origin + u}</div>
+          <model-viewer ${res.ok?'':'reveal="interaction"'} src="${u}" camera-controls auto-rotate exposure="1.1" shadow-intensity="0.7"></model-viewer>
+        `;
+        grid.appendChild(card);
+      }
+    })();
+  </script>
+</body>
+</html>

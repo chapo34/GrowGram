@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Creator-Tools – Planen. Produzieren. Wachsen. | GrowGram</title>
+<meta name="description" content="Creator-Tools für GrowGram: Journal→Zeitraffer, Content-Planer, Vorlagen, Insights & Badges. Alles DSGVO-konform, EU-gehostet und auf hilfreiche Inhalte optimiert."/>
+<link rel="canonical" href="https://growgram-app.com/pages/creator-tools.html"/>
+<meta name="theme-color" content="#0d0f10"/>
+
+<style>
+:root{
+  --bg:#0d0f10; --panel:#0f1316; --text:#e7f0e9; --muted:#a5b6ab; --border:#1c2428;
+  --brand:#4CAF50; --accent:#ffa53a; --ring:rgba(76,175,80,.35);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font:400 16px/1.6 system-ui,-apple-system,Inter,Roboto,Segoe UI,Arial;
+  -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+}
+a{color:inherit; text-decoration:none}
+.container{width:min(1080px,92vw); margin:28px auto}
+
+/* Header */
+.header{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px}
+.back{color:#cfe0d3}
+.nav{display:flex; gap:10px; flex-wrap:wrap}
+.btn{display:inline-flex; align-items:center; gap:.6rem; padding:.72rem 1rem; border-radius:12px; border:1px solid var(--border); font-weight:800; cursor:pointer; background:#0e1316; color:#dfe9e3}
+.btn-primary{background:linear-gradient(180deg,#4CAF50,#2d8a43); color:#08150d; box-shadow:0 0 0 2px var(--ring) inset}
+
+/* Hero */
+.kicker{color:#c8d7cd; text-transform:uppercase; letter-spacing:.16em; font-weight:800; font-size:.72rem}
+h1{margin:.25rem 0 .6rem; font-size:clamp(28px,4.6vw,46px); line-height:1.08}
+.lead{color:#cfe0d3; margin:0 0 1rem}
+.pills{display:flex; gap:10px; flex-wrap:wrap}
+.pill{background:#10171a; border:1px dashed #2a3531; border-radius:999px; padding:6px 10px; font-size:.9rem}
+
+/* Tabs (Planen / Produzieren / Veröffentlichen / Wachsen) */
+.tabs{display:flex; gap:8px; flex-wrap:wrap; margin:14px 0}
+.tab{background:#0f1417; border:1px solid var(--border); border-radius:999px; padding:8px 12px; cursor:pointer; font-weight:800}
+.tab[aria-selected="true"]{outline:2px solid var(--ring)}
+
+/* Cards & Grids */
+.section{margin:18px 0 26px}
+.grid-3{display:grid; gap:14px; grid-template-columns:repeat(3,1fr)}
+@media (max-width:1024px){ .grid-3{grid-template-columns:1fr} }
+.card{
+  position:relative;
+  background:linear-gradient(180deg, rgba(76,175,80,.06), rgba(10,12,13,0)), var(--panel);
+  border:1px solid var(--border); border-radius:14px; padding:18px;
+  box-shadow:0 1px 0 #263137 inset, 0 10px 20px rgba(0,0,0,.22);
+  transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease, background .25s ease;
+}
+.card:hover{ transform: translateY(-2px); box-shadow:0 12px 28px rgba(0,0,0,.28); border-color:#263730 }
+.card h2, .card h3{margin:.25rem 0 .35rem}
+.card .muted{color:var(--muted)}
+.hr{height:1px; background:var(--border); margin:14px 0}
+.clickable{cursor:pointer}
+.highlight:hover{background:linear-gradient(180deg, rgba(255,165,58,.10), rgba(10,12,13,0)), var(--panel); border-color:#3a2a18}
+.cta-link{color:#ffbf7a; text-decoration:underline}
+
+/* KPI / Countups */
+.kpis{display:flex; gap:10px; flex-wrap:wrap}
+.kpi{background:#0f1417; border:1px solid #223036; border-radius:12px; padding:10px 12px; min-width:160px; text-align:center}
+.kpi .num{font-size:1.6rem; font-weight:900}
+.kpi .label{color:#a7bbb0; font-size:.9rem}
+
+/* CTA Bar */
+.cta-bar{
+  display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+  background:#0f1316; border:1px solid var(--border); border-radius:14px; padding:14px;
+  box-shadow:0 10px 24px rgba(0,0,0,.28)
+}
+
+/* Info */
+.note{color:var(--muted)}
+.badges{display:flex; gap:8px; flex-wrap:wrap; margin:.4rem 0}
+.badge{background:#10171a; border:1px dashed #2a3531; border-radius:999px; padding:6px 10px}
+
+/* Footer */
+footer{margin:24px 0 8px; color:#9bb0a5}
+small{color:#a5b6ab}
+
+/* Confetti Canvas */
+#confetti{position:fixed; inset:0; pointer-events:none}
+.hidden{display:none !important}
+</style>
+</head>
+<body>
+<canvas id="confetti"></canvas>
+
+<div class="container">
+  <!-- Header -->
+  <div class="header">
+    <a class="back" href="/">← Zurück</a>
+    <div class="nav">
+      <a class="btn" href="/pages/sicherheit.html">Sicherheit</a>
+      <a class="btn" href="/pages/kultur.html">Kultur</a>
+      <a class="btn" href="/pages/compliance.html">Compliance</a>
+      <a class="btn btn-primary" id="btn-beta-top" href="mailto:beta@growgram-app.com?subject=Beta%20Invite">Frühen Zugang sichern</a>
+    </div>
+  </div>
+
+  <!-- Hero -->
+  <div class="kicker">Creator-Tools · Fokus: Qualität & Anerkennung</div>
+  <h1>Planen. Produzieren. Wachsen. <br/>Mit Tools, die wirklich helfen.</h1>
+  <p class="lead">GrowGram honoriert hilfreiche Inhalte – mit Badges, Featurings und sauberer Sichtbarkeit. Unsere Tools sind auf Fortschritt, Fairness und EU-Datenschutz gebaut.</p>
+  <div class="pills">
+    <span class="pill">🎞️ Journal → Zeitraffer</span>
+    <span class="pill">🗓️ Content-Planer</span>
+    <span class="pill">📊 Insights (hilfreich, Saves, Retention)</span>
+    <span class="pill">🏆 Status-Badges</span>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs" role="tablist" aria-label="Creator-Phasen">
+    <button class="tab" role="tab" aria-selected="true"  data-tab="planen">Planen</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="produzieren">Produzieren</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="veroeffentlichen">Veröffentlichen</button>
+    <button class="tab" role="tab" aria-selected="false" data-tab="wachsen">Wachsen</button>
+  </div>
+
+  <!-- Sektion: Planen -->
+  <section class="section tab-panel" id="panel-planen">
+    <div class="grid-3">
+      <div class="card highlight clickable" id="card-planner">
+        <h2>Content-Planer</h2>
+        <p class="muted">Plane Posts, Stories & Journal-Reminders. Intelligente Vorschläge zu Tageszeit, Themen & Serien (ohne Streak-Druck).</p>
+        <div class="hr"></div>
+        <p class="cta-link">Erfahre mehr (Kultur & Rituale) →</p>
+      </div>
+
+      <a class="card clickable" href="/pages/compliance.html" style="text-decoration:none">
+        <h2>Compliance-Check</h2>
+        <p class="muted">Automatische Warnungen vor Verstoß (Preise/Verkauf, falsche Heilsversprechen, Jugendschutz). Sicher posten, souverän bleiben.</p>
+        <div class="hr"></div>
+        <p class="cta-link">Zu Compliance</p>
+      </a>
+
+      <div class="card">
+        <h2>Vorlagen & Shot-Listen</h2>
+        <p class="muted">Guides & Presets für „Setup zeigen“, „Fehler & Learnings“, „Journal Update“. Struktur spart Zeit – Qualität steigt.</p>
+        <div class="badges">
+          <span class="badge">🧩 How-to</span>
+          <span class="badge">📷 Shot-List</span>
+          <span class="badge">📝 Caption-Hint</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sektion: Produzieren -->
+  <section class="section tab-panel hidden" id="panel-produzieren">
+    <div class="grid-3">
+      <div class="card highlight clickable" id="card-journal">
+        <h2>Journal → Zeitraffer</h2>
+        <p class="muted">3–4 Fotos über Wochen, 1 Klick auf „Generate“ – dein Journal wird zum Zeitraffer. Fortschritt sichtbar → Anerkennung.</p>
+        <div class="hr"></div>
+        <p class="cta-link">Mehr zum Journal (Mehr-Seite) →</p>
+      </div>
+
+      <div class="card">
+        <h2>Auto-Captions & Barrierefreiheit</h2>
+        <p class="muted">Automatische Untertitel, Alt-Texte & Kontrast-Check. Gute Inhalte sind für alle zugänglich.</p>
+        <div class="badges">
+          <span class="badge">🦾 Auto-CC</span>
+          <span class="badge">🖼️ Alt-Text</span>
+          <span class="badge">🎛️ Contrast-Safe</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Rechte-sichere Assets</h2>
+        <p class="muted">Sound-Snippets, Sticker & Templates – kuratiert & lizenzklar. Keine Copyright-Risiken.</p>
+        <div class="badges">
+          <span class="badge">🎵 Safe-Audio</span>
+          <span class="badge">🔖 Sticker</span>
+          <span class="badge">🎨 Templates</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sektion: Veröffentlichen -->
+  <section class="section tab-panel hidden" id="panel-veroeffentlichen">
+    <div class="grid-3">
+      <div class="card">
+        <h2>Guided Upload</h2>
+        <p class="muted">Letzter Check: Compliance, Lesbarkeit, hilfreiche Tags. Upload fühlt sich sicher & sauber an.</p>
+        <div class="hr"></div>
+        <div class="note">„Sanfter Nudge“ statt Druck: Du entscheidest Tempo & Tiefe.</div>
+      </div>
+
+      <div class="card">
+        <h2>Smart-Tags</h2>
+        <p class="muted">System schlägt relevante Themen vor (Setup, Medium, Schwierigkeit). Hilft Auffindbarkeit – ohne Hashtag-Spam.</p>
+      </div>
+
+      <div class="card">
+        <h2>Preview & Cross-Post</h2>
+        <p class="muted">Schau dir an, wie dein Post im Feed wirkt. Später optional: Export/Teaser für andere Plattformen.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sektion: Wachsen -->
+  <section class="section tab-panel hidden" id="panel-wachsen">
+    <div class="grid-3">
+      <div class="card">
+        <h2>Insights, die Sinn machen</h2>
+        <p class="muted">Wir messen Nützlichkeit – nicht nur Reichweite. Wichtig sind: Saves, „hilfreich“-Votes, Completion & Replies.</p>
+        <div class="hr"></div>
+        <div class="kpis">
+          <div class="kpi">
+            <div class="num" data-countup data-target="87">0</div>
+            <div class="label">Hilfreich-Score (P90)</div>
+          </div>
+          <div class="kpi">
+            <div class="num" data-countup data-target="42">0</div>
+            <div class="label">Saves pro 1k Views</div>
+          </div>
+          <div class="kpi">
+            <div class="num" data-countup data-target="73">0</div>
+            <div class="label">Completion %</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Kommentar-Assistent</h2>
+        <p class="muted">Antwort-Vorschläge, die freundlich & konkret sind. Fokus: hilfreich statt hitzig – das zahlt direkt auf Sichtbarkeit ein.</p>
+        <div class="badges">
+          <span class="badge">💬 „Was hat dir geholfen?“</span>
+          <span class="badge">🧭 Alternative vorschlagen</span>
+        </div>
+      </div>
+
+      <div class="card highlight clickable" id="card-status">
+        <h2>Status & Featurings</h2>
+        <p class="muted">Founder, Helper, Expert, Grow der Woche – sichtbare Anerkennung, kuratiert & fair.</p>
+        <div class="hr"></div>
+        <p class="cta-link">Wie du sichtbar wirst (Kultur) →</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Abschluss-CTA -->
+  <section class="section">
+    <div class="card cta-bar">
+      <div style="flex:1; min-width:220px">
+        <h3 style="margin:.25rem 0 .35rem">Starte als Creator:in</h3>
+        <p class="note" style="margin:0">Sichere dir einen der limitierten Beta-Plätze & erhalte das exklusive <b>Founder-Badge</b>. Journal→Zeitraffer inklusive.</p>
+      </div>
+      <a class="btn btn-primary" id="btn-beta-bottom" href="mailto:beta@growgram-app.com?subject=Beta%20Invite">Jetzt anmelden</a>
+      <a class="btn" href="/pages/mehr.html">Mehr über GrowGram</a>
+    </div>
+  </section>
+
+  <footer>
+    <small>© 2025 GrowGram · <a href="/pages/impressum.html">Impressum</a> · <a href="/pages/privacy.html">Datenschutz</a></small>
+  </footer>
+</div>
+
+<!-- Micro-JS: Tabs, Count-Ups, Konfetti, Nudge-Navigation -->
+<script>
+/* ---- Tabs ---- */
+const tabs = [...document.querySelectorAll('.tab')];
+const panels = {
+  planen: document.getElementById('panel-planen'),
+  produzieren: document.getElementById('panel-produzieren'),
+  veroeffentlichen: document.getElementById('panel-veroeffentlichen'),
+  wachsen: document.getElementById('panel-wachsen'),
+};
+function setTab(id){
+  tabs.forEach(t=>t.setAttribute('aria-selected', String(t.dataset.tab===id)));
+  Object.entries(panels).forEach(([k,el])=> el.classList.toggle('hidden', k!==id));
+}
+tabs.forEach(t=> t.addEventListener('click', ()=> setTab(t.dataset.tab)));
+setTab('planen');
+
+/* ---- sanftes Konfetti (Canvas) ---- */
+const confettiCanvas = document.getElementById('confetti');
+const cfx = confettiCanvas.getContext('2d');
+function sizeCanvas(){ confettiCanvas.width = innerWidth; confettiCanvas.height = innerHeight; }
+addEventListener('resize', sizeCanvas); sizeCanvas();
+
+function dropConfetti(n=120){
+  const parts = Array.from({length:n}, () => ({
+    x: Math.random()*innerWidth,
+    y: -20 - Math.random()*60,
+    r: 3+Math.random()*4,
+    s: 1+Math.random()*2,
+    h: Math.floor(120+Math.random()*120), // grün→orange
+    a: Math.random()*Math.PI*2
+  }));
+  let t=0;
+  (function tick(){
+    cfx.clearRect(0,0,innerWidth,innerHeight);
+    parts.forEach(p=>{
+      p.y += p.s; p.x += Math.sin((t+p.a)*0.06);
+      cfx.fillStyle = `hsl(${p.h} 80% 60% / ${Math.max(0,1 - p.y/innerHeight)})`;
+      cfx.beginPath(); cfx.arc(p.x, p.y, p.r, 0, Math.PI*2); cfx.fill();
+    });
+    t++; if (t<220) requestAnimationFrame(tick); else cfx.clearRect(0,0,innerWidth,innerHeight);
+  })();
+}
+
+/* ---- Count-Ups beim Sichtbarwerden ---- */
+const counters = [...document.querySelectorAll('[data-countup]')];
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach(entry=>{
+    if (!entry.isIntersecting) return;
+    const el = entry.target;
+    const target = +el.dataset.target || 0;
+    const dur = 900 + Math.random()*600;
+    const start = performance.now();
+    function step(now){
+      const p = Math.min(1, (now - start)/dur);
+      const val = Math.floor(target * (0.1 + 0.9*p*p)); // ease-out
+      el.textContent = val.toLocaleString('de-DE');
+      if (p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+    io.unobserve(el);
+  });
+},{threshold:0.4});
+counters.forEach(el=>io.observe(el));
+
+/* ---- Button-Glücks-Moment ---- */
+['btn-beta-top','btn-beta-bottom'].forEach(id=>{
+  const b=document.getElementById(id);
+  b?.addEventListener('click', ()=>{
+    dropConfetti(120);
+    const old=b.textContent; b.textContent='Danke! 🎉 Wir melden uns.';
+    setTimeout(()=>{ b.textContent=old; }, 3200);
+  });
+});
+
+/* ---- Nudges zu passenden Seiten ---- */
+document.getElementById('card-journal')?.addEventListener('click', ()=>{ dropConfetti(60); location.href='/pages/mehr.html'; });
+document.getElementById('card-planner')?.addEventListener('click', ()=>{ location.href='/pages/kultur.html'; });
+document.getElementById('card-status')?.addEventListener('click', ()=>{ location.href='/pages/kultur.html'; });
+</script>
+</body>
+</html>

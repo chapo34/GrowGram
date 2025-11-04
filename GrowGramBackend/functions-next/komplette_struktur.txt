@@ -1,0 +1,198 @@
+src/
+├── app
+│   ├── app.ts
+│   ├── cors.ts
+│   ├── docs.ts
+│   ├── errors.ts
+│   ├── routes.ts
+│   └── security.ts
+├── config
+│   ├── colors.ts
+│   ├── env.ts
+│   ├── firebase.ts
+│   ├── helmet.ts
+│   ├── logger.ts
+│   └── rateLimit.ts
+├── controllers
+│   ├── admin
+│   │   ├── devSeedController.ts
+│   │   └── seedController.ts
+│   ├── auth
+│   │   ├── complianceController.ts
+│   │   ├── loginController.ts
+│   │   ├── profileController.ts
+│   │   ├── registerController.ts
+│   │   └── verifyController.ts
+│   ├── avatar
+│   │   └── avatarController.ts
+│   ├── chat
+│   │   ├── chatController.ts
+│   │   └── groupController.ts
+│   ├── feed
+│   │   ├── feed.controller.ts
+│   │   └── searchController.ts
+│   ├── files
+│   │   └── mediaController.ts
+│   ├── health.controller.ts
+│   ├── posts
+│   │   ├── commentsController.ts
+│   │   ├── likesController.ts
+│   │   ├── postsController.ts
+│   │   └── postUploadController.ts
+│   ├── taxonomy
+│   │   └── taxonomyController.ts
+│   └── version.controller.ts
+├── docs
+│   └── openapi.yaml
+├── index.ts
+├── jobs
+│   ├── reindex.job.ts
+│   └── thumbnails.job.ts
+├── loaders
+│   ├── express.ts
+│   ├── jobs.ts
+│   └── routes.ts
+├── middleware
+│   ├── auth
+│   │   ├── auth.middleware.ts
+│   │   └── roles.middleware.ts
+│   ├── errors
+│   │   ├── error.handler.ts
+│   │   └── notfound.handler.ts
+│   ├── upload.middleware.ts
+│   └── validate.middleware.ts
+├── models
+│   ├── chatModel.ts
+│   ├── commentModel.ts
+│   ├── index.ts
+│   ├── postModel.ts
+│   └── userModel.ts
+├── repositories
+│   ├── _utils.ts
+│   ├── chats.repo.ts
+│   ├── comments.repo.ts
+│   ├── files.repo.ts
+│   ├── index.ts
+│   ├── posts.repo.ts
+│   ├── users.repo.ts
+│   └── waitlist.repo.ts
+├── routes
+│   ├── admin
+│   │   ├── index.ts
+│   │   ├── reindex.routes.ts
+│   │   └── seed.routes.ts
+│   ├── auth
+│   │   ├── compliance.routes.ts
+│   │   ├── index.ts
+│   │   ├── login.routes.ts
+│   │   ├── me.routes.ts
+│   │   ├── register.routes.ts
+│   │   └── verify.routes.ts
+│   ├── chat
+│   │   ├── index.ts
+│   │   ├── media.routes.ts
+│   │   ├── messages.routes.ts
+│   │   ├── open.routes.ts
+│   │   └── read.routes.ts
+│   ├── feed
+│   │   ├── for-you.routes.ts
+│   │   ├── index.ts
+│   │   ├── search.routes.ts
+│   │   ├── tags.routes.ts
+│   │   └── trending.routes.ts
+│   ├── index.ts
+│   ├── media
+│   │   └── files.routes.ts
+│   ├── meta
+│   │   ├── index.ts
+│   │   └── taxonomy.routes.ts
+│   ├── posts
+│   │   ├── comments.routes.ts
+│   │   ├── create.routes.ts
+│   │   ├── index.ts
+│   │   ├── likes.routes.ts
+│   │   ├── upload-binary.routes.ts
+│   │   └── visibility.routes.ts
+│   ├── search
+│   │   └── posts.routes.ts
+│   ├── system
+│   │   ├── health.routes.ts
+│   │   ├── index.ts
+│   │   ├── legal.routes.ts
+│   │   └── version.routes.ts
+│   ├── taxonomy
+│   │   ├── index.ts
+│   │   └── taxonomy.routes.ts
+│   ├── users
+│   │   ├── avatar.routes.ts
+│   │   ├── index.ts
+│   │   └── profile.routes.ts
+│   └── waitlist
+│       ├── index.ts
+│       └── waitlist.routes.ts
+├── scripts
+│   ├── dev-seed.ts
+│   └── fix-data.ts
+├── services
+│   ├── admin
+│   │   ├── reindex.service.ts
+│   │   └── seed.service.ts
+│   ├── auth
+│   │   ├── email.service.ts
+│   │   ├── jwt.service.ts
+│   │   └── password.service.ts
+│   ├── chat
+│   │   ├── chat.service.ts
+│   │   ├── media.service.ts
+│   │   └── message.service.ts
+│   ├── feed
+│   │   ├── feed.service.ts
+│   │   └── search.service.ts
+│   ├── posts
+│   │   ├── post.service.ts
+│   │   ├── upload.service.ts
+│   │   └── visibility.service.ts
+│   ├── users
+│   │   ├── avatar.service.ts
+│   │   └── profile.service.ts
+│   └── waitlist
+│       └── waitlist.service.ts
+├── tests
+│   └── e2e
+│       ├── auth-flow.e2e.test.ts
+│       ├── health.e2e.test.ts
+│       └── unit
+│           ├── controllers
+│           │   └── posts.controller.test.ts
+│           └── services
+│               └── auth.service.test.ts
+├── triggers
+│   ├── firestore
+│   │   └── onPostWrite.ts
+│   └── storage
+│       └── onImageUpload.ts
+├── types
+│   ├── api.ts
+│   ├── domain.ts
+│   ├── express.d.ts
+│   └── index.ts
+├── utils
+│   ├── crypto.ts
+│   ├── http.ts
+│   ├── id.ts
+│   ├── image.ts
+│   ├── logger.ts
+│   ├── sanitizer.ts
+│   ├── string.ts
+│   ├── time.ts
+│   └── types.ts
+└── validators
+    ├── auth.schema.ts
+    ├── chat.schema.ts
+    ├── compliance.schema.ts
+    ├── feed.schema.ts
+    ├── index.ts
+    ├── posts.schema.ts
+    └── users.schema.ts
+
+53 directories, 143 files

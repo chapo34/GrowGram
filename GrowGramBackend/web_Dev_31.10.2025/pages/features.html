@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Features – GrowGram</title>
+<meta name="description" content="Die wichtigsten Features von GrowGram: Status & Badges, Grow-Journal mit Zeitraffer, variable Inspiration, Sicherheit & Creator-Tools.">
+<meta name="theme-color" content="#0d0f10">
+<link rel="canonical" href="https://growgram-app.com/pages/features.html">
+<style>
+:root{
+  --bg:#0d0f10; --panel:#0f1316; --text:#e7f0e9; --muted:#a5b6ab; --border:#1c2428;
+  --brand:#4CAF50; --accent:#ffa53a; --ok:#8fe39c; --ring:rgba(76,175,80,.35);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:400 16px/1.6 system-ui,-apple-system,Inter,Roboto,Segoe UI,Arial}
+a{color:inherit;text-decoration:none}
+.container{width:min(1000px,92vw);margin:32px auto}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.back{color:#cfe0d3}
+.kicker{color:#c8d7cd;text-transform:uppercase;letter-spacing:.16em;font-weight:800;font-size:.72rem}
+h1{margin:.25rem 0 .6rem;font-size:clamp(28px,4.4vw,42px);line-height:1.08}
+.lead{color:#cfe0d3;margin:0 0 1rem}
+
+.grid{display:grid;gap:14px;grid-template-columns:repeat(2,1fr)}
+@media (max-width:860px){.grid{grid-template-columns:1fr}}
+.tile{
+  position:relative; overflow:hidden; border-radius:14px; padding:18px;
+  background:linear-gradient(180deg,rgba(76,175,80,.06),rgba(10,12,13,.0)), var(--panel);
+  border:1px solid var(--border); box-shadow:0 1px 0 #263137 inset, 0 8px 18px rgba(0,0,0,.22);
+  transition:.25s ease;
+}
+.tile:hover{border-color:#3a2a17; box-shadow:0 0 0 1px #3a2a17 inset, 0 10px 24px rgba(255,165,58,.18)}
+.tile h2{margin:.1rem 0 .35rem; font-size:1.25rem}
+.tile .muted{color:var(--muted)}
+.badges{display:flex;gap:8px;flex-wrap:wrap;margin:.45rem 0}
+.badge{background:#10171a;border:1px dashed #2a3531;border-radius:999px;padding:6px 10px}
+.list{margin:.35rem 0 0 .9rem;color:#a9bdb1}
+.sep{height:1px;background:var(--border);margin:18px 0}
+
+.card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:18px;margin:14px 0;box-shadow:0 1px 0 #263137 inset,0 8px 18px rgba(0,0,0,.22)}
+.kpi{display:flex;gap:10px;flex-wrap:wrap}
+.kpi span{background:#10171a;border:1px dashed #2a3531;border-radius:999px;padding:6px 10px}
+
+.btn{display:inline-flex;align-items:center;gap:.6rem;padding:.78rem 1rem;border-radius:12px;border:1px solid var(--border);font-weight:800;cursor:pointer}
+.btn-primary{background:linear-gradient(180deg,#4CAF50,#2d8a43);color:#08150d;box-shadow:0 0 0 2px var(--ring) inset}
+.btn-ghost{background:#0e1316;color:#dfe9e3}
+footer{margin:24px 0 8px;color:#9bb0a5}
+small{color:#a5b6ab}
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <a class="back" href="/">← Zurück zur Startseite</a>
+      <a class="btn btn-primary" href="mailto:beta@growgram-app.com?subject=Beta%20Invite">Frühen Zugang sichern</a>
+    </div>
+
+    <div class="kicker">Features · Status · Fortschritt</div>
+    <h1>Was dich bei GrowGram wirklich weiterbringt.</h1>
+    <p class="lead">Wir kombinieren Anerkennung (Status & Badges), sichtbaren Fortschritt (Journal → Zeitraffer) und variable Inspiration – sicher moderiert & EU-gehostet.</p>
+
+    <!-- Feature-Kacheln -->
+    <section class="grid">
+
+      <!-- Status & Badges -->
+      <a class="tile" href="/pages/kultur.html">
+        <h2>Dein Status: Badges & Featurings</h2>
+        <p class="muted">Anerkennung statt Lärm. Hilfreiche Beiträge werden sichtbar – im Feed, im Profil und mit kuratierten Featurings.</p>
+        <div class="badges">
+          <span class="badge">🏅 Founder</span>
+          <span class="badge">🧩 Community-Helper</span>
+          <span class="badge">🧠 Expert</span>
+          <span class="badge">🌱 Grow der Woche</span>
+        </div>
+        <ul class="list">
+          <li>Sichtbarer Status als sozialer Beweis</li>
+          <li>Mentor:innen & Community-Helden im Rampenlicht</li>
+          <li>Fair & transparent – Qualität vor Hype</li>
+        </ul>
+      </a>
+
+      <!-- Journal & Zeitraffer -->
+      <a class="tile" href="/pages/mehr.html#journal">
+        <h2>Grow-Journal → Zeitraffer</h2>
+        <p class="muted">Dokumentiere deinen Weg. 3–4 Fotos reichen – wir bauen daraus ein schönes Zeitraffer-Video.</p>
+        <ul class="list">
+          <li>Sichtbarer Fortschritt triggert Stolz</li>
+          <li>Teile Learnings, nicht nur Ergebnisse</li>
+          <li>Perfekt fürs Profil & Featurings</li>
+        </ul>
+      </a>
+
+      <!-- Variable Inspiration -->
+      <a class="tile" href="/pages/mehr.html#inspiration">
+        <h2>Variable Inspiration – ohne FOMO</h2>
+        <p class="muted">„Tipp der Woche“, „Grow der Woche“, saisonale Themen. Frische Impulse, die motivieren – kein Streak-Stress.</p>
+        <ul class="list">
+          <li>Kuratiert & themenbezogen</li>
+          <li>Nützlichkeit wird höher gewichtet als Hype</li>
+          <li>Community-Mentions für gute Beiträge</li>
+        </ul>
+      </a>
+
+      <!-- Creator-Tools -->
+      <a class="tile" href="/pages/creator.html">
+        <h2>Creator-Tools & Insights</h2>
+        <p class="muted">Profile, hilfreiche Metriken und Reporting – Fokus auf Qualität und Lernwert.</p>
+        <ul class="list">
+          <li>Profil-Highlights & Badge-Übersicht</li>
+          <li>„Hilfreich“-Signal statt Like-Jagd</li>
+          <li>Moderations-Shortcuts & Meldesysteme</li>
+        </ul>
+      </a>
+
+      <!-- Sicherheit -->
+      <a class="tile" href="/pages/sicherheit.html">
+        <h2>Sicherheit & Moderation</h2>
+        <p class="muted">EU-Hosting, klare Regeln, aktives Moderations-Setup. Schutz für Nutzer:innen & gute Inhalte.</p>
+        <ul class="list">
+          <li>18+ · Jugendschutz-Hinweise</li>
+          <li>Meldewege & sichtbare Konsequenzen</li>
+          <li>Transparente Regeln & Fairness</li>
+        </ul>
+      </a>
+
+      <!-- Compliance -->
+      <a class="tile" href="/pages/compliance.html">
+        <h2>Kein Verkauf. Keine Preise. Keine Deals.</h2>
+        <p class="muted">GrowGram ist community-geführt – nicht kommerziell getrieben. Compliance schützt alle.</p>
+        <ul class="list">
+          <li>Keine Händler-Listings oder Bezugsquellen</li>
+          <li>Keine Preis-/Deal-Postings</li>
+          <li>Klare Grenzen, klare Sicherheit</li>
+        </ul>
+      </a>
+
+    </section>
+
+    <div class="sep"></div>
+
+    <!-- CTA unten -->
+    <section class="card">
+      <h2>Werde Gründungsmitglied</h2>
+      <p class="muted">Sichere dir einen limitierten Beta-Platz und erhalte das sichtbare <b>Founder-Badge</b> in deinem Profil.</p>
+      <div class="kpi" style="margin:.5rem 0 .8rem">
+        <span>🎖️ Founder-Badge</span>
+        <span>🎞️ Journal-Zeitraffer</span>
+        <span>🌱 Grow der Woche</span>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <a class="btn btn-primary" href="mailto:beta@growgram-app.com?subject=Beta%20Invite">Beta-Slot sichern</a>
+        <a class="btn btn-ghost" href="/">Zur Startseite</a>
+      </div>
+    </section>
+
+    <footer><small>© 2025 GrowGram · <a href="/pages/impressum.html">Impressum</a> · <a href="/pages/privacy.html">Datenschutz</a></small></footer>
+  </div>
+</body>
+</html>

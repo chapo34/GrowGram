@@ -1,0 +1,926 @@
+openapi: 3.0.3
+info:
+  title: GrowGram Backend API
+  version: 1.0.0
+  description: >
+    Offizielle API-Spezifikation für die GrowGram Mobile & Web Clients.
+    Alle Endpunkte (sofern nicht anders erwähnt) erwarten JWT Bearer Auth.
+    Produktionsbasis ist Firebase Functions (Region europe-west3).
+
+servers:
+  - url: https://europe-west3-growgram-backend.cloudfunctions.net/api
+    description: Production (Cloud Functions)
+  - url: http://127.0.0.1:5001/growgram-backend/europe-west3/api
+    description: Local Emulator (recommended)
+  - url: http://localhost:5001/growgram-backend/europe-west3/api
+    description: Local Emulator (alt)
+
+tags:
+  - name: Auth
+  - name: Users
+  - name: Feed
+  - name: Search
+  - name: Posts
+  - name: Chat
+  - name: Media
+  - name: System
+  - name: Legal
+
+security:
+  - bearerAuth: []
+
+paths:
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Benutzer registrieren
+      security: []   # Registrierung ohne Token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [firstName, lastName, email, password, birthDate]
+              properties:
+                firstName: { type: string }
+                lastName:  { type: string }
+                email:     { type: string, format: email }
+                password:  { type: string, format: password }
+                birthDate: { type: string, format: date }
+                city:      { type: string }
+            example:
+              firstName: "Martin"
+              lastName: "Erdelyi"
+              email: "ceo@growgram-app.com"
+              password: "••••••••"
+              birthDate: "2000-01-01"
+              city: "Wiesbaden"
+      responses:
+        '201':
+          description: Registriert
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+                  user:  { $ref: '#/components/schemas/User' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login
+      security: []   # Login ohne Token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:    { type: string, format: email }
+                password: { type: string, format: password }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+                  user:  { $ref: '#/components/schemas/User' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout (serverseitig optional)
+      responses:
+        '204': { description: Logged out }
+        '200': { description: OK }
+
+  /auth/verify-email:
+    get:
+      tags: [Auth]
+      summary: E-Mail verifizieren
+      security: []   # Wird über Mail-Link aufgerufen
+      parameters:
+        - in: query
+          name: token
+          schema: { type: string }
+          required: true
+        - in: query
+          name: userId
+          schema: { type: string }
+          required: true
+      responses:
+        '200': { description: Verifiziert }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /auth/compliance-ack:
+    post:
+      tags: [Auth]
+      summary: Compliance- & Ü18-Bestätigung speichern
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [agree, over18]
+              properties:
+                agree:  { type: boolean }
+                over18: { type: boolean }
+                version:{ type: string, default: "1.0.0" }
+      responses:
+        '200': { description: OK }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /users/me:
+    get:
+      tags: [Users]
+      summary: Eigenes Profil (me)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+    patch:
+      tags: [Users]
+      summary: Eigenes Profil aktualisieren
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserPatch'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+
+  /users/{userId}:
+    get:
+      tags: [Users]
+      summary: Öffentliches Profil eines Users
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/User'
+                  - type: object
+                    required: [id]
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /users/me/avatar-binary:
+    post:
+      tags: [Users, Media]
+      summary: Avatar hochladen (Binary Upload)
+      description: >
+        Direktes Binary-Upload. Aliase im Backend können zusätzlich
+        `/auth/me/avatar-binary` oder `/auth/avatar-binary` sein.
+      parameters:
+        - in: query
+          name: filename
+          schema: { type: string, default: "avatar.jpg" }
+      requestBody:
+        required: true
+        content:
+          image/jpeg: { schema: { type: string, format: binary } }
+          application/octet-stream: { schema: { type: string, format: binary } }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url: { type: string, format: uri }
+
+  /feed/trending:
+    get:
+      tags: [Feed]
+      summary: Trending Feed
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Tag'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  posts:
+                    type: array
+                    items: { $ref: '#/components/schemas/FeedPost' }
+                  nextCursor: { type: string, nullable: true }
+
+  /feed/trending-tags:
+    get:
+      tags: [Feed]
+      summary: Beliebte Tags
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tags:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        tag:   { type: string }
+                        count: { type: integer }
+
+  /feed/for-you:
+    get:
+      tags: [Feed]
+      summary: For-You Feed
+      parameters:
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  posts:
+                    type: array
+                    items: { $ref: '#/components/schemas/FeedPost' }
+                  nextCursor: { type: string, nullable: true }
+
+  /feed/search:
+    get:
+      tags: [Search]
+      summary: Suche in Posts
+      parameters:
+        - in: query
+          name: q
+          required: true
+          schema: { type: string }
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Tag'
+        - in: query
+          name: mode
+          schema:
+            type: string
+            enum: [prefix, exact, tag]
+            default: prefix
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  posts:
+                    type: array
+                    items: { $ref: '#/components/schemas/FeedPost' }
+                  nextCursor: { type: string, nullable: true }
+
+  /posts/upload-binary:
+    post:
+      tags: [Posts, Media]
+      summary: Bild-Upload + Post anlegen (Binary Upload)
+      parameters:
+        - in: query
+          name: filename
+          schema: { type: string, default: "upload.jpg" }
+        - in: query
+          name: visibility
+          schema: { type: string, enum: [public, private], default: public }
+        - in: query
+          name: text
+          schema: { type: string }
+        - in: query
+          name: tags
+          description: JSON-Array als String
+          schema: { type: string, example: "[\"sativa\",\"indoor\"]" }
+        - in: query
+          name: folder
+          schema: { type: string, default: "uploads" }
+      requestBody:
+        required: true
+        content:
+          image/jpeg: { schema: { type: string, format: binary } }
+          application/octet-stream: { schema: { type: string, format: binary } }
+      responses:
+        '201':
+          description: Post erstellt
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  post: { $ref: '#/components/schemas/FeedPost' }
+
+  /posts/mine:
+    get:
+      tags: [Posts]
+      summary: Eigene Posts (paginiert)
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Cursor'
+        - in: query
+          name: visibility
+          schema: { type: string, enum: [public, private] }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  posts:
+                    type: array
+                    items: { $ref: '#/components/schemas/FeedPost' }
+                  nextCursor: { type: string, nullable: true }
+
+  /posts/by-user/{userId}:
+    get:
+      tags: [Posts]
+      summary: Posts eines Users (paginiert)
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Cursor'
+        - in: query
+          name: visibility
+          schema: { type: string, enum: [public, private] }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  posts:
+                    type: array
+                    items: { $ref: '#/components/schemas/FeedPost' }
+                  nextCursor: { type: string, nullable: true }
+
+  /posts/{postId}:
+    patch:
+      tags: [Posts]
+      summary: Post patchen (z.B. Sichtbarkeit)
+      parameters:
+        - $ref: '#/components/parameters/PostId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                visibility: { type: string, enum: [public, private] }
+      responses:
+        '200': { description: OK }
+    delete:
+      tags: [Posts]
+      summary: Post löschen
+      parameters:
+        - $ref: '#/components/parameters/PostId'
+      responses:
+        '204': { description: Deleted }
+
+  /posts/{postId}/visibility:
+    post:
+      tags: [Posts]
+      summary: Sichtbarkeit setzen (Legacy-Alias)
+      parameters:
+        - $ref: '#/components/parameters/PostId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [visibility]
+              properties:
+                visibility: { type: string, enum: [public, private] }
+      responses:
+        '200': { description: OK }
+
+  /posts/{postId}/like:
+    post:
+      tags: [Posts]
+      summary: Post liken
+      parameters:
+        - $ref: '#/components/parameters/PostId'
+      responses:
+        '200': { description: OK }
+
+  /posts/{postId}/unlike:
+    post:
+      tags: [Posts]
+      summary: Like entfernen
+      parameters:
+        - $ref: '#/components/parameters/PostId'
+      responses:
+        '200': { description: OK }
+
+  /posts/{postId}/comments:
+    get:
+      tags: [Posts]
+      summary: Kommentare eines Posts
+      parameters:
+        - $ref: '#/components/parameters/PostId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  comments:
+                    type: array
+                    items: { $ref: '#/components/schemas/Comment' }
+    post:
+      tags: [Posts]
+      summary: Kommentar erstellen
+      parameters:
+        - $ref: '#/components/parameters/PostId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text]
+              properties:
+                text: { type: string }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  comment: { $ref: '#/components/schemas/Comment' }
+
+  /posts/{postId}/comments/{commentId}/like:
+    post:
+      tags: [Posts]
+      summary: Kommentar liken
+      parameters:
+        - $ref: '#/components/parameters/PostId'
+        - $ref: '#/components/parameters/CommentId'
+      responses:
+        '200': { description: OK }
+
+  /posts/{postId}/comments/{commentId}/unlike:
+    post:
+      tags: [Posts]
+      summary: Kommentar-Unlike
+      parameters:
+        - $ref: '#/components/parameters/PostId'
+        - $ref: '#/components/parameters/CommentId'
+      responses:
+        '200': { description: OK }
+
+  /chat/list:
+    get:
+      tags: [Chat]
+      summary: Chatliste (Threads) des Users
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Cursor'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  chats:
+                    type: array
+                    items: { $ref: '#/components/schemas/Chat' }
+                  nextCursor: { type: string, nullable: true }
+
+  /chat/open:
+    post:
+      tags: [Chat]
+      summary: DM öffnen/erstellen
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [peerId]
+              properties:
+                peerId: { type: string, description: "Ziel-User-ID" }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  chat: { $ref: '#/components/schemas/Chat' }
+                  created: { type: boolean }
+
+  /chat/{chatId}/messages:
+    get:
+      tags: [Chat]
+      summary: Nachrichten eines Chats
+      parameters:
+        - $ref: '#/components/parameters/ChatId'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Cursor'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  messages:
+                    type: array
+                    items: { $ref: '#/components/schemas/ChatMessage' }
+                  nextCursor: { type: string, nullable: true }
+    post:
+      tags: [Chat]
+      summary: Nachricht senden (Text + optional Medien-URLs)
+      parameters:
+        - $ref: '#/components/parameters/ChatId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text: { type: string }
+                replyToId: { type: string, nullable: true }
+                mediaUrls:
+                  type: array
+                  items: { type: string, format: uri }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { $ref: '#/components/schemas/ChatMessage' }
+
+  /chat/{chatId}/media:
+    post:
+      tags: [Chat, Media]
+      summary: Medien in Chat hochladen (multipart/form-data)
+      parameters:
+        - $ref: '#/components/parameters/ChatId'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201': { description: Created }
+
+  /chat/{chatId}/messages/{messageId}/edit:
+    post:
+      tags: [Chat]
+      summary: Nachricht bearbeiten
+      parameters:
+        - $ref: '#/components/parameters/ChatId'
+        - $ref: '#/components/parameters/MessageId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text]
+              properties:
+                text: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { $ref: '#/components/schemas/ChatMessage' }
+
+  /chat/{chatId}/messages/{messageId}/unsend:
+    post:
+      tags: [Chat]
+      summary: Nachricht zurückziehen
+      parameters:
+        - $ref: '#/components/parameters/ChatId'
+        - $ref: '#/components/parameters/MessageId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+
+  /chat/{chatId}/read:
+    post:
+      tags: [Chat]
+      summary: Chat als gelesen markieren
+      parameters:
+        - $ref: '#/components/parameters/ChatId'
+      responses:
+        '200': { description: OK }
+
+  /files/{path}:
+    get:
+      tags: [Media]
+      summary: Signierten Download-Link liefern (302 Redirect)
+      parameters:
+        - name: path
+          in: path
+          required: true
+          description: Pfad relativ zum Bucket-Root (URL-encoded; kann Schrägstriche enthalten)
+          schema: { type: string }
+      responses:
+        '302': { description: Redirect to signed URL }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /healthz:
+    get:
+      tags: [System]
+      summary: Healthcheck
+      security: []  # öffentlich
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema: { type: string, example: "OK" }
+
+  /version:
+    get:
+      tags: [System]
+      summary: Version & Meta
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:    { type: boolean }
+                  name:  { type: string }
+                  env:   { type: string }
+                  region:{ type: string }
+                  ts:    { type: string, format: date-time }
+
+  /legal/terms:
+    get:
+      tags: [Legal]
+      summary: Nutzungsbedingungen (Text)
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema: { type: string }
+
+  /legal/guidelines:
+    get:
+      tags: [Legal]
+      summary: Community-Richtlinien (Text)
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema: { type: string }
+
+  /legal/privacy:
+    get:
+      tags: [Legal]
+      summary: Datenschutz (Text)
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema: { type: string }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    Limit:
+      name: limit
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 200, default: 20 }
+    Cursor:
+      name: cursor
+      in: query
+      schema: { type: string, description: "Opaque cursor oder ISO-Date (je nach Endpoint)" }
+    Tag:
+      name: tag
+      in: query
+      schema: { type: string }
+    UserId:
+      name: userId
+      in: path
+      required: true
+      schema: { type: string }
+    PostId:
+      name: postId
+      in: path
+      required: true
+      schema: { type: string }
+    CommentId:
+      name: commentId
+      in: path
+      required: true
+      schema: { type: string }
+    ChatId:
+      name: chatId
+      in: path
+      required: true
+      schema: { type: string }
+    MessageId:
+      name: messageId
+      in: path
+      required: true
+      schema: { type: string }
+
+  responses:
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Not Found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:   { type: string }
+        message: { type: string }
+        details: { type: string }
+
+    User:
+      type: object
+      properties:
+        id:          { type: string }
+        firstName:   { type: string }
+        lastName:    { type: string }
+        email:       { type: string, format: email }
+        username:    { type: string }
+        city:        { type: string }
+        birthDate:   { type: string, format: date }
+        bio:         { type: string }
+        avatarUrl:   { type: string, format: uri }
+        privateProfile: { type: boolean }
+        hideSensitive:  { type: boolean }
+        pushOptIn:      { type: boolean }
+
+    UserPatch:
+      type: object
+      properties:
+        firstName:   { type: string }
+        lastName:    { type: string }
+        username:    { type: string }
+        city:        { type: string }
+        birthDate:   { type: string, format: date }
+        bio:         { type: string }
+        avatarUrl:   { type: string, format: uri }
+        privateProfile: { type: boolean }
+        hideSensitive:  { type: boolean }
+        pushOptIn:      { type: boolean }
+
+    FeedPost:
+      type: object
+      properties:
+        id:            { type: string }
+        text:          { type: string }
+        mediaUrls:
+          type: array
+          items: { type: string, format: uri }
+        tags:
+          type: array
+          items: { type: string }
+        likesCount:    { type: integer }
+        commentsCount: { type: integer }
+        score:         { type: number }
+        visibility:
+          type: string
+          enum: [public, private]
+        createdAt:     { type: string }
+        _liked:        { type: boolean }
+
+    CommentAuthor:
+      type: object
+      properties:
+        id:        { type: string }
+        name:      { type: string }
+        avatarUrl: { type: string, format: uri }
+
+    Comment:
+      type: object
+      properties:
+        id:        { type: string }
+        postId:    { type: string }
+        text:      { type: string }
+        author:    { $ref: '#/components/schemas/CommentAuthor' }
+        likesCount:{ type: integer }
+        liked:     { type: boolean }
+        createdAt: { type: string, format: date-time }
+
+    Chat:
+      type: object
+      properties:
+        id:          { type: string }
+        type:        { type: string, enum: [dm, group] }
+        name:        { type: string, nullable: true }
+        participants:
+          type: array
+          items: { type: string }
+        lastMessage:
+          type: object
+          nullable: true
+          properties:
+            text:      { type: string }
+            senderId:  { type: string }
+            createdAt: { type: string }
+        lastMessageAt: { type: string }
+        updatedAt:     { type: string }
+
+    ChatMessage:
+      type: object
+      properties:
+        id:        { type: string }
+        chatId:    { type: string }
+        senderId:  { type: string }
+        type:      { type: string, enum: [text] }
+        text:      { type: string }
+        mediaUrls:
+          type: array
+          items: { type: string, format: uri }
+        readBy:
+          type: array
+          items: { type: string }
+        createdAt: { type: string }
+        editedAt:  { type: string, nullable: true }
+        deletedAt: { type: string, nullable: true }

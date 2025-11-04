@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="de" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Datenschutzerklärung – GrowGram</title>
+  <meta name="description" content="Datenschutzerklärung der GrowGram-App und Website. Informationen zu Verarbeitung, Rechtsgrundlagen, Speicherdauer, Rechten und Kontakt." />
+  <link rel="stylesheet" href="/styles/style.css" />
+  <link rel="icon" href="/favicon.ico" />
+</head>
+<body>
+  <!-- Navbar (gleiches Markup wie Startseite) -->
+  <header class="navbar">
+    <div class="container">
+      <a href="/" class="navbar__brand" aria-label="GrowGram Home">
+        <span class="navbar__brand-logo" aria-hidden="true"></span>
+        GrowGram
+      </a>
+
+      <button id="gg-nav-toggle" class="navbar__toggle btn--ghost" aria-expanded="false" aria-controls="gg-nav-menu" aria-label="Menü umschalten">
+        ☰
+      </button>
+
+      <nav id="gg-nav-menu" class="navbar__menu" aria-label="Hauptnavigation">
+        <a class="navbar__link" href="/#features">Features</a>
+        <a class="navbar__link" href="/#roadmap">Roadmap</a>
+        <a class="navbar__link" href="/#download">Download</a>
+        <button class="btn btn--ghost" data-action="toggle-theme" aria-label="Theme wechseln" title="Theme wechseln">
+          <span data-role="theme-icon">🌙</span>
+        </button>
+        <a class="btn btn--accent btn--pill" href="/#cta">Jetzt starten</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- Hero / Header der Seite -->
+    <section class="hero hero--grid">
+      <div class="container hero__inner">
+        <div class="stack">
+          <span class="hero__kicker">Recht &amp; Transparenz</span>
+          <h1 class="hero__title">Datenschutzerklärung</h1>
+          <p class="hero__subtitle">
+            Hier erfährst du, wie wir personenbezogene Daten in der GrowGram-App und auf dieser Website verarbeiten.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Inhalt -->
+    <section class="section">
+      <div class="container stack stack--loose">
+
+        <article class="card">
+          <div class="card__body stack">
+            <h2 id="ueberblick">1. Verantwortlicher &amp; Kontakt</h2>
+            <p>
+              Verantwortlicher im Sinne der DSGVO für App und Website ist:
+            </p>
+            <p>
+              <strong>GrowGram (Projektbetreiber)</strong><br />
+              E-Mail: <a href="mailto:hello@growgram-app.com">hello@growgram-app.com</a>
+            </p>
+            <p>
+              Für Datenschutzanfragen nutze bitte die obige E-Mail mit dem Betreff <em>„Datenschutz“</em>.
+            </p>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card__body stack">
+            <h2 id="uebersicht">2. Kurzüberblick</h2>
+            <ul>
+              <li>Wir betreiben eine Social-Media-App für die Cannabis-Community (ab 18 Jahren).</li>
+              <li>Hosting &amp; Backend laufen in der Google-Cloud/Firebase in der Region <strong>europe-west3</strong> (Deutschland/Frankfurt).</li>
+              <li>Für E-Mail-Versand (z. B. Verifizierung) nutzen wir <strong>SendGrid</strong>.</li>
+              <li>Es werden nur notwendige Cookies/Local-Storage für essentielle Funktionen eingesetzt; kein Drittanbieter-Tracking.</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card__body stack">
+            <h2 id="kategorien">3. Kategorien personenbezogener Daten</h2>
+            <ul>
+              <li><strong>Accountdaten:</strong> E-Mail-Adresse, Passwort-Hash (niemals Klartext), Verifizierungsstatus.</li>
+              <li><strong>Nutzungsdaten:</strong> Interaktionen in der App (z. B. Likes, Kommentare), technische Ereignisse (z. B. Fehlermeldungen).</li>
+              <li><strong>Protokolldaten:</strong> IP-Adresse, User-Agent, Zeitstempel, Request-Metadaten (Server-Logs/Cloud Functions).</li>
+              <li><strong>Inhaltsdaten:</strong> von dir hochgeladene Medien und Texte.</li>
+              <li><strong>Kommunikationsdaten:</strong> E-Mail-Inhalte (z. B. Verifizierungs- und Systemmails).</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card__body stack">
+            <h2 id="zwecke">4. Zwecke und Rechtsgrundlagen (Art. 6 DSGVO)</h2>
+            <ul>
+              <li><strong>Registrierung &amp; Account-Verwaltung</strong> (Art. 6 Abs. 1 lit. b): zur Erfüllung des Nutzungsvertrags.</li>
+              <li><strong>E-Mail-Verifizierung &amp; Kommunikation</strong> (Art. 6 Abs. 1 lit. b, ggf. lit. c): zur Kontobestätigung, sicherer Nutzung und gesetzlicher Pflichten.</li>
+              <li><strong>Betrieb, Sicherheit, Missbrauchsabwehr</strong> (Art. 6 Abs. 1 lit. f): legitimes Interesse an Stabilität, Debugging, Betrugs-/Spam-Prävention.</li>
+              <li><strong>Inhalte &amp; Community-Funktionen</strong> (Art. 6 Abs. 1 lit. b): Bereitstellung der App-Features.</li>
+              <li><strong>Einwilligungen</strong> (Art. 6 Abs. 1 lit. a): soweit wir dich um Zustimmung bitten (z. B. Newsletter – derzeit nicht aktiv).</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card__body stack">
+            <h2 id="firebase">5. Hosting &amp; Backend (Firebase / Google Cloud)</h2>
+            <p>
+              Wir nutzen <strong>Firebase</strong> (Google) für Hosting, Cloud Functions (Node 18), Firestore, Auth (E-Mail/Passwort) und Storage.
+              Die Systeme sind auf die Region <strong>europe-west3</strong> (Frankfurt) ausgerichtet. Diensteanbieter im EWR ist in der Regel
+              die <em>Google Ireland Limited</em>. Es kann zu konzerninternen Übermittlungen kommen (Standardvertragsklauseln).
+            </p>
+            <ul>
+              <li><strong>Hosting &amp; Functions:</strong> Auslieferung der Website und Ausführung API-Endpunkte.</li>
+              <li><strong>Auth:</strong> Registrierung, Login, E-Mail-Verifizierung.</li>
+              <li><strong>Firestore:</strong> Speicherung von Profil- und Interaktionsdaten gemäß App-Funktion.</li>
+              <li><strong>Storage:</strong> Medien-Uploads (z. B. Bilder/Videos), nach deinen Aktionen.</li>
+              <li><strong>Logs:</strong> technische Protokolle zur Stabilität und Sicherheit.</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card__body stack">
+            <h2 id="sendgrid">6. E-Mail-Versand (SendGrid)</h2>
+            <p>
+              System- und Verifizierungs-Mails versenden wir über <strong>SendGrid</strong> (ein Dienst der Twilio-Gruppe).
+              Dabei werden E-Mail-Adresse und notwendige Versand-Metadaten verarbeitet. Es kann zu Datenübermittlungen in Drittländer
+              (z. B. USA) kommen. Wir stützen uns hierbei auf <strong>Standardvertragsklauseln</strong> (Art. 46 DSGVO).
+            </p>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card__body stack">
+            <h2 id="cookies">7. Cookies &amp; lokale Speicherung</h2>
+            <ul>
+              <li><strong>Erforderlich:</strong> Session/CSRF-ähnliche Token, Zustands-Flags (z. B. Theme in <code>localStorage</code>).</li>
+              <li><strong>Keine Drittanbieter-Tracking-Cookies</strong> und keine Profilbildung zu Werbezwecken.</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card__body stack">
+            <h2 id="logs">8. Protokolldaten (Server-Logs)</h2>
+            <p>
+              Beim Aufruf der Website und Nutzung der App werden Server-Logs erfasst (IP-Adresse, Zeit, User-Agent, Request-Pfad, Fehlermeldungen).
+              Diese dienen Betrieb, Sicherheit und Fehleranalyse (legitimes Interesse, Art. 6 Abs. 1 lit. f).
+            </p>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card__body stack">
+            <h2 id="speicherdauer">9. Speicherdauer</h2>
+            <ul>
+              <li><strong>Accountdaten:</strong> bis zur Kontolöschung bzw. gesetzlicher Aufbewahrungspflichten.</li>
+              <li><strong>E-Mail-Verifizierungstoken:</strong> in der Regel <strong>24&nbsp;Stunden</strong> gültig und danach gelöscht/ungültig.</li>
+              <li><strong>Server-Logs:</strong> in der Regel bis zu <strong>30&nbsp;Tage</strong> (betriebsbedingt). </li>
+              <li><strong>Inhaltsdaten:</strong> bis zur Löschung durch dich oder aufgrund Community-Richtlinien.</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card__body stack">
+            <h2 id="empfaenger">10. Empfänger / Auftragsverarbeiter</h2>
+            <ul>
+              <li><strong>Google (Firebase/Google Cloud):</strong> Hosting, Datenbank, Auth, Storage, Logs.</li>
+              <li><strong>SendGrid (Twilio):</strong> Versand von System-/Verifizierungs-E-Mails.</li>
+              <li>Weitere Dienstleister nur, wenn für Betrieb erforderlich und mit Auftragsverarbeitungsvertrag (Art. 28 DSGVO).</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card__body stack">
+            <h2 id="uebermittlungen">11. Drittlandübermittlungen</h2>
+            <p>
+              Soweit Dienste Daten in Drittländer (z. B. USA) übermitteln, erfolgt dies auf Basis von
+              <strong>Art. 46 DSGVO (Standardvertragsklauseln)</strong> und ergänzenden Maßnahmen. Ein Restrisiko kann nicht vollständig
+              ausgeschlossen werden.
+            </p>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card__body stack">
+            <h2 id="minderjaehrige">12. Minderjährige</h2>
+            <p>
+              GrowGram richtet sich an volljährige Nutzerinnen und Nutzer (<strong>ab 18 Jahren</strong>).
+              Wir verarbeiten wissentlich keine Daten von Kindern unter 16 Jahren.
+            </p>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card__body stack">
+            <h2 id="rechte">13. Deine Rechte (Art. 15–21 DSGVO)</h2>
+            <ul>
+              <li><strong>Auskunft</strong> über die verarbeiteten Daten.</li>
+              <li><strong>Berichtigung</strong> unrichtiger Daten.</li>
+              <li><strong>Löschung</strong> („Recht auf Vergessenwerden“), soweit keine Aufbewahrungspflichten entgegenstehen.</li>
+              <li><strong>Einschränkung</strong> der Verarbeitung.</li>
+              <li><strong>Datenübertragbarkeit</strong> (Bereitstellung in einem gängigen Format).</li>
+              <li><strong>Widerspruch</strong> gegen Verarbeitungen auf Grundlage von Art. 6 Abs. 1 lit. f.</li>
+              <li><strong>Widerruf</strong> erteilter Einwilligungen mit Wirkung für die Zukunft.</li>
+              <li><strong>Beschwerde</strong> bei einer Datenschutz-Aufsichtsbehörde (am Aufenthaltsort, Arbeitsplatz oder Ort des mutmaßlichen Verstoßes).</li>
+            </ul>
+            <p>Kontaktiere uns zur Ausübung deiner Rechte: <a href="mailto:hello@growgram-app.com">hello@growgram-app.com</a></p>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card__body stack">
+            <h2 id="sicherheit">14. Datensicherheit</h2>
+            <ul>
+              <li>Transportverschlüsselung (HTTPS/TLS) für Website und API.</li>
+              <li>Sichere Passworthashes; keine Speicherung von Klartextpasswörtern.</li>
+              <li>Rollenbasierte Zugriffe, Firestore-Regeln (user-scoped), CORS-Restriktionen, Rate-Limiting für Auth-Routen.</li>
+              <li>Regelmäßige Updates und Monitoring der Cloud-Umgebung.</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card__body stack">
+            <h2 id="aenderungen">15. Änderungen dieser Erklärung</h2>
+            <p>
+              Wir passen diese Datenschutzerklärung an, wenn sich Dienste, Rechtslage oder Prozesse ändern. Die jeweils aktuelle Fassung ist hier abrufbar.
+            </p>
+            <p class="text-muted">Stand: <time datetime="2025-10-24">24.&nbsp;Oktober&nbsp;2025</time></p>
+          </div>
+        </article>
+
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer-accent" role="contentinfo">
+    <div class="container section">
+      <div class="row">
+        <div class="col-12 md:col-6">
+          <div class="stack">
+            <div class="navbar__brand">
+              <span class="navbar__brand-logo" aria-hidden="true"></span>
+              GrowGram
+            </div>
+            <p class="text-muted">© <span id="year"></span> GrowGram — European Hosting (europe-west3).</p>
+          </div>
+        </div>
+        <div class="col-6 md:col-2">
+          <div class="stack">
+            <strong>Rechtliches</strong>
+            <a class="text-muted" href="/privacy.html" aria-current="page">Datenschutz</a>
+            <a class="text-muted" href="/impressum.html">Impressum</a>
+          </div>
+        </div>
+        <div class="col-6 md:col-2">
+          <div class="stack">
+            <strong>Produkt</strong>
+            <a class="text-muted" href="/#features">Features</a>
+            <a class="text-muted" href="/#roadmap">Roadmap</a>
+          </div>
+        </div>
+        <div class="col-12 md:col-2">
+          <div class="stack">
+            <strong>Kontakt</strong>
+            <a class="text-muted" href="mailto:hello@growgram-app.com">hello@growgram-app.com</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="/scripts/app.js" defer></script>
+  <script>
+    // kleines Hilfsscript für das Jahr
+    document.addEventListener("DOMContentLoaded", () => {
+      const y = document.getElementById("year");
+      if (y) y.textContent = new Date().getFullYear();
+    });
+  </script>
+</body>
+</html>

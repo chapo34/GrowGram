@@ -1,0 +1,339 @@
+/* ==========================================================================
+   GrowGram — Layout System
+   File: /web/styles/layout.css
+   Depends on: token.css (custom media + tokens), base.css
+   ========================================================================== */
+
+@layer layout {
+
+  /* =====================================================
+     0) Container & Wrappers
+     ===================================================== */
+
+  /* Fluid container (volle Breite mit Padding) */
+  .container-fluid {
+    width: 100%;
+    padding-inline: var(--sp-4);
+    margin-inline: auto;
+  }
+
+  /* Section wrapper (Spacing nur hier, Inhalt bleibt neutral) */
+  .section   { padding-block: var(--sp-8); }
+  .section--tight { padding-block: var(--sp-6); }
+  .section--loose { padding-block: var(--sp-9); }
+
+  /* Container Query root: ermöglicht @container Abfragen */
+  .cq {
+    container-type: inline-size;
+    container-name: cq;
+  }
+
+  /* =====================================================
+     1) 12-Column Grid System (CSS Grid)
+     ===================================================== */
+
+  .row {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: var(--sp-4);
+  }
+  .row--tight { gap: var(--sp-3); }
+  .row--loose { gap: var(--sp-5); }
+
+  /* Column span helpers (mobile-first) */
+  .col-1 { grid-column: span 1; }
+  .col-2 { grid-column: span 2; }
+  .col-3 { grid-column: span 3; }
+  .col-4 { grid-column: span 4; }
+  .col-5 { grid-column: span 5; }
+  .col-6 { grid-column: span 6; }
+  .col-7 { grid-column: span 7; }
+  .col-8 { grid-column: span 8; }
+  .col-9 { grid-column: span 9; }
+  .col-10 { grid-column: span 10; }
+  .col-11 { grid-column: span 11; }
+  .col-12 { grid-column: span 12; }
+
+  /* Responsive spans (nutzt @custom-media aus token.css) */
+  @media (--sm) {
+    .sm:col-1 { grid-column: span 1; }  .sm:col-2 { grid-column: span 2; }
+    .sm:col-3 { grid-column: span 3; }  .sm:col-4 { grid-column: span 4; }
+    .sm:col-5 { grid-column: span 5; }  .sm:col-6 { grid-column: span 6; }
+    .sm:col-7 { grid-column: span 7; }  .sm:col-8 { grid-column: span 8; }
+    .sm:col-9 { grid-column: span 9; }  .sm:col-10 { grid-column: span 10; }
+    .sm:col-11 { grid-column: span 11; } .sm:col-12 { grid-column: span 12; }
+  }
+  @media (--md) {
+    .md:col-1 { grid-column: span 1; }  .md:col-2 { grid-column: span 2; }
+    .md:col-3 { grid-column: span 3; }  .md:col-4 { grid-column: span 4; }
+    .md:col-5 { grid-column: span 5; }  .md:col-6 { grid-column: span 6; }
+    .md:col-7 { grid-column: span 7; }  .md:col-8 { grid-column: span 8; }
+    .md:col-9 { grid-column: span 9; }  .md:col-10 { grid-column: span 10; }
+    .md:col-11 { grid-column: span 11; } .md:col-12 { grid-column: span 12; }
+  }
+  @media (--lg) {
+    .lg:col-1 { grid-column: span 1; }  .lg:col-2 { grid-column: span 2; }
+    .lg:col-3 { grid-column: span 3; }  .lg:col-4 { grid-column: span 4; }
+    .lg:col-5 { grid-column: span 5; }  .lg:col-6 { grid-column: span 6; }
+    .lg:col-7 { grid-column: span 7; }  .lg:col-8 { grid-column: span 8; }
+    .lg:col-9 { grid-column: span 9; }  .lg:col-10 { grid-column: span 10; }
+    .lg:col-11 { grid-column: span 11; } .lg:col-12 { grid-column: span 12; }
+  }
+  @media (--xl) {
+    .xl:col-1 { grid-column: span 1; }  .xl:col-2 { grid-column: span 2; }
+    .xl:col-3 { grid-column: span 3; }  .xl:col-4 { grid-column: span 4; }
+    .xl:col-5 { grid-column: span 5; }  .xl:col-6 { grid-column: span 6; }
+    .xl:col-7 { grid-column: span 7; }  .xl:col-8 { grid-column: span 8; }
+    .xl:col-9 { grid-column: span 9; }  .xl:col-10 { grid-column: span 10; }
+    .xl:col-11 { grid-column: span 11; } .xl:col-12 { grid-column: span 12; }
+  }
+
+  /* Offsets (nur häufige) */
+  .offset-1  { grid-column-start: 2; }
+  .offset-2  { grid-column-start: 3; }
+  .offset-3  { grid-column-start: 4; }
+  .offset-4  { grid-column-start: 5; }
+  .offset-6  { grid-column-start: 7; }
+
+  /* Simple grids (1–6 Spalten), schnell einzusetzen */
+  .grid { display: grid; gap: var(--sp-4); }
+  .grid-1 { grid-template-columns: 1fr; }
+  .grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+  .grid-5 { grid-template-columns: repeat(5, 1fr); }
+  .grid-6 { grid-template-columns: repeat(6, 1fr); }
+
+  @media (max-width: 960px) {
+    .grid-4, .grid-5, .grid-6 { grid-template-columns: repeat(2, 1fr); }
+    .row { grid-template-columns: repeat(12, minmax(0, 1fr)); gap: var(--sp-3); }
+  }
+  @media (max-width: 640px) {
+    .grid-2, .grid-3, .grid-4, .grid-5, .grid-6 { grid-template-columns: 1fr; }
+  }
+
+  /* =====================================================
+     2) Every-Layout-inspirierte Primitives
+     ===================================================== */
+
+  /* Stack: vertikale Liste mit konstanter Lücke (auch für Formgruppen) */
+  .stack { --space: var(--sp-4); display: grid; gap: var(--space); }
+  .stack--tight { --space: var(--sp-3); }
+  .stack--loose { --space: var(--sp-5); }
+
+  /* Cluster: horizontales Wrapping mit räumlicher Verteilung */
+  .cluster {
+    --space: var(--sp-3);
+    display: flex; flex-wrap: wrap; gap: var(--space);
+    align-items: center;
+  }
+  .cluster.center { justify-content: center; }
+  .cluster.between { justify-content: space-between; }
+
+  /* Switcher: Items in mehrere Spalten aufteilen ab bestimmter min-Breite */
+  .switcher {
+    --min: 280px; --gap: var(--sp-4);
+    display: grid;
+    gap: var(--gap);
+    grid-template-columns: repeat(auto-fit, minmax(min(var(--min), 100%), 1fr));
+  }
+
+  /* Sidebar: Hauptinhalt + Seitenspalte mit definierter max-Breite */
+  .sidebar {
+    --side: 320px; --gap: var(--sp-5);
+    display: grid;
+    grid-template-columns: 1fr minmax(0, var(--side));
+    gap: var(--gap);
+    align-items: start;
+  }
+  .sidebar--left {
+    grid-template-columns: minmax(0, var(--side)) 1fr;
+  }
+  @media (max-width: 960px) {
+    .sidebar, .sidebar--left { grid-template-columns: 1fr; }
+  }
+
+  /* Cover: Vollhöhe, zentriert, mit optionalem Header/Footer */
+  .cover {
+    min-block-size: 100dvh;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+  }
+  .cover__center {
+    place-self: center;
+    width: min(100%, var(--container-sm));
+  }
+
+  /* Reel: horizontale Scroll-Leiste mit Snap */
+  .reel {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: max-content;
+    gap: var(--sp-3);
+    overflow-x: auto;
+    padding-bottom: .25rem;
+    scroll-snap-type: x mandatory;
+  }
+  .reel > * { scroll-snap-align: start; }
+  .reel::-webkit-scrollbar { height: 10px; }
+
+  /* Frame: responsive Medienbox mit Aspect Ratio */
+  .frame {
+    --ratio: 16/9;
+    aspect-ratio: var(--ratio);
+    border-radius: var(--radius-2);
+    overflow: hidden;
+    background: var(--color-surface-2);
+  }
+  .frame > img, .frame > video { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  /* =====================================================
+     3) Masonry (CSS Columns – simple, reflowed)
+     ===================================================== */
+  .masonry {
+    column-gap: var(--sp-4);
+  }
+  .masonry-2 { column-count: 2; }
+  .masonry-3 { column-count: 3; }
+  .masonry-4 { column-count: 4; }
+  .masonry > * { break-inside: avoid; margin-bottom: var(--sp-4); }
+  @media (max-width: 960px) { .masonry-4 { column-count: 2; } }
+  @media (max-width: 640px) { .masonry-3, .masonry-4 { column-count: 1; } }
+
+  /* =====================================================
+     4) Flex / Grid Utilities (ergänzend zu base)
+     ===================================================== */
+  .flex { display: flex; }
+  .inline-flex { display: inline-flex; }
+  .grid { display: grid; }
+  .inline-grid { display: inline-grid; }
+
+  .flex-col { flex-direction: column; }
+  .flex-row { flex-direction: row; }
+  .wrap { flex-wrap: wrap; }
+  .nowrap { flex-wrap: nowrap; }
+
+  .items-start { align-items: flex-start; }
+  .items-center { align-items: center; }
+  .items-end { align-items: flex-end; }
+  .justify-start { justify-content: flex-start; }
+  .justify-center { justify-content: center; }
+  .justify-end { justify-content: flex-end; }
+  .justify-between { justify-content: space-between; }
+  .justify-around { justify-content: space-around; }
+
+  .place-center { place-items: center; }
+  .content-center { align-content: center; }
+
+  .gap-2 { gap: var(--sp-2); }
+  .gap-3 { gap: var(--sp-3); }
+  .gap-4 { gap: var(--sp-4); }
+  .gap-5 { gap: var(--sp-5); }
+  .gap-6 { gap: var(--sp-6); }
+
+  /* Grid templates quick */
+  .cols-2 { grid-template-columns: repeat(2, 1fr); }
+  .cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .cols-4 { grid-template-columns: repeat(4, 1fr); }
+  .cols-auto { grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); }
+
+  /* Order helpers */
+  .order-1 { order: 1; } .order-2 { order: 2; } .order-3 { order: 3; }
+  .order-first { order: -999; } .order-last { order: 999; }
+
+  /* =====================================================
+     5) Spacing Utilities (margin/padding, Auswahl)
+     ===================================================== */
+  .mt-0 { margin-top: 0 !important; }
+  .mt-2 { margin-top: var(--sp-2) !important; }
+  .mt-3 { margin-top: var(--sp-3) !important; }
+  .mt-4 { margin-top: var(--sp-4) !important; }
+  .mt-5 { margin-top: var(--sp-5) !important; }
+  .mt-6 { margin-top: var(--sp-6) !important; }
+
+  .mb-2 { margin-bottom: var(--sp-2) !important; }
+  .mb-3 { margin-bottom: var(--sp-3) !important; }
+  .mb-4 { margin-bottom: var(--sp-4) !important; }
+  .mb-5 { margin-bottom: var(--sp-5) !important; }
+  .mb-6 { margin-bottom: var(--sp-6) !important; }
+
+  .mx-auto { margin-inline: auto !important; }
+  .mx-0 { margin-inline: 0 !important; }
+  .my-2 { margin-block: var(--sp-2) !important; }
+  .my-4 { margin-block: var(--sp-4) !important; }
+
+  .p-2 { padding: var(--sp-2) !important; }
+  .p-3 { padding: var(--sp-3) !important; }
+  .p-4 { padding: var(--sp-4) !important; }
+  .p-5 { padding: var(--sp-5) !important; }
+  .px-4 { padding-inline: var(--sp-4) !important; }
+  .py-4 { padding-block: var(--sp-4) !important; }
+
+  /* =====================================================
+     6) Sizing & Position
+     ===================================================== */
+  .w-100 { width: 100% !important; }
+  .w-auto { width: auto !important; }
+  .h-100 { height: 100% !important; }
+  .h-screen { min-height: 100dvh !important; }
+
+  .relative { position: relative !important; }
+  .absolute { position: absolute !important; }
+  .fixed { position: fixed !important; }
+  .sticky { position: sticky !important; top: 0; }
+
+  .inset-0 { inset: 0 !important; }
+  .top-0 { top: 0 !important; }
+  .right-0 { right: 0 !important; }
+  .bottom-0 { bottom: 0 !important; }
+  .left-0 { left: 0 !important; }
+
+  .z-10 { z-index: 10; }
+  .z-50 { z-index: 50; }
+  .z-100 { z-index: 100; }
+  .z-max { z-index: var(--z-max); }
+
+  /* =====================================================
+     7) Visibility / Responsive Helpers
+     ===================================================== */
+  .d-none { display: none !important; }
+  .d-block { display: block !important; }
+  .d-inline { display: inline !important; }
+  .d-inline-block { display: inline-block !important; }
+
+  @media (--sm) {
+    .sm:d-none { display: none !important; }
+    .sm:d-block { display: block !important; }
+    .sm:flex { display: flex !important; }
+    .sm:grid { display: grid !important; }
+  }
+  @media (--md) {
+    .md:d-none { display: none !important; }
+    .md:d-block { display: block !important; }
+    .md:flex { display: flex !important; }
+    .md:grid { display: grid !important; }
+  }
+  @media (--lg) {
+    .lg:d-none { display: none !important; }
+    .lg:d-block { display: block !important; }
+    .lg:flex { display: flex !important; }
+    .lg:grid { display: grid !important; }
+  }
+  @media (--xl) {
+    .xl:d-none { display: none !important; }
+    .xl:d-block { display: block !important; }
+    .xl:flex { display: flex !important; }
+    .xl:grid { display: grid !important; }
+  }
+
+  /* =====================================================
+     8) Container Queries (Progressive Enhancement)
+     ===================================================== */
+  @container cq (min-width: 720px) {
+    .cq\\:grid-2 { grid-template-columns: repeat(2, 1fr); }
+    .cq\\:grid-3 { grid-template-columns: repeat(3, 1fr); }
+    .cq\\:sidebar { grid-template-columns: 1fr minmax(0, 320px); }
+  }
+
+}
+/* end @layer layout */

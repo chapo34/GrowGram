@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Warteliste – Exklusiver Beta-Zugang | GrowGram</title>
+<meta name="description" content="Sichere dir exklusiven Beta-Zugang zur GrowGram Beta-Crew. Fair, moderiert, EU-Hosting.">
+<meta name="theme-color" content="#0d0f10">
+<link rel="canonical" href="/waitlist">
+<style>
+:root{ --bg:#0d0f10; --panel:#0f1316; --text:#e7f0e9; --muted:#a5b6ab; --border:#1c2428; --brand:#4CAF50; --accent:#ffa53a; --ring:rgba(76,175,80,.35) }
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:400 16px/1.6 system-ui,-apple-system,Inter,Roboto,Segoe UI,Arial}
+a{color:inherit;text-decoration:none}
+.container{width:min(860px,92vw);margin:24px auto}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.back{color:#cfe0d3}
+h1{margin:.25rem 0 .6rem;font-size:clamp(28px,4vw,40px);line-height:1.08}
+.lead{color:#cfe0d3;margin:0 0 1rem}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:18px;margin:12px 0;box-shadow:0 1px 0 #263137 inset,0 8px 18px rgba(0,0,0,.22)}
+.row{display:grid;gap:12px;grid-template-columns:1fr 1fr}
+@media (max-width:780px){.row{grid-template-columns:1fr}}
+label{display:block;font-weight:700;margin:.2rem 0}
+input{width:100%;padding:.72rem .8rem;border-radius:12px;border:1px solid var(--border);background:#0e1316;color:#e7f0e9}
+input[type="checkbox"]{width:auto}
+.hint{font-size:.9rem;color:#9fb2a7}
+.btn{display:inline-flex;align-items:center;gap:.6rem;padding:.78rem 1rem;border-radius:12px;border:1px solid var(--border);font-weight:800;cursor:pointer}
+.btn-primary{background:linear-gradient(180deg,#4CAF50,#2d8a43);color:#08150d;box-shadow:0 0 0 2px var(--ring) inset}
+.btn-ghost{background:#0e1316;color:#dfe9e3}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+.msg{margin-top:10px;padding:.6rem .8rem;border-radius:10px;font-weight:700;display:none}
+.msg.ok{background:#0e1a12;border:1px solid #1f3b24;color:#b7f3c4}
+.msg.err{background:#221312;border:1px solid #532929;color:#ffd1c0}
+.small{font-size:.86rem;color:var(--muted)}
+hr{border:0;height:1px;background:var(--border);margin:14px 0}
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <a class="back" href="/">← Zurück</a>
+      <a class="btn btn-ghost" href="/discord">Discord</a>
+    </div>
+
+    <h1>Exklusiver Beta-Zugang</h1>
+    <p class="lead">Tritt der <b>Beta-Crew</b> bei. <b>500</b> limitierte Plätze – inkl. **Beta-Crew Badge** in der App.</p>
+
+    <form id="wl" class="card" novalidate>
+      <div class="row">
+        <div>
+          <label for="email1">E-Mail*</label>
+          <input id="email1" name="email" type="email" inputmode="email" autocomplete="email" required placeholder="dein.name@mail.com">
+        </div>
+        <div>
+          <label for="name">Name (optional)</label>
+          <input id="name" name="name" type="text" maxlength="80" placeholder="Vorname oder Nickname">
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="discord">Discord (optional)</label>
+          <input id="discord" name="discord" type="text" maxlength="80" placeholder="deinDiscord#1234">
+        </div>
+      </div>
+
+      <!-- Zustimmung -->
+      <div style="margin:.6rem 0">
+        <label style="display:flex;gap:.6rem;align-items:flex-start">
+          <input id="consent" name="consent" type="checkbox" required>
+          <span class="hint">Ich stimme zu, dass meine Angaben zur Warteliste gespeichert werden. Details in der <a href="/pages/privacy.html" target="_blank" rel="noopener">Datenschutzerklärung</a>.</span>
+        </label>
+      </div>
+
+      <!-- Honeypots -->
+      <div style="display:none">
+        <label>Website <input id="website" name="website" type="text"></label>
+        <label>URL <input id="trap" name="trap" type="text"></label>
+      </div>
+
+      <div class="actions">
+        <button id="btn" class="btn btn-primary" type="submit">Jetzt beitreten</button>
+        <a class="btn btn-ghost" href="/discord">Discord beitreten</a>
+      </div>
+      <div id="msg" class="msg" role="status" aria-live="polite"></div>
+
+      <hr>
+      <p class="small">Fair & sicher: kein Verkaufs-/Preiscontent, 18+, Moderation & EU-Hosting. Kein finanzieller Anspruch, keine Beteiligung – „Beta-Crew“ ist reine Bezeichnung für frühe Tester:innen.</p>
+    </form>
+  </div>
+
+<script>
+(function(){
+  const form = document.getElementById('wl');
+  const btn  = document.getElementById('btn');
+  const msg  = document.getElementById('msg');
+
+  function showMsg(text, type){
+    msg.textContent = text;
+    msg.className = 'msg ' + (type || 'ok');
+    msg.style.display = 'block';
+  }
+  function emailValid(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v||'')); }
+
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault(); msg.style.display='none';
+
+    const data = {
+      name:    document.getElementById('name')?.value || '',
+      email:   document.getElementById('email1')?.value || '',
+      discord: document.getElementById('discord')?.value || '',
+      consent: document.getElementById('consent')?.checked || false,
+      website: document.getElementById('website')?.value || '',
+      trap:    document.getElementById('trap')?.value || ''
+    };
+
+    if (!emailValid(data.email)) { showMsg('Bitte gültige E-Mail eingeben.', 'err'); return; }
+    if (!data.consent)           { showMsg('Bitte Zustimmung geben.', 'err'); return; }
+
+    btn.setAttribute('disabled','true'); btn.textContent='Sende…';
+
+    try{
+      const r = await fetch('/api/waitlist', {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify(data),
+        credentials: 'omit'
+      });
+      const j = await r.json().catch(()=>({}));
+      if (!r.ok || !j.ok){
+        const code = j.error || 'server';
+        if (code==='invalid_email') showMsg('Ungültige E-Mail.', 'err');
+        else if (code==='need_consent') showMsg('Zustimmung fehlt.', 'err');
+        else if (code==='captcha_failed') showMsg('Captcha fehlgeschlagen – bitte erneut.', 'err');
+        else showMsg('Serverfehler – bitte später erneut.', 'err');
+        btn.removeAttribute('disabled'); btn.textContent='Jetzt beitreten';
+        return;
+      }
+      const u = new URL('/thanks', location.origin);
+      u.searchParams.set('e', data.email);
+      window.location.href = u.toString();
+    }catch(err){
+      showMsg('Netzwerkfehler – bitte später erneut.', 'err');
+      btn.removeAttribute('disabled'); btn.textContent='Jetzt beitreten';
+    }
+  });
+})();
+</script>
+</body>
+</html>

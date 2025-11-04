@@ -1,0 +1,61 @@
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+firebase-debug.log
+firestore-debug.log
+
+# Node / TS
+node_modules/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# Firebase / Functions (functions-next & functions)
+.firebase/
+functions-next/node_modules/
+functions-next/dist/
+functions-next/.env
+functions-next/.env.*
+functions-next/.runtimeconfig.json
+functions/node_modules/
+functions/dist/
+functions/.env
+functions/.env.*
+functions/.runtimeconfig.json
+
+# Service accounts / credentials (gezielt – NICHT *.json global!)
+serviceAccount*.json
+*service-account*.json
+*credentials*.json
+*-adminsdk-*.json
+keys/
+
+# ZIPs & große Binärdateien
+*.zip
+*.tar.gz
+
+# 3D/Design-Assets (groß, nicht versionswürdig)
+*.blend
+*.glb
+*.fbx
+mascot.blend
+mascot.glb
+web_Dev_31.10.2025/assets/3d/
+
+# Expo (falls genutzt)
+.expo/
+.expo-shared/
+
+# Caches / Temp
+.cache/
+.tmp/
