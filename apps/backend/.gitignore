@@ -59,3 +59,8 @@ web_Dev_31.10.2025/assets/3d/
 # Caches / Temp
 .cache/
 .tmp/
+
+.env*
+*.env.local
+firebase*.json
+serviceAccount*.json

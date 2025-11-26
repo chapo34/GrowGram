@@ -1,0 +1,1071 @@
+
+
+/* ===== functions/src/controllers/register/registerController.ts ===== */
+// functions/src/controllers/registerUserController.ts
+import type { Request, Response } from 'express';
+import * as functionsConf from 'firebase-functions/v1';
+import { initializeApp, getApps } from 'firebase-admin/app';
+import { getFirestore, FieldValue } from 'firebase-admin/firestore';
+import { generateToken } from '../utils/jwtUtils.js';
+
+if (getApps().length === 0) initializeApp();
+const db = getFirestore();
+
+type Body = {
+  userId?: string;
+  email?: string;
+  firstName?: string;
+  username?: string | null;
+};
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export const registerUserController = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { userId, email, firstName, username }: Body = (req.body ?? {}) as Body;
+
+    const cleanEmail = String(email || '').trim().toLowerCase();
+    if (!userId || !cleanEmail || !EMAIL_RE.test(cleanEmail)) {
+      res.status(400).json({ ok: false, error: 'missing/invalid userId or email' });
+      return;
+    }
+
+    const c: any = (functionsConf as any).config?.() ?? {};
+    const jwtExpires: string | number | undefined = (c?.jwt?.expires as any) ?? process.env.JWT_EXPIRES;
+
+    const ts = FieldValue.serverTimestamp();
+    await db.doc(`users/${userId}`).set(
+      {
+        email: cleanEmail,
+        firstName: firstName || null,
+        username: username ?? null,
+        isVerified: false,
+        createdAt: ts,
+        updatedAt: ts,
+      },
+      { merge: true }
+    );
+
+    const token = generateToken({ userId, email: cleanEmail, expiresIn: jwtExpires });
+
+    const hostingBase =
+      c?.app?.baseurl ||
+      process.env.APP_BASEURL ||
+      'https://growgram-backend.web.app';
+
+    const verifyUrl = `${hostingBase.replace(/\/$/, '')}/auth/verify-email?token=${encodeURIComponent(
+      token
+    )}`;
+
+    if (c?.sendgrid?.key && c?.sendgrid?.template?.verify) {
+      try {
+        const sg = (await import('@sendgrid/mail')).default;
+        sg.setApiKey(String(c.sendgrid.key));
+        await sg.send({
+          to: cleanEmail,
+          from: (c?.sendgrid?.from as string) || 'no-reply@growgram-app.com',
+          templateId: String(c.sendgrid.template.verify),
+          dynamicTemplateData: {
+            firstName: firstName || '',
+            verificationUrl: verifyUrl,
+            appName: 'GrowGram',
+          },
+        });
+      } catch (e) {
+        console.warn('sendgrid_failed', e);
+      }
+    }
+
+    res.status(201).json({ ok: true, verifyUrl });
+  } catch (err) {
+    console.error('registerUserController error:', err);
+    res.status(500).json({ ok: false, error: 'register_failed' });
+  }
+};
+
+export default registerUserController;
+
+/* ===== functions/src/controllers/authController.ts ===== */
+// src/controllers/authController.ts
+import type { Request, Response } from 'express';
+import bcrypt from 'bcryptjs';
+import * as functionsConf from 'firebase-functions/v1';
+import { db, admin } from '../config/firebase.js';
+import { generateToken } from '../utils/jwtUtils.js';
+import type { AuthedRequest } from '../middleware/authMiddleware.js';
+
+// ---- Firestore ----
+const users = db.collection('users');
+
+// ---- Helpers ----
+const norm = (s: unknown) => String(s ?? '').trim();
+const lower = (s: unknown) => norm(s).toLowerCase();
+const isValidUsername = (u: string) => /^[a-zA-Z0-9._]{3,20}$/.test(u);
+
+// Zentrale Konfiguration für Links/URLs
+function getConfig() {
+  const c: any = (functionsConf as any).config?.() ?? {};
+
+  // Bevorzugt API_BASE_URL aus ENV oder functions:config:set app.api_baseurl="https://.../api"
+  const apiBase = (
+    c?.app?.api_baseurl ||
+    process.env.API_BASE_URL ||
+    'https://europe-west3-growgram-backend.cloudfunctions.net/api'
+  ).replace(/\/$/, '');
+
+  const verifyPath = c?.app?.verifypath || process.env.VERIFY_PATH || '/auth/verify-email';
+
+  // Falls VERIFICATION_URL gesetzt ist, hat diese Vorrang (muss auf /auth/verify-email zeigen)
+  const verificationUrl =
+    (process.env.VERIFICATION_URL && process.env.VERIFICATION_URL.replace(/\/$/, '')) ||
+    `${apiBase}${verifyPath}`;
+
+  return { apiBase, verifyPath, verificationUrl };
+}
+
+/** POST /auth/register
+ *  Erstellt den User, setzt isVerified=false und sendet eine Verify-Mail.
+ */
+export const registerUser = async (req: Request, res: Response) => {
+  try {
+    const {
+      firstName,
+      lastName,
+      email,
+      password,
+      city,
+      birthDate,
+      username,
+    } = (req.body || {}) as {
+      firstName?: string;
+      lastName?: string;
+      email?: string;
+      password?: string;
+      city?: string;
+      birthDate?: string;
+      username?: string;
+    };
+
+    // Minimalvalidierung
+    if (!firstName || !lastName || !email || !password) {
+      return res.status(400).json({ message: 'Pflichtfelder fehlen.' });
+    }
+    if (norm(password).length < 8) {
+      return res.status(400).json({ message: 'Passwort muss mindestens 8 Zeichen haben.' });
+    }
+
+    const emailLower = lower(email);
+
+    // E-Mail eindeutig?
+    const byMail = await users.where('emailLower', '==', emailLower).limit(1).get();
+    if (!byMail.empty) {
+      return res.status(400).json({ message: 'E-Mail bereits registriert.' });
+    }
+
+    // Optionaler Username
+    let usernameClean: string | undefined;
+    let usernameLower: string | undefined;
+    if (username && norm(username)) {
+      const u = norm(username);
+      if (!isValidUsername(u)) {
+        return res.status(400).json({
+          message: 'Ungültiger Benutzername. Erlaubt: 3–20 Zeichen [a-zA-Z0-9._].',
+        });
+      }
+      usernameClean = u;
+      usernameLower = lower(u);
+
+      const byUsername = await users.where('usernameLower', '==', usernameLower).limit(1).get();
+      if (!byUsername.empty) {
+        return res.status(400).json({ message: 'Benutzername bereits vergeben.' });
+      }
+    }
+
+    // Hashen & speichern
+    const hashedPassword = await bcrypt.hash(password, 12);
+    const ts = admin.firestore.FieldValue.serverTimestamp();
+
+    const userRef = await users.add({
+      firstName: norm(firstName),
+      lastName: norm(lastName),
+      city: city ?? null,
+      birthDate: birthDate ?? null,
+      email: norm(email),
+      emailLower,
+      password: hashedPassword,
+      isVerified: false,
+      createdAt: ts,
+      updatedAt: ts,
+      ...(usernameClean ? { username: usernameClean, usernameLower } : {}),
+    });
+
+    // Verify-Token für 1 Tag (via jwtUtils)
+    const token = generateToken({
+      userId: userRef.id,
+      email: emailLower,
+      expiresIn: '1d',
+    });
+
+    const { verificationUrl } = getConfig();
+    const verifyUrl = `${verificationUrl}?token=${encodeURIComponent(token)}`;
+
+    // Mail versenden (lazy import, damit keine Zyklusabhängigkeit)
+    try {
+      const { sendVerificationEmail } = await import('../services/emailService.js');
+      await sendVerificationEmail({
+        to: emailLower,
+        firstName: norm(firstName),
+        verificationUrl: verifyUrl,
+      });
+    } catch (e) {
+      // Registrierung nicht blockieren, nur warnen
+      console.warn('[register] sendVerificationEmail warn:', e);
+    }
+
+    return res.status(201).json({
+      message: 'Registrierung erfolgreich. Bitte E-Mail verifizieren.',
+      verifyUrl, // für QA gut; in Produktion ggf. entfernen
+    });
+  } catch (err) {
+    console.error('[register] error:', err);
+    return res.status(500).json({ message: 'Interner Serverfehler.' });
+  }
+};
+
+/** POST /auth/login  (identifier=E-Mail ODER Benutzername) */
+export const loginUser = async (req: Request, res: Response) => {
+  try {
+    const identifierRaw =
+      (req.body.identifier as string | undefined) ??
+      (req.body.email as string | undefined);
+    const { password } = (req.body || {}) as { password?: string };
+
+    if (!identifierRaw || !password) {
+      return res.status(400).json({ message: 'E-Mail/Benutzername und Passwort erforderlich.' });
+    }
+
+    const identifier = norm(identifierRaw);
+    const byEmail = identifier.includes('@');
+
+    const snap = byEmail
+      ? await users.where('emailLower', '==', lower(identifier)).limit(1).get()
+      : await users.where('usernameLower', '==', lower(identifier)).limit(1).get();
+
+    if (snap.empty) {
+      return res.status(404).json({ message: 'Benutzer nicht gefunden.' });
+    }
+
+    const userDoc = snap.docs[0];
+    const u = userDoc.data() as any;
+
+    const passOk = await bcrypt.compare(password, String(u.password || ''));
+    if (!passOk) return res.status(401).json({ message: 'Ungültige Zugangsdaten.' });
+
+    if (!u.isVerified) {
+      return res.status(403).json({ message: 'E-Mail nicht verifiziert.' });
+    }
+
+    const token = generateToken({
+      userId: userDoc.id,
+      email: String(u.emailLower || u.email || '').toLowerCase(),
+      expiresIn: '7d',
+    });
+
+    return res.status(200).json({
+      token,
+      user: {
+        id: userDoc.id,
+        firstName: u.firstName,
+        lastName: u.lastName,
+        city: u.city ?? null,
+        birthDate: u.birthDate ?? null,
+        email: u.email,
+        username: u.username ?? null,
+        avatarUrl: u.avatarUrl ?? null,
+      },
+    });
+  } catch (err) {
+    console.error('[login] error:', err);
+    return res.status(500).json({ message: 'Login fehlgeschlagen.' });
+  }
+};
+
+/** GET /auth/me  (geschützt) */
+export const me = async (req: AuthedRequest, res: Response) => {
+  try {
+    const uid = req.user?.userId;
+    if (!uid) return res.status(401).json({ message: 'Nicht autorisiert.' });
+
+    const snap = await users.doc(uid).get();
+    if (!snap.exists) return res.status(404).json({ message: 'User nicht gefunden.' });
+
+    const u = snap.data()!;
+    return res.json({
+      id: snap.id,
+      firstName: u.firstName,
+      lastName: u.lastName,
+      email: u.email,
+      username: u.username ?? null,
+      city: u.city ?? null,
+      birthDate: u.birthDate ?? null,
+      avatarUrl: u.avatarUrl ?? null,
+    });
+  } catch (e) {
+    console.error('[me] error:', e);
+    return res.status(500).json({ message: 'Fehler beim Laden.' });
+  }
+};
+
+/** POST /auth/resend-verification  (optional) */
+export const resendVerification = async (req: Request, res: Response) => {
+  try {
+    const email = lower((req.body || {}).email);
+    if (!email) return res.status(400).json({ message: 'E-Mail fehlt.' });
+
+    const snap = await users.where('emailLower', '==', email).limit(1).get();
+    if (snap.empty) return res.status(404).json({ message: 'Benutzer nicht gefunden.' });
+
+    const doc = snap.docs[0];
+    const u = doc.data() as any;
+    if (u.isVerified) return res.status(200).json({ message: 'Bereits verifiziert.' });
+
+    const token = generateToken({ userId: doc.id, email, expiresIn: '1d' });
+    const { verificationUrl } = getConfig();
+    const verifyUrl = `${verificationUrl}?token=${encodeURIComponent(token)}`;
+
+    try {
+      const { sendVerificationEmail } = await import('../services/emailService.js');
+      await sendVerificationEmail({
+        to: email,
+        firstName: norm(u.firstName || 'Friend'),
+        verificationUrl: verifyUrl,
+      });
+    } catch (e) {
+      console.warn('[resendVerification] email warn:', e);
+    }
+
+    return res.status(200).json({ message: 'Bestätigungs-E-Mail gesendet.' });
+  } catch (e) {
+    console.error('[resendVerification] error:', e);
+    return res.status(500).json({ message: 'Fehler beim Versand.' });
+  }
+};
+
+/* ===== functions/src/controllers/verifyController.ts ===== */
+// functions/src/controllers/verifyController.ts
+import type { Request, Response } from 'express';
+import * as functionsConf from 'firebase-functions/v1';
+import { db, admin } from '../config/firebase.js';
+import { verifyToken } from '../utils/jwtUtils.js';
+
+type TokenPayload = { userId: string; email?: string; iat?: number; exp?: number };
+
+const FieldValue = admin.firestore.FieldValue;
+
+// ---- helpers ---------------------------------------------------------------
+
+function pickToken(req: Request): string | undefined {
+  let raw =
+    (typeof req.query.token === 'string' && req.query.token) ||
+    (typeof req.query.t === 'string' && req.query.t) ||
+    (typeof req.query.code === 'string' && req.query.code) ||
+    (typeof req.query.oobCode === 'string' && req.query.oobCode) ||
+    undefined;
+
+  if (!raw) {
+    const hdr = req.header('authorization') || req.header('Authorization');
+    if (hdr && hdr.toLowerCase().startsWith('bearer ')) raw = hdr.slice(7).trim();
+  }
+
+  if (!raw) return undefined;
+
+  try {
+    const once = decodeURIComponent(raw);
+    if ((once.match(/\./g) || []).length === 2) return once;
+  } catch {/* ignore */}
+  return raw;
+}
+
+function joinUrl(base: string, suffix: string) {
+  if (!base) return suffix;
+  const b = base.endsWith('/') ? base.slice(0, -1) : base;
+  const s = suffix.startsWith('/') ? suffix : `/${suffix}`;
+  return `${b}${s}`;
+}
+
+async function confirmWaitlistByEmail(email?: string) {
+  if (!email) return;
+  const docId = email.toLowerCase();
+  const ref = db.collection('waitlist').doc(docId);
+  await ref.set(
+    {
+      email: docId,
+      status: 'confirmed',
+      confirmedAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
+    },
+    { merge: true }
+  );
+}
+
+// ---- controller ------------------------------------------------------------
+
+export const verifyEmailController = async (req: Request, res: Response): Promise<void> => {
+  res.setHeader('Cache-Control', 'no-store');
+
+  const token = pickToken(req);
+  if (!token) {
+    res.status(400).json({ ok: false, error: 'Missing token' });
+    return;
+  }
+
+  const c: any = (functionsConf as any).config?.() ?? {};
+  const baseurl: string = c?.app?.baseurl || process.env.APP_BASEURL || '';
+  const redirectUrl: string = c?.app?.redirecturl || process.env.APP_REDIRECTURL || '/verified';
+
+  try {
+    const payload = verifyToken<TokenPayload>(token);
+    if (!payload?.userId) {
+      res.status(400).json({ ok: false, error: 'Invalid token payload' });
+      return;
+    }
+
+    const userRef = db.collection('users').doc(payload.userId);
+
+    const result = await db.runTransaction(async (trx) => {
+      const snap = await trx.get(userRef);
+      if (!snap.exists) return { status: 'not_found' as const };
+
+      const user = (snap.data() || {}) as { email?: string; isVerified?: boolean };
+      if (payload.email && user.email && String(user.email).toLowerCase() !== String(payload.email).toLowerCase()) {
+        return { status: 'email_mismatch' as const, email: user.email as string | undefined };
+      }
+
+      if (user.isVerified) {
+        return { status: 'already' as const, email: (user.email || payload.email) as string | undefined };
+      }
+
+      trx.set(
+        userRef,
+        {
+          isVerified: true,
+          verifiedAt: FieldValue.serverTimestamp(),
+          updatedAt: FieldValue.serverTimestamp(),
+        },
+        { merge: true }
+      );
+
+      return { status: 'ok' as const, email: (user.email || payload.email) as string | undefined };
+    });
+
+    // Warteliste auch auf confirmed setzen (nicht blockierend, aber awaited vorm Redirect)
+    try {
+      await confirmWaitlistByEmail(result.email || payload.email);
+    } catch (e) {
+      console.warn('waitlist confirm failed (non-blocking):', (e as any)?.message || e);
+    }
+
+    if (baseurl) {
+      const target =
+        result.status === 'ok'
+          ? joinUrl(baseurl, `${redirectUrl}?status=ok`)
+          : result.status === 'already'
+          ? joinUrl(baseurl, `${redirectUrl}?status=already`)
+          : result.status === 'email_mismatch'
+          ? joinUrl(baseurl, `${redirectUrl}?status=error&reason=email_mismatch`)
+          : joinUrl(baseurl, `${redirectUrl}?status=error&reason=not_found`);
+
+      res.status(302).set('Location', target).end();
+      return;
+    }
+
+    // JSON-Fallback
+    if (result.status === 'ok') { res.status(200).json({ ok: true, message: 'E-Mail erfolgreich verifiziert.' }); return; }
+    if (result.status === 'already') { res.status(200).json({ ok: true, message: 'Schon verifiziert.' }); return; }
+    if (result.status === 'email_mismatch') { res.status(400).json({ ok: false, error: 'Email mismatch' }); return; }
+    res.status(404).json({ ok: false, error: 'User not found' });
+  } catch (err) {
+    console.error('verifyEmailController error:', (err as any)?.message || err);
+    res.status(400).json({ ok: false, error: 'Invalid token' });
+  }
+};
+
+/* ===== functions/src/routes/authRoutes.ts ===== */
+// functions/src/routes/authRoutes.ts
+import { Router } from 'express';
+import { body } from 'express-validator';
+
+import { registerValidator, loginValidator } from '../utils/validators.js';
+import { validateRequest } from '../middleware/validateRequest.js';
+import { registerUser, loginUser } from '../controllers/authController.js';
+import { verifyEmailController } from '../controllers/verifyController.js';
+import {
+  requestPasswordReset,
+  resetPasswordConfirm,
+} from '../controllers/passwordController.js';
+
+// ⬇️ neu:
+import authMiddleware from '../middleware/authMiddleware.js';
+import { complianceAck } from '../controllers/complianceController.js';
+
+const router = Router();
+
+/* ---------------- Register & Login ---------------- */
+router.post('/register', registerValidator, validateRequest, registerUser);
+router.post('/login',    loginValidator,    validateRequest, loginUser);
+
+/* ---------------- Verify ---------------- */
+router.get('/verify-email', verifyEmailController);
+
+/* ---------------- Compliance-Ack (neu) ---------------- */
+// einfache Validierung: beide Flags müssen true sein; version optional
+const complianceAckValidator = [
+  body('agree')
+    .isBoolean().withMessage('agree muss boolean sein')
+    .custom((v) => v === true).withMessage('agree muss true sein'),
+  body('over18')
+    .isBoolean().withMessage('over18 muss boolean sein')
+    .custom((v) => v === true).withMessage('over18 muss true sein'),
+  body('version').optional().isString().isLength({ max: 32 }),
+];
+
+router.post(
+  '/compliance-ack',
+  authMiddleware,
+  complianceAckValidator,
+  validateRequest,
+  complianceAck
+);
+
+/* ---------------- Password Reset ---------------- */
+router.post('/reset-password',         requestPasswordReset);
+router.post('/reset-password/confirm', resetPasswordConfirm);
+
+export default router;
+
+/* ===== functions/src/services/emailService.ts ===== */
+// ESM + Node 20
+import sgMail from '@sendgrid/mail';
+import type { MailDataRequired } from '@sendgrid/mail';
+import dotenv from 'dotenv';
+dotenv.config();
+
+const API_KEY    = process.env.SENDGRID_API_KEY || '';
+const FROM_EMAIL = process.env.SENDGRID_SENDER || 'no-reply@growgram-app.com';
+const FROM_NAME  = process.env.SENDGRID_SENDER_NAME || 'GrowGram';
+
+const TPL_VERIFY          = process.env.SENDGRID_TEMPLATE_VERIFY  || '';
+const TPL_RESET           = process.env.SENDGRID_TEMPLATE_RESET   || '';
+const TPL_WELCOME         = process.env.SENDGRID_TEMPLATE_WELCOME || '';
+const TPL_WAITLISTCONFIRM = process.env.SENDGRID_TEMPLATE_WAITLISTCONFIRM || '';
+
+const REPLY_TO  = process.env.SENDGRID_REPLY_TO || '';
+const IP_POOL   = process.env.SENDGRID_IP_POOL || '';
+const SANDBOX   = String(process.env.SENDGRID_SANDBOX || '').toLowerCase() === 'true';
+const ASM_GROUP_WELCOME = process.env.SENDGRID_ASM_GROUP_WELCOME_ID
+  ? Number(process.env.SENDGRID_ASM_GROUP_WELCOME_ID)
+  : undefined;
+
+// Wichtig: Website vs. API trennen
+const APP_URL = (process.env.APP_URL || 'https://growgram-app.com').replace(/\/$/, '');
+const API_BASE_URL = (process.env.API_BASE_URL || 'https://europe-west3-growgram-backend.cloudfunctions.net/api').replace(/\/$/, '');
+
+const IS_DRY_RUN   = API_KEY.toLowerCase() === 'dryrun';
+const HAS_LIVE_KEY = !!API_KEY && API_KEY.startsWith('SG.');
+if (!IS_DRY_RUN && HAS_LIVE_KEY) sgMail.setApiKey(API_KEY);
+
+type SendOpts = {
+  to: string;
+  subject?: string;
+  templateId: string;
+  data: Record<string, unknown>;
+  category?: string;
+  transactional?: boolean;
+  userId?: string | number;
+};
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function assertHttpsAbsolute(url: string, label: string): string {
+  const u = new URL(url);
+  if (u.protocol !== 'https:') throw new Error(`${label} must be https`);
+  return u.toString();
+}
+
+function previewLog(kind: string, opts: SendOpts) {
+  const lines = [
+    '📩 MOCK EMAIL PREVIEW (DRY-RUN)',
+    `Kind: ${kind}`,
+    `To:   ${opts.to}`,
+    `From: ${FROM_NAME} <${FROM_EMAIL}>`,
+    opts.subject ? `Subj: ${opts.subject}` : null,
+    `Tpl:  ${opts.templateId || '(none)'}`,
+    `Data: ${JSON.stringify(opts.data)}`,
+  ].filter(Boolean);
+  console.log(lines.join('\n'));
+}
+
+function ensureLiveReady(which: 'verify' | 'reset' | 'welcome' | 'waitlist') {
+  if (IS_DRY_RUN) return;
+  const missing: string[] = [];
+  if (!HAS_LIVE_KEY) missing.push('SENDGRID_API_KEY(Format SG.*)');
+  if (!FROM_EMAIL) missing.push('SENDGRID_SENDER');
+  if (!FROM_NAME)  missing.push('SENDGRID_SENDER_NAME');
+
+  if (which === 'verify'   && !TPL_VERIFY)          missing.push('SENDGRID_TEMPLATE_VERIFY');
+  if (which === 'reset'    && !TPL_RESET)           missing.push('SENDGRID_TEMPLATE_RESET');
+  if (which === 'welcome'  && !TPL_WELCOME)         missing.push('SENDGRID_TEMPLATE_WELCOME');
+  if (which === 'waitlist' && !TPL_WAITLISTCONFIRM) missing.push('SENDGRID_TEMPLATE_WAITLISTCONFIRM');
+
+  if (missing.length) {
+    const err = new Error(`[emailService] Misconfiguration (LIVE, ${which}): ${missing.join(', ')}`);
+    (err as any).status = 500;
+    throw err;
+  }
+}
+
+function parseValidityMinutes(): number | undefined {
+  const raw = process.env.RESET_EXPIRES || '60m';
+  const s = String(raw).trim().toLowerCase();
+  if (/^\d+$/.test(s)) return Math.round(Number(s) / 60);
+  const m = s.match(/^(\d+)\s*([smhd])$/);
+  if (!m) return undefined;
+  const n = Number(m[1]);
+  const u = m[2];
+  switch (u) {
+    case 's': return Math.max(1, Math.round(n / 60));
+    case 'm': return n;
+    case 'h': return n * 60;
+    case 'd': return n * 24 * 60;
+    default:  return undefined;
+  }
+}
+
+async function send(
+  kind: 'verify' | 'password-reset' | 'welcome' | 'waitlist-confirm',
+  opts: SendOpts
+): Promise<void> {
+  if (!EMAIL_RE.test(opts.to)) throw new Error('invalid_recipient_email');
+
+  if (IS_DRY_RUN) {
+    previewLog(kind, opts);
+    console.log('✅ DRY-RUN: E-Mail simuliert, kein Versand.');
+    return;
+  }
+
+  const msg: MailDataRequired = {
+    to: opts.to,
+    from: { email: FROM_EMAIL, name: FROM_NAME },
+    templateId: opts.templateId,
+    dynamicTemplateData: opts.data,
+    ...(opts.subject ? { subject: opts.subject } : {}),
+    ...(opts.category ? { categories: [opts.category] } : {}),
+    headers: { 'X-GrowGram-App': 'backend' },
+    trackingSettings: {
+      clickTracking: { enable: false, enableText: false },
+      openTracking:  { enable: false },
+    },
+    mailSettings: {
+      sandboxMode: { enable: SANDBOX },
+      ...(opts.transactional ? { bypassListManagement: { enable: true } } : {}),
+    },
+    ...(REPLY_TO ? { replyTo: { email: REPLY_TO, name: FROM_NAME } } : {}),
+    ...(IP_POOL ? { ipPoolName: IP_POOL } : {}),
+    ...(opts.userId ? { customArgs: { userId: String(opts.userId), category: opts.category ?? kind } } : {}),
+  };
+
+  if (!opts.transactional && ASM_GROUP_WELCOME) (msg as any).asm = { groupId: ASM_GROUP_WELCOME };
+
+  try {
+    await sgMail.send(msg);
+  } catch (e: any) {
+    console.error('[emailService] send failed', {
+      code: e?.code,
+      message: e?.message,
+      response: e?.response?.body?.errors || e?.response?.body || undefined,
+    });
+    const err = new Error('email_send_failed');
+    (err as any).status = 502;
+    throw err;
+  }
+}
+
+/* --------- Mails --------- */
+
+export async function sendVerificationEmail(params: {
+  to: string;
+  firstName: string;
+  verificationUrl: string;
+  userId?: string | number;
+}) {
+  ensureLiveReady('verify');
+  const { to, firstName, verificationUrl, userId } = params;
+  const safeUrl = assertHttpsAbsolute(verificationUrl, 'verificationUrl');
+
+  await send('verify', {
+    to,
+    subject: 'Bitte bestätige deine E-Mail für GrowGram',
+    templateId: TPL_VERIFY,
+    transactional: true,
+    userId,
+    data: {
+      firstName,
+      verificationUrl: safeUrl, // offizieller Key
+      confirmUrl:     safeUrl,  // Alias – damit dein Template sicher trifft
+      appName: 'GrowGram',
+      year: new Date().getFullYear(),
+      unsubscribeUrl: '',
+    },
+    category: 'verify',
+  });
+}
+
+export async function sendPasswordResetEmail(params: {
+  to: string;
+  firstName: string;
+  resetUrl: string;
+  appUrl?: string;
+  userId?: string | number;
+  validityMinutes?: number;
+}) {
+  ensureLiveReady('reset');
+  const {
+    to, firstName, resetUrl, appUrl, userId,
+    validityMinutes = parseValidityMinutes() ?? 60,
+  } = params;
+  const safeReset = assertHttpsAbsolute(resetUrl, 'resetUrl');
+  await send('password-reset', {
+    to,
+    subject: 'GrowGram – Passwort zurücksetzen',
+    templateId: TPL_RESET,
+    transactional: true,
+    userId,
+    data: {
+      firstName,
+      resetUrl: safeReset,
+      appUrl: appUrl || APP_URL,
+      appName: 'GrowGram',
+      year: new Date().getFullYear(),
+      validityMinutes,
+    },
+    category: 'password-reset',
+  });
+}
+
+export async function sendWelcomeEmail(params: {
+  to: string;
+  firstName: string;
+  username?: string;
+  userId?: string | number;
+}) {
+  ensureLiveReady('welcome');
+  const { to, firstName, username, userId } = params;
+  await send('welcome', {
+    to,
+    subject: 'Willkommen bei GrowGram 🌱',
+    templateId: TPL_WELCOME,
+    transactional: false,
+    userId,
+    data: {
+      firstName,
+      username: username || '',
+      appOpenUrl: process.env.APP_DEEPLINK || APP_URL,
+      completeProfileUrl: `${APP_URL}/settings/profile`,
+      exploreUrl: `${APP_URL}/explore`,
+      preferencesUrl: `${APP_URL}/settings/notifications`,
+      year: new Date().getFullYear(),
+      unsubscribeUrl: `${APP_URL}/email/unsubscribe`,
+    },
+    category: 'welcome',
+  });
+}
+
+/* ----- Waitlist: Confirm (Double-Opt-In) ----- */
+
+export async function sendWaitlistConfirmEmail(params: {
+  to: string;
+  firstName: string;
+  publicId: string;
+  viewerToken: string;
+  appUrl?: string;
+  userId?: string | number;
+}) {
+  ensureLiveReady('waitlist');
+
+  // Button führt IMMER zur Cloud-Functions API (setzt confirmedAt)
+  const confirmUrl =
+    `${API_BASE_URL}/waitlist/confirm?pid=${encodeURIComponent(params.publicId)}&t=${encodeURIComponent(params.viewerToken)}`;
+
+  await send('waitlist-confirm', {
+    to: params.to,
+    subject: 'Bitte bestätige deine Anmeldung – GrowGram',
+    templateId: TPL_WAITLISTCONFIRM,
+    transactional: true,
+    userId: params.userId,
+    category: 'waitlist-confirm',
+    data: {
+      firstName: params.firstName || 'Friend',
+      email: params.to,
+      confirmUrl,                          // <— Wichtigster Key im Template
+      discordUrl: 'https://discord.gg/JgXsnEKRQr',
+      websiteUrl: (params.appUrl || APP_URL),
+      year: new Date().getFullYear(),
+    },
+  });
+}
+
+/* ===== functions/src/utils/jwt.ts ===== */
+// functions/src/utils/jwt.ts
+// JWT Utilities – kompatibel & robust (ESM, Node 18, Firebase Functions)
+
+import * as functionsConf from 'firebase-functions/v1';
+import jwt, { type JwtPayload, type SignOptions, type Secret } from 'jsonwebtoken';
+
+export type TokenPayload = { userId: string; email?: string } & Record<string, unknown>;
+
+type LoadedCfg = { secret: Secret; expires: string | number };
+let _cfg: LoadedCfg | null = null;
+
+/** Lazy Config Load: ENV → functions.config() */
+function loadCfg(): LoadedCfg {
+  if (_cfg) return _cfg;
+
+  // ENV hat Priorität (z. B. Emulator / .env via emulator:start)
+  const envSecret = process.env.JWT_SECRET;
+  const envExpires = process.env.JWT_EXPIRES;
+
+  // Firebase functions:config:get (Prod/Staging/Dev)
+  const c: any = (functionsConf as any).config?.() ?? {};
+  const fxSecret = c?.jwt?.secret as string | undefined;
+  const fxExpires = (c?.jwt?.expires as string | number | undefined) ?? '7d';
+
+  const secret = (envSecret ?? fxSecret) as Secret | undefined;
+  const expires = (envExpires ?? fxExpires) as string | number;
+
+  if (!secret) {
+    throw new Error('JWT secret missing. Configure JWT_SECRET env or functions.config().jwt.secret');
+  }
+
+  _cfg = { secret, expires };
+  return _cfg!;
+}
+
+/** Sign JWT (default HS256) */
+export function signJwt(
+  payload: TokenPayload,
+  expiresIn?: string | number,
+  more?: SignOptions
+): string {
+  const { secret, expires } = loadCfg();
+  const exp = expiresIn ?? expires;
+  return jwt.sign(payload, secret, {
+    algorithm: 'HS256',
+    expiresIn: exp as jwt.SignOptions['expiresIn'],
+    ...(more ?? {}),
+  });
+}
+
+/** Verify JWT */
+export function verifyJwt<T extends JwtPayload = JwtPayload>(token: string): T & TokenPayload {
+  const { secret } = loadCfg();
+  const dec = jwt.verify(token, secret) as T | string;
+  if (typeof dec === 'string') throw new Error('Invalid token');
+  return dec as T & TokenPayload;
+}
+
+/** Optional: nur Claims anschauen (ohne Verify) */
+export function decodeJwt<T = unknown>(token: string): (T & TokenPayload) | null {
+  const dec = jwt.decode(token);
+  if (!dec || typeof dec === 'string') return null;
+  return dec as T & TokenPayload;
+}
+
+/** Helper für externe Nutzung (z. B. Mails/Debug) */
+export function getJwtSecret(): string {
+  return String(loadCfg().secret);
+}
+export function getJwtExpires(): string | number {
+  return loadCfg().expires;
+}
+
+/* ---- Kompatibilitäts-Aliase (alte Call-Sites) ---- */
+export const signToken = signJwt;
+export const verifyToken = verifyJwt;
+
+/* ===== functions/src/utils/jwtUtils.ts ===== */
+// functions/src/utils/jwtUtils.ts
+// Einheitliche Secret-Quelle: zuerst functions.config(), dann .env
+import * as functionsConf from 'firebase-functions/v1';
+import jwt from 'jsonwebtoken';
+import type { JwtPayload, SignOptions, Secret } from 'jsonwebtoken';
+
+function pick<T>(...vals: (T | undefined)[]): T | undefined {
+  return vals.find((v) => v !== undefined) as T | undefined;
+}
+
+function getConfig() {
+  const c: any = (functionsConf as any).config?.() ?? {};
+  return {
+    jwtSecret: pick<Secret>(
+      c?.jwt?.secret as Secret | undefined,
+      process.env.JWT_SECRET as Secret | undefined
+    ),
+    authExpires:
+      (pick<string | number>(c?.jwt?.expires as any, process.env.JWT_EXPIRES as any) ??
+        '7d') as string | number,
+    resetExpires:
+      (pick<string | number>(c?.reset?.expires as any, process.env.RESET_EXPIRES as any) ??
+        '60m') as string | number,
+  };
+}
+
+const cfg = getConfig();
+if (!cfg.jwtSecret) {
+  throw new Error('[jwtUtils] Missing JWT secret (set functions:config().jwt.secret or JWT_SECRET)');
+}
+
+export interface AuthTokenPayload extends JwtPayload {
+  userId: string;
+  email?: string;
+}
+export interface ResetTokenPayload extends JwtPayload {
+  userId: string;
+  purpose: 'reset';
+  jti: string;
+}
+export type AuthTokenInput = { userId: string; email?: string; expiresIn?: string | number };
+
+function signOpts(expires: string | number, more?: SignOptions): SignOptions {
+  return { expiresIn: expires as any, algorithm: 'HS256', ...(more ?? {}) };
+}
+
+export function generateToken(payload: AuthTokenInput, more?: SignOptions): string {
+  const { expiresIn, ...claims } = payload;
+  const exp = expiresIn ?? cfg.authExpires;
+  return jwt.sign(claims as Record<string, unknown>, cfg.jwtSecret as Secret, signOpts(exp, more));
+}
+
+export function verifyToken<T extends JwtPayload = AuthTokenPayload>(token: string): T {
+  const dec = jwt.verify(token, cfg.jwtSecret as Secret, {
+    algorithms: ['HS256'],
+    clockTolerance: 60, // 60s Toleranz gegen Uhr-Drift
+  }) as T | string;
+  if (typeof dec === 'string') throw new Error('Invalid token');
+  return dec;
+}
+
+export function generateResetToken(
+  payload: { userId: string } & Partial<Omit<ResetTokenPayload, 'purpose' | 'userId' | 'jti'>>,
+  more?: SignOptions
+): string {
+  const base: Record<string, unknown> = { ...payload, userId: payload.userId, purpose: 'reset' };
+  return jwt.sign(base, cfg.jwtSecret as Secret, {
+    ...signOpts(cfg.resetExpires, more),
+    jwtid:
+      (globalThis.crypto?.randomUUID?.() as string) ??
+      (Math.random().toString(36).slice(2) + Date.now().toString(36)),
+  });
+}
+
+export function verifyResetToken(token: string): ResetTokenPayload {
+  const dec = jwt.verify(token, cfg.jwtSecret as Secret, {
+    algorithms: ['HS256'],
+    clockTolerance: 60,
+  }) as ResetTokenPayload | string;
+  if (typeof dec === 'string' || dec.purpose !== 'reset' || !dec.jti) {
+    throw new Error('Invalid reset token');
+  }
+  return dec;
+}
+
+export function decodeUnsafe<T = any>(token: string): T | null {
+  const d = jwt.decode(token) as T | null;
+  return d ?? null;
+}
+
+/* ===== functions/src/middleware/validateRequest.ts ===== */
+// functions/src/middleware/validateRequest.ts
+import type { Request, Response, NextFunction } from 'express';
+import { validationResult } from 'express-validator';
+
+/** Nutzt express-validator: beim Fehler 400 mit Details, sonst `next()`. */
+export function validateRequest(req: Request, res: Response, next: NextFunction): void {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    res.status(400).json({ errors: errors.array() });
+    return;
+  }
+  next();
+}
+
+export default validateRequest;
+
+/* ===== functions/src/config/firebase.ts ===== */
+// functions/src/config/firebase.ts
+// Kompatibilitäts-Adapter für firebase-admin v11 UND v12
+// -> Bestehender Code kann weiterhin "admin.firestore()", "admin.auth()", "admin.storage().bucket()"
+//    und "admin.firestore.{FieldValue,Timestamp}" benutzen – ohne Änderungen an anderen Dateien.
+
+import { getApps, initializeApp } from 'firebase-admin/app';
+import { getFirestore, FieldValue, Timestamp } from 'firebase-admin/firestore';
+import { getAuth } from 'firebase-admin/auth';
+import { getStorage } from 'firebase-admin/storage';
+import type { Bucket } from '@google-cloud/storage';
+
+// Einmalige Initialisierung (ADC im Emulator/Cloud)
+if (getApps().length === 0) {
+  initializeApp();
+}
+
+/** v12 Handles (funktionieren auch, wenn v11 installiert ist) */
+const db = getFirestore();
+const authAdmin = getAuth();
+const storage = getStorage();
+const bucket: Bucket = storage.bucket();
+
+/** Kompatible "admin"-Attrappe mit denselben Aufrufen wie früher */
+const firestoreCompat = Object.assign(
+  () => db,                 // erlaubt admin.firestore()
+  { FieldValue, Timestamp } // erlaubt admin.firestore.FieldValue / Timestamp
+);
+
+// Achtung: TypeScript: wir typisieren die Attrappe bewusst als any,
+// damit alle alten Aufrufe zugelassen sind (admin.firestore(), admin.auth(), admin.storage().bucket()).
+export const admin: any = {
+  firestore: firestoreCompat,
+  auth: () => authAdmin,
+  storage: () => storage,
+};
+
+// Zusätzlich die modernen Einzel-Exporte – falls du sie irgendwo direkt verwendest:
+export { db, authAdmin, storage, bucket, FieldValue, Timestamp };
+
+// Einheitliche Region-Konstante
+export const REGION = 'europe-west3';
+
+/* ===== functions/src/models/userModel.ts ===== */
+// src/models/userModel.ts
+import { admin } from '../config/firebase.js';
+
+export interface User {
+  id: string;
+  firstName?: string;
+  lastName?: string;
+  email: string;
+  // password wird NICHT in Firestore abgelegt – daher optional oder entfernen:
+  password?: string;
+  birthDate?: string;
+  city?: string;
+  isVerified?: boolean;
+  createdAt?: string | FirebaseFirestore.Timestamp | null;
+  username?: string;
+  avatarUrl?: string;
+}
+
+export const findUserByEmail = async (email: string): Promise<User | null> => {
+  const usersRef = admin.firestore().collection('users');
+  const snap = await usersRef.where('email', '==', email).limit(1).get();
+  if (snap.empty) return null;
+  const doc = snap.docs[0];
+  return { id: doc.id, ...(doc.data() as any) } as User;
+};

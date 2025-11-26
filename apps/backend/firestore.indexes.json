@@ -87,9 +87,20 @@
         { "fieldPath": "chatId",    "order": "ASCENDING" },
         { "fieldPath": "createdAt", "order": "DESCENDING" }
       ]
+    },
+
+    {
+      "collectionGroup": "comments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "postId",    "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": [
-    { "collectionGroup": "posts", "fieldPath": "keywordPrefixes", "indexes": [] }
+    { "collectionGroup": "posts", "fieldPath": "keywordPrefixes", "indexes": [] },
+    { "collectionGroup": "posts", "fieldPath": "keywords",        "indexes": [] },
+    { "collectionGroup": "posts", "fieldPath": "tagsLower",       "indexes": [] }
   ]
 }

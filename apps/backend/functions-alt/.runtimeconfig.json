@@ -1,0 +1,4 @@
+{
+  "app": { "baseurl": "http://localhost:5000", "redirecturl": "/verified" },
+  "jwt": { "secret": "DEV_SUPER_SECRET", "expires": "1d" }
+}

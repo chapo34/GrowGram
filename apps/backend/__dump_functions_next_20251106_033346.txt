@@ -1,0 +1,6351 @@
+
+
+# ==== FILE: package.json ====
+
+{
+  "name": "growgram-functions-next",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "🌱 GrowGram Backend (Functions-Next) – Firebase Cloud Functions + Express + TypeScript (ESM, Node 20+)",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "serve": "firebase emulators:start --only functions,hosting --config ../firebase.json",
+    "clean": "rimraf dist",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit",
+    "start": "node dist/index.js",
+    "deploy": "npm run build && firebase deploy --only functions,hosting --config ../firebase.json",
+    "deploy:functions": "npm run build && firebase deploy --only functions --config ../firebase.json",
+    "deploy:hosting": "firebase deploy --only hosting --config ../firebase.json",
+    "lint": "eslint \"src/**/*.{ts,js}\" --fix"
+  },
+  "dependencies": {
+    "@sendgrid/mail": "^8.1.5",
+    "bcryptjs": "^3.0.2",
+    "compression": "^1.7.4",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.4.0",
+    "firebase-admin": "^12.5.0",
+    "firebase-functions": "^6.6.0",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.2",
+    "uuid": "^9.0.1",
+    "yaml": "^2.8.1"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^4.17.25",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/multer": "^1.4.12",
+    "@types/node": "^20.14.2",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^9.1.2",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-unused-imports": "^3.2.0",
+    "rimraf": "^6.0.1",
+    "tsx": "^4.19.2",
+    "typescript": "^5.9.2"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true,
+      "es2022": true
+    },
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+      "sourceType": "module",
+      "ecmaVersion": "latest"
+    },
+    "plugins": [
+      "@typescript-eslint",
+      "unused-imports",
+      "import"
+    ],
+    "extends": [
+      "eslint:recommended",
+      "plugin:@typescript-eslint/recommended",
+      "plugin:import/errors",
+      "plugin:import/warnings",
+      "plugin:import/typescript",
+      "prettier"
+    ],
+    "rules": {
+      "no-console": "off",
+      "@typescript-eslint/no-unused-vars": "off",
+      "unused-imports/no-unused-imports": "error"
+    }
+  }
+}
+
+
+# ==== FILE: tsconfig.json ====
+
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "lib": ["ES2022"],
+    "rootDir": "src",
+    "outDir": "dist",
+
+    "baseUrl": "./src",
+    "paths": {
+      "@app/*": ["app/*"],
+      "@config/*": ["config/*"],
+      "@controllers/*": ["controllers/*"],
+      "@middleware/*": ["middleware/*"],
+      "@models/*": ["models/*"],
+      "@repositories/*": ["repositories/*"],
+      "@routes/*": ["routes/*"],
+      "@services/*": ["services/*"],
+      "@utils/*": ["utils/*"],
+      "@validators/*": ["validators/*"]
+    },
+
+    "strict": true,
+    "noImplicitAny": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": false,
+
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "verbatimModuleSyntax": true,
+    "allowSyntheticDefaultImports": true,
+
+    "types": ["node"],
+    "sourceMap": true,
+    "removeComments": true
+  },
+  "include": ["src/**/*", "src/types/**/*.d.ts"],
+  "exclude": ["dist", "node_modules", "tests", "__tests__", "**/*.spec.ts", "**/*.test.ts"]
+}
+
+# ==== FILE: .env.example ====
+
+######################################################################
+# 🌱 GROWGRAM BACKEND – ENVIRONMENT CONFIG (EXAMPLE)
+# Copy this file to ".env" and fill in your real secrets locally.
+######################################################################
+
+##########################
+# 🔗 API / BASE
+##########################
+API_BASE="https://europe-west3-growgram-backend.cloudfunctions.net/api"
+APP_PROJECT_ID="growgram-backend"
+APP_REGION="europe-west3"
+USERS_COLLECTION="users_dev"
+GCS_BUCKET_NAME="growgram-backend.appspot.com"
+
+##########################
+# 🔐 AUTH / JWT
+##########################
+JWT_SECRET="your_generated_secret_here"
+JWT_EXPIRES="1d"
+RESET_TOKEN_EXPIRES="15m"
+
+##########################
+# 🌍 APP / HOSTING
+##########################
+APP_BASEURL="https://growgram-app.com"
+APP_REDIRECTURL="/verified"
+APP_URL="https://growgram-app.com"
+VERIFY_URL="https://europe-west3-growgram-backend.cloudfunctions.net/api/auth/verify-email"
+RESET_URL="https://europe-west3-growgram-backend.cloudfunctions.net/api/auth/reset-password"
+
+##########################
+# 📧 SENDGRID
+##########################
+SENDGRID_KEY="SG_xxx"
+SENDGRID_SENDER="support@growgram-app.com"
+SENDGRID_SENDER_NAME="GrowGram"
+SENDGRID_REPLY_TO="notifications@growgram-app.com"
+SENDGRID_TEMPLATE_VERIFY="d-xxxxxx"
+SENDGRID_TEMPLATE_RESET="d-xxxxxx"
+SENDGRID_TEMPLATE_WELCOME="d-xxxxxx"
+SENDGRID_TEMPLATE_WAITLIST_WELCOME="d-xxxxxx"
+SENDGRID_TEMPLATE_WAITLIST_CONFIRM="d-xxxxxx"
+SENDGRID_SANDBOX="false"
+
+##########################
+# 🧩 DEV / TEST
+##########################
+DEV_LINK_SECRET="dev_secret_placeholder"
+TEST_EMAIL="test@example.com"
+TEST_PASSWORD="password123"
+ENABLE_DEBUG_LOGS="true"
+
+##########################
+# ⚙️ ADMIN / SEED / API KEYS
+##########################
+ADMIN_TASK_TOKEN="your_admin_token_here"
+ADMIN_JOB_SECRET="your_job_secret_here"
+UNSPLASH_ACCESS_KEY="unsplash_key_here"
+PEXELS_API_KEY="pexels_key_here"
+PIXABAY_API_KEY="pixabay_key_here"
+SEED_KEY="your_seed_key_here"
+
+##########################
+# 🧠 OPTIONAL / AI
+##########################
+OPENAI_API_KEY=""
+MODERATION_THRESHOLD="0.85"
+
+# ==== FILE: ../firebase.json ====
+
+{
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "runtime": "nodejs20",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" ci",
+        "npm --prefix \"$RESOURCE_DIR\" run build"
+      ]
+    },
+    {
+      "source": "functions-next",
+      "codebase": "functions-next",
+      "runtime": "nodejs20",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" install --no-audit --no-fund",
+        "npm --prefix \"$RESOURCE_DIR\" run build"
+      ]
+    }
+  ],
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "storage": {
+    "rules": "storage.rules"
+  },
+  "hosting": [
+    {
+      "target": "app",
+      "public": "web",
+      "ignore": [
+        "firebase.json",
+        "**/.*",
+        "**/node_modules/**"
+      ],
+      "rewrites": [
+        {
+          "source": "/api/v1{,/**}",
+          "function": {
+            "functionId": "apiV1",
+            "region": "europe-west3",
+            "codebase": "functions-next"
+          }
+        }
+      ]
+    }
+  ]
+}
+
+# ==== FILE: ../firebase.deploy-functions-next.json ====
+
+{
+  "functions": [
+    {
+      "source": "functions-next",
+      "codebase": "functions-next",
+      "runtime": "nodejs20",
+      "ignore": ["node_modules", ".git", "firebase-debug.log", "firebase-debug.*.log", "*.local"],
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" install --no-audit --no-fund",
+        "npm --prefix \"$RESOURCE_DIR\" run build"
+      ]
+    }
+  ]
+}
+
+# ==== FILE: .env (MASKIERT) ====
+
+######################################################################
+# 🌱 GROWGRAM BACKEND – ENTERPRISE ENVIRONMENT CONFIGURATION (v2.0)
+# Backend: Firebase Cloud Functions (Node 18+, TypeScript, ESM)
+# Region: europe-west3
+######################################################################
+
+##########################
+# 🔗 API / BASE CONFIG
+##########################
+
+# Cloud Functions API base URL (automatically used in all email links)
+API_BASE=***REDACTED***
+
+# Firebase project & region
+APP_PROJECT_ID=***REDACTED***
+APP_REGION=***REDACTED***
+
+# Firestore collections
+USERS_COLLECTION=***REDACTED***
+
+# Storage bucket (for uploads)
+GCS_BUCKET_NAME=***REDACTED***
+
+
+##########################
+# 🔐 AUTHENTICATION / JWT
+##########################
+
+# Strong secret for JWT (64+ random hex chars)
+JWT_SECRET=***REDACTED***
+# Expiration for access tokens
+JWT_EXPIRES=***REDACTED***
+# Expiration for password reset tokens
+RESET_TOKEN_EXPIRES=***REDACTED***
+
+
+##########################
+# 🌍 APP / FRONTEND LINKS
+##########################
+
+# Main hosted domain (Firebase Hosting or custom)
+APP_BASEURL=***REDACTED***
+# After verification redirect route
+APP_REDIRECTURL=***REDACTED***
+# Public App URL (frontend)
+APP_URL=***REDACTED***
+
+# Email verify endpoint (points to Cloud Function)
+VERIFY_URL=***REDACTED***
+# Password reset endpoint
+RESET_URL=***REDACTED***
+
+
+##########################
+# 📧 SENDGRID (Transactional Email)
+##########################
+
+# SendGrid API key (begins with SG.)
+SENDGRID_API_KEY=***REDACTED***
+# Verified sender identity
+SENDGRID_SENDER=***REDACTED***
+SENDGRID_SENDER_NAME=***REDACTED***
+SENDGRID_REPLY_TO=***REDACTED***
+
+# Dynamic template IDs
+SENDGRID_TEMPLATE_VERIFY=***REDACTED***
+SENDGRID_TEMPLATE_RESET=***REDACTED***
+SENDGRID_TEMPLATE_WELCOME=***REDACTED***
+SENDGRID_TEMPLATE_WAITLIST_WELCOME=***REDACTED***
+SENDGRID_TEMPLATE_WAITLIST_CONFIRM=***REDACTED***
+
+# Sandbox mode (false =***REDACTED***
+SENDGRID_SANDBOX=***REDACTED***
+
+
+##########################
+# 🧩 DEVELOPMENT / TEST
+##########################
+
+# Secret for local Dev link generator (any strong string)
+DEV_LINK_SECRET=***REDACTED***
+
+# Local test account (for emulator smoke tests)
+TEST_EMAIL=***REDACTED***
+TEST_PASSWORD=***REDACTED***
+
+# Enable debug logs (true/false)
+ENABLE_DEBUG_LOGS=***REDACTED***
+
+
+##########################
+# ⚙️ ADMIN / INTERNAL KEYS
+##########################
+
+# Internal tokens for admin jobs or cron tasks
+ADMIN_TASK_TOKEN=***REDACTED***
+ADMIN_JOB_SECRET=***REDACTED***
+
+# Optional external content APIs (used by feed seeding)
+UNSPLASH_ACCESS_KEY=***REDACTED***
+PEXELS_API_KEY=***REDACTED***
+PIXABAY_API_KEY=***REDACTED***
+
+# Internal seed key (for dev environment only)
+SEED_KEY=***REDACTED***
+SEED_SECRET=***REDACTED***
+
+
+##########################
+# 🧠 OPTIONAL / AI MODULES
+##########################
+
+# (Future use: content moderation / caption AI)
+OPENAI_API_KEY=***REDACTED***
+MODERATION_THRESHOLD=***REDACTED***
+
+
+######################################################################
+# ✅ DEPLOY COMMANDS (for Firebase Functions Config)
+######################################################################
+# firebase functions:config:set \
+#   sendgrid.key=***REDACTED***
+#   sendgrid.template.verify=***REDACTED***
+#   app.baseurl=***REDACTED***
+#   app.redirecturl=***REDACTED***
+#   jwt.secret=***REDACTED***
+#   jwt.expires=***REDACTED***
+#
+# Notes:
+# - Do NOT commit your real `.env` file.
+# - Keep all production secrets in Firebase Functions Config or
+#   secure CI/CD environments (e.g. GitHub Secrets, Google Secret Manager)
+######################################################################
+
+# ==== FILE: src/app/app.ts ====
+
+import express, {
+  type Express,
+  type Request,
+  type Response,
+  type NextFunction,
+  type RequestHandler,
+} from "express";
+import compression from "compression";
+import path from "node:path";
+import { existsSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { randomUUID } from "node:crypto";
+
+import { buildCors, addPreflight, type OriginRule } from "./cors.js";
+import { attachSecurity } from "./security.js";
+import { attachErrorHandlers } from "./errors.js";
+import { attachDocs } from "./docs.js";
+import { mountRoutes } from "./routes.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+export type AppOptions = {
+  allowedOrigins?: OriginRule[];
+  jsonLimit?: string;
+  urlencodedLimit?: string;
+  staticDir?: string | false;
+  rateLimiter?: (req: Request, res: Response, next: NextFunction) => void;
+  docs?: {
+    yamlPath?: string;
+    routeJson?: string;
+    routeUi?: string;
+    title?: string;
+  };
+};
+
+/** Minimaler Request-Logger mit Request-ID & Dauer */
+function requestLogger(req: Request, res: Response, next: NextFunction) {
+  const t0 = process.hrtime.bigint();
+  const id = (res.locals.requestId as string) || randomUUID();
+  res.locals.requestId = id;
+  res.setHeader("x-request-id", id);
+
+  const done = () => {
+    const ns = Number(process.hrtime.bigint() - t0);
+    const ms = Math.round(ns / 1e6);
+    res.setHeader("x-response-time", `${ms}ms`);
+    console.log(
+      JSON.stringify({
+        lvl: "info",
+        id,
+        ip: req.ip,
+        m: req.method,
+        u: req.originalUrl,
+        s: res.statusCode,
+        ms,
+      })
+    );
+  };
+
+  res.on("finish", done);
+  res.on("close", done);
+  next();
+}
+
+/** App-Factory: Security → CORS → Parser → Static */
+export function createApp(opts: AppOptions = {}): Express {
+  const {
+    allowedOrigins = [],
+    jsonLimit = "2mb",
+    urlencodedLimit = "200kb",
+    staticDir = path.join(__dirname, "..", "public"),
+    rateLimiter,
+    docs,
+  } = opts;
+
+  const app = express();
+  app.disable("x-powered-by");
+  app.set("trust proxy", true);
+
+  // Public Health/Root – immer erreichbar
+  app.get("/", (_req: Request, res: Response) => res.status(200).send("GrowGram API up"));
+  app.get("/health", (_req: Request, res: Response) =>
+    res.status(200).json({ ok: true, ts: Date.now() })
+  );
+
+  // Security / Compression / CORS
+  attachSecurity(app);
+  app.use(compression() as unknown as RequestHandler);
+  app.use(buildCors(allowedOrigins));
+  addPreflight(app, allowedOrigins); // nur einmal nötig
+
+  // Request-ID + Logger
+  app.use((_, res, next) => {
+    res.locals.requestId = randomUUID();
+    res.setHeader("x-request-id", res.locals.requestId);
+    next();
+  });
+  app.use(requestLogger);
+
+  // Optionaler Rate-Limiter
+  if (rateLimiter) app.use(rateLimiter);
+
+  // Parser
+  app.use(express.json({ limit: jsonLimit }));
+  app.use(express.urlencoded({ extended: true, limit: urlencodedLimit }));
+
+  // Static (nur wenn vorhanden & nicht deaktiviert)
+  if (staticDir && typeof staticDir === "string" && existsSync(staticDir)) {
+    app.use(express.static(staticDir));
+  }
+
+  // Docs (OpenAPI JSON + Redoc UI) – Lazy-Loader verhindert Boot-Crash
+  attachDocs(app, {
+    title: docs?.title ?? "GrowGram API",
+    yamlPath: docs?.yamlPath,    // default: src/docs/openapi.yaml
+    routeJson: docs?.routeJson,  // default: /openapi.json
+    routeUi: docs?.routeUi,      // default: /docs
+  });
+
+  return app;
+}
+
+/** Vollständiger Bootstrap inkl. Routen & zentrale Fehler-Handler */
+export async function initApp(opts: AppOptions = {}): Promise<Express> {
+  const app = createApp(opts);
+  await mountRoutes(app);
+  attachErrorHandlers(app);
+  return app;
+}
+
+# ==== FILE: src/app/cors.ts ====
+
+import type { Express, Request, Response, NextFunction } from "express";
+import cors, { type CorsOptionsDelegate } from "cors";
+
+export type OriginRule = string | RegExp | ((origin: string) => boolean);
+
+function matches(origin: string, rule: OriginRule): boolean {
+  if (typeof rule === "string") return origin === rule;
+  if (rule instanceof RegExp) return rule.test(origin);
+  return !!rule(origin);
+}
+
+/** CORS-Factory: erlaubt originlose (curl/Postman) + Whitelist/RegExp/Fn */
+export function buildCors(allowed: OriginRule[] = []) {
+  const delegate: CorsOptionsDelegate = (req, cb) => {
+    // CorsRequest doesn't have .get, so read headers in a type-safe way
+    const headers = req.headers as Record<string, string | string[] | undefined>;
+    const origin = (() => {
+      const v = headers.origin;
+      if (Array.isArray(v)) return v[0];
+      if (typeof v === "string") return v;
+      // fallback to a potential non-lowercase header key
+      const V = (headers as any).Origin;
+      if (Array.isArray(V)) return V[0];
+      if (typeof V === "string") return V;
+      return undefined;
+    })();
+
+    if (!origin) return cb(null, { origin: true, credentials: true }); // allow curl/Postman
+
+    const ok =
+      allowed.length === 0
+        ? false
+        : allowed.some((r) => {
+            try {
+              return matches(origin, r);
+            } catch {
+              return false;
+            }
+          });
+
+    cb(null, { origin: ok, credentials: true });
+  };
+  return cors(delegate);
+}
+
+/** Preflight-Helfer */
+export function addPreflight(app: Express, allowed: OriginRule[] = []) {
+  const preflight = buildCors(allowed);
+  app.options("*", preflight as unknown as (req: Request, res: Response, next: NextFunction) => void);
+}
+
+# ==== FILE: src/app/docs.ts ====
+
+import type { Express, Request, Response } from "express";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+import { createHash } from "node:crypto";
+import { fileURLToPath } from "node:url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+type DocsOpts = {
+  yamlPath?: string;
+  routeJson?: string; // default: /openapi.json
+  routeUi?: string;   // default: /docs
+  title?: string;     // default: GrowGram API
+};
+
+export function attachDocs(app: Express, opts: DocsOpts = {}): void {
+  const yamlPath = opts.yamlPath ?? path.join(__dirname, "..", "docs", "openapi.yaml");
+  const routeJson = opts.routeJson ?? "/openapi.json";
+  const routeUi   = opts.routeUi   ?? "/docs";
+  const title     = opts.title     ?? "GrowGram API";
+
+  let cachedJson = "";
+  let cachedEtag = "";
+
+  async function loadSpec() {
+    const [{ default: YAML }] = await Promise.all([import("yaml")]); // lazy import
+    const raw = await readFile(yamlPath, "utf8");
+    const json = JSON.stringify(YAML.parse(raw));
+    cachedJson = json;
+    cachedEtag = createHash("sha1").update(json).digest("hex");
+  }
+
+  app.get(routeJson, async (req: Request, res: Response) => {
+    try {
+      await loadSpec();
+      if (req.headers["if-none-match"] === cachedEtag) return res.status(304).end();
+      res.setHeader("Content-Type", "application/json; charset=utf-8");
+      res.setHeader("ETag", cachedEtag);
+      res.setHeader("Cache-Control", "no-cache");
+      res.status(200).send(cachedJson);
+    } catch (e: any) {
+      res.status(404).json({ error: "spec_load_failed", message: e?.message || "openapi.yaml missing" });
+    }
+  });
+
+  app.get(routeUi, (_req: Request, res: Response) => {
+    const html = `<!doctype html><html><head>
+      <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+      <title>${title}</title>
+      <style>body{margin:0}.top{position:fixed;inset:0 0 auto 0;height:56px;background:#0b1f14;color:#A8FFB0;display:flex;align-items:center;padding:0 16px;font-family:system-ui,-apple-system,Segoe UI,Roboto} .wrap{margin-top:56px}</style>
+    </head><body>
+      <div class="top"><strong>${title}</strong>&nbsp;&nbsp;<a href="${routeJson}" target="_blank" rel="noopener" style="color:#A8FFB0">openapi.json</a></div>
+      <div class="wrap"><redoc spec-url="${routeJson}" hide-loading></redoc></div>
+      <script src="https://cdn.jsdelivr.net/npm/redoc/bundles/redoc.standalone.min.js" defer></script>
+    </body></html>`;
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.setHeader("Cache-Control", "no-cache");
+    res.status(200).send(html);
+  });
+}
+
+export default attachDocs;
+
+# ==== FILE: src/app/errors.ts ====
+
+import type { Express, Request, Response, NextFunction } from "express";
+
+export class HttpError extends Error {
+  status: number;
+  code?: string;
+  details?: unknown;
+  constructor(status: number, message: string, code?: string, details?: unknown) {
+    super(message);
+    this.name = "HttpError";
+    this.status = status;
+    this.code = code;
+    this.details = details;
+    Object.setPrototypeOf(this, new.target.prototype);
+    Error.captureStackTrace?.(this, HttpError);
+  }
+}
+
+export function createError(
+  status: number,
+  message: string,
+  code?: string,
+  details?: unknown
+): HttpError {
+  return new HttpError(status, message, code, details);
+}
+
+function notFound(_req: Request, res: Response) {
+  res.status(404).json({ error: "not_found" });
+}
+
+function errorHandler(err: any, _req: Request, res: Response, _next: NextFunction) {
+  const status = typeof err?.status === "number" ? err.status : 500;
+  const msg = err?.message || "Internal Server Error";
+  console.error("handler error:", msg);
+  res.status(status).json({ error: "internal_error", message: msg });
+}
+
+export function attachErrorHandlers(app: Express) {
+  app.use(notFound);
+  app.use(errorHandler);
+}
+
+# ==== FILE: src/app/routes.ts ====
+
+import type { Express, Request, Response } from "express";
+
+export async function mountRoutes(app: Express) {
+  // Beispiel-Route (öffentlich)
+  app.get("/version", (_req: Request, res: Response) => {
+    res.status(200).json({ name: "growgram-functions-next", version: "1.0.0" });
+  });
+
+  // TODO: hier deine echten Router mounten:
+  // import { authRouter } from "../routes/auth.js";
+  // app.use("/auth", authRouter);
+}
+
+# ==== FILE: src/app/security.ts ====
+
+import type { Express } from "express";
+import helmet from "helmet";
+
+export function attachSecurity(app: Express) {
+  app.use(
+    helmet({
+      // Für API-JSON völlig ok, UI hostest du getrennt
+      crossOriginEmbedderPolicy: false,
+      crossOriginOpenerPolicy: { policy: "same-origin" },
+      crossOriginResourcePolicy: { policy: "cross-origin" },
+    })
+  );
+}
+
+# ==== FILE: src/config/colors.ts ====
+
+// Optionale Farb-Konstanten – nützlich für konsistente Responses, E-Mails, etc.
+export const COLORS = {
+  brand: '#4CAF50',
+  brandDark: '#3a9440',
+  bg: '#0b1f14',
+  card: '#11271b',
+  border: '#2f5a41',
+  text: '#ffffff',
+  subtext: '#cfe8d6',
+  danger: '#ff8e8e',
+} as const;
+
+# ==== FILE: src/config/env.ts ====
+
+import "dotenv/config";
+
+export const env = {
+  // 🔗 Base / API
+  apiBase: process.env.API_BASE || "https://europe-west3-growgram-backend.cloudfunctions.net/apiV1",
+  firebaseProjectId: process.env.FIREBASE_PROJECT_ID || "growgram-backend",
+  firebaseRegion: process.env.FIREBASE_REGION || "europe-west3",
+  usersCollection: process.env.USERS_COLLECTION || "users_dev",
+  gcsBucketName: process.env.GCS_BUCKET_NAME || "growgram-backend.appspot.com",
+
+  // 🔐 Auth / JWT
+  jwtSecret: process.env.JWT_SECRET || "dev_only_secret", // PROD: setzen!
+  jwtExpires: process.env.JWT_EXPIRES || "1d",
+  resetTokenExpires: process.env.RESET_TOKEN_EXPIRES || "15m",
+
+  // 🌍 App / HOSTING
+  appBaseUrl: process.env.APP_BASEURL || "https://growgram-app.com",
+  appRedirectUrl: process.env.APP_REDIRECTURL || "/verified",
+  appUrl: process.env.APP_URL || "https://growgram-app.com",
+  verifyUrl: process.env.VERIFY_URL || "",
+  resetUrl: process.env.RESET_URL || "",
+
+  // 📧 SendGrid
+  sendgridKey: process.env.SENDGRID_KEY || "",
+  sendgridSender: process.env.SENDGRID_SENDER || "support@growgram-app.com",
+  sendgridSenderName: process.env.SENDGRID_SENDER_NAME || "GrowGram",
+  sendgridReplyTo: process.env.SENDGRID_REPLY_TO || "notifications@growgram-app.com",
+  sendgridTemplateVerify: process.env.SENDGRID_TEMPLATE_VERIFY || "d-xxxxxx",
+  sendgridTemplateReset: process.env.SENDGRID_TEMPLATE_RESET || "d-xxxxxx",
+  sendgridTemplateWelcome: process.env.SENDGRID_TEMPLATE_WELCOME || "d-xxxxxx",
+  sendgridTemplateWaitlistWelcome: process.env.SENDGRID_TEMPLATE_WAITLIST_WELCOME || "d-xxxxxx",
+  sendgridTemplateWaitlistConfirm: process.env.SENDGRID_TEMPLATE_WAITLIST_CONFIRM || "d-xxxxxx",
+  sendgridSandbox: process.env.SENDGRID_SANDBOX === "true",
+
+  // 🧩 DEV / TEST / ADMIN
+  devLinkSecret: process.env.DEV_LINK_SECRET || "dev_secret_placeholder",
+  testEmail: process.env.TEST_EMAIL || "test@example.com",
+  testPassword: process.env.TEST_PASSWORD || "password123",
+  adminTaskToken: process.env.ADMIN_TASK_TOKEN || "admin_token_placeholder",
+  adminJobSecret: process.env.ADMIN_JOB_SECRET || "job_secret_placeholder",
+
+  // 🔑 3rd-Party (optional)
+  unsplashAccessKey: process.env.UNSPLASH_ACCESS_KEY || "",
+  pexelsApiKey: process.env.PEXELS_API_KEY || "",
+  pixabayApiKey: process.env.PIXABAY_API_KEY || "",
+  seedKey: process.env.SEED_KEY || "seed_key_placeholder",
+
+  // 🧠 Optional / AI
+  openaiApiKey: process.env.OPENAI_API_KEY || "",
+  moderationThreshold: parseFloat(process.env.MODERATION_THRESHOLD || "0.85"),
+};
+export default env;
+
+# ==== FILE: src/config/firebase.ts ====
+
+/**
+ * Firebase Admin bootstrap (Functions Gen2 ready)
+ * - Single-init Guard
+ * - Clean named exports (db, auth, storage, bucket, admin, FieldValue, Timestamp)
+ * - Env validation + Emulator support
+ */
+import admin from 'firebase-admin';
+
+type InitOpts = {
+  storageBucket?: string | null;
+};
+
+function readEnv(): InitOpts {
+  const storageBucket = process.env.FIREBASE_STORAGE_BUCKET || null;
+  return { storageBucket };
+}
+
+// --- initialize (idempotent) ---
+const { storageBucket } = readEnv();
+
+if (admin.apps.length === 0) {
+  admin.initializeApp({
+    credential: admin.credential.applicationDefault(),
+    ...(storageBucket ? { storageBucket } : {}),
+  });
+}
+
+// --- core handles ---
+export const db = admin.firestore();
+export const auth = admin.auth();
+export const storage = admin.storage();
+export const bucket = storage.bucket();
+
+// handy re-exports for callers that need them
+export { admin };
+export const FieldValue = admin.firestore.FieldValue;
+export const Timestamp = admin.firestore.Timestamp;
+
+/**
+ * Small helpers to keep code clean in repos/services.
+ */
+
+// RFC3339 now()
+export const nowISO = () => new Date().toISOString();
+
+// Type-safe get by id (throws 404-like error if missing when strict=true)
+export async function getRequiredDoc<T = admin.firestore.DocumentData>(
+  ref: admin.firestore.DocumentReference<T>,
+  strict = true,
+): Promise<admin.firestore.DocumentSnapshot<T>> {
+  const snap = await ref.get();
+  if (!snap.exists && strict) {
+    const err: any = new Error('Document not found');
+    err.code = 'not_found';
+    err.status = 404;
+    throw err;
+  }
+  return snap;
+}
+
+# ==== FILE: src/config/helmet.ts ====
+
+import type { HelmetOptions } from 'helmet';
+
+// Separate Options-Datei (falls du sie auch außerhalb von src/app/security.ts brauchst)
+export const helmetOptions: HelmetOptions = {
+  contentSecurityPolicy: false, // bei Bedarf für HTML-Responses gezielt aufsetzen
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+  referrerPolicy: { policy: 'no-referrer' },
+  frameguard: { action: 'deny' },
+  hsts: false, // HSTS besser am Edge (Hosting/Proxy) aktivieren
+  xssFilter: true,
+  noSniff: true,
+  dnsPrefetchControl: { allow: false },
+  hidePoweredBy: true,
+};
+
+# ==== FILE: src/config/logger.ts ====
+
+/*********************************************************************
+ * 📝 GrowGram Logger – simple stdio logger with level threshold
+ *********************************************************************/
+import { env } from "./env.js";
+
+type Level = "silent" | "error" | "warn" | "info" | "http" | "debug";
+
+const order: Record<Level, number> = {
+  silent: 99,
+  error: 0,
+  warn: 10,
+  info: 20,
+  http: 30,
+  debug: 40
+};
+
+const currentLevel: Level = (env as any).logLevel ?? "info";
+const THRESHOLD = order[currentLevel] ?? 20;
+
+const enabled = (level: Level) => order[level] <= THRESHOLD;
+
+export const logger = {
+  error: (...args: unknown[]) => enabled("error") && console.error("[ERROR]", ...args),
+  warn:  (...args: unknown[]) => enabled("warn")  && console.warn("[WARN]", ...args),
+  info:  (...args: unknown[]) => enabled("info")  && console.log("[INFO]", ...args),
+  http:  (...args: unknown[]) => enabled("http")  && console.log("[HTTP]", ...args),
+  debug: (...args: unknown[]) => enabled("debug") && console.debug("[DEBUG]", ...args)
+};
+
+export default logger;
+
+# ==== FILE: src/config/rateLimit.ts ====
+
+import rateLimit from "express-rate-limit";
+
+// global limiter for all requests
+export const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 min
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: "Too many requests, please try again later.",
+});
+
+// specific limiter for login/register routes
+export const authLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 5,
+  keyGenerator: (req) => req.ip + (req.body?.email || ""),
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: "Too many login/signup attempts. Try again later.",
+});
+
+# ==== FILE: src/controllers/admin/devSeedController.ts ====
+
+import type { Request, Response } from 'express';
+
+export async function reindex(_req: Request, res: Response) {
+  // TODO: echte Reindex-Logik (Search/Score neu berechnen)
+  return res.json({ ok: true });
+}
+
+# ==== FILE: src/controllers/admin/seedController.ts ====
+
+import type { Request, Response } from 'express';
+import * as svc from '../../services/admin/seed.service.js';
+
+export async function seed(_req: Request, res: Response) {
+  await svc.seed();
+  return res.json({ ok: true });
+}
+
+export async function devSeed(_req: Request, res: Response) {
+  if ((svc as any).devSeed) {
+    await (svc as any).devSeed();
+  } else {
+    await svc.seed();
+  }
+  return res.json({ ok: true });
+}
+
+# ==== FILE: src/controllers/auth/complianceController.ts ====
+
+import type { Request, Response } from 'express';
+import { db, admin } from '../../config/firebase.js';
+
+export async function complianceAck(req: Request, res: Response) {
+  try {
+    const uid = (req as any).user?.userId;
+    if (!uid) return res.status(401).json({ message: 'Nicht autorisiert' });
+
+    const { agree, over18, version } = (req.body || {}) as { agree?: boolean; over18?: boolean; version?: string };
+    if (!agree || !over18) return res.status(400).json({ message: 'Zustimmung erforderlich' });
+
+    await db.collection('users').doc(uid).set({
+      compliance: {
+        agreed: true,
+        over18: true,
+        version: version || '1.0.0',
+        agreedAt: admin.firestore.FieldValue.serverTimestamp(),
+      },
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+
+    return res.json({ ok: true });
+  } catch (e) {
+    console.error('[complianceAck] error:', e);
+    return res.status(500).json({ message: 'Interner Serverfehler' });
+  }
+}
+
+# ==== FILE: src/controllers/auth/loginController.ts ====
+
+import type { Request, Response } from 'express';
+
+export async function login(_req: Request, res: Response) {
+  // TODO
+  return res.json({ ok: true });
+}
+
+export async function logout(_req: Request, res: Response) {
+  return res.status(204).end();
+}
+
+# ==== FILE: src/controllers/auth/profileController.ts ====
+
+import type { Request, Response } from 'express';
+
+// ---- simple stubs / replace with real services later ----
+async function updateProfile(_userId: string, patch: any) {
+  return { id: _userId || 'me', ...patch };
+}
+async function getPublic(_userId: string) {
+  return { id: _userId, username: 'user', isVerified: true };
+}
+async function getMe(_userId: string) {
+  return {
+    id: _userId,
+    email: 'me@example.com',
+    username: 'me',
+    isVerified: true,
+  };
+}
+// ---------------------------------------------------------
+
+// PATCH /me  (alias: updateMe)
+export async function update(req: Request, res: Response) {
+  const userId = ((req as any).user?.id ?? 'me') as string;
+  const next = await updateProfile(userId, (req as any).body || {});
+  return res.json({ user: next });
+}
+export { update as updateMe };
+
+// GET /users/:userId (alias: getPublicProfile)
+export async function get(req: Request, res: Response) {
+  const { userId } = req.params as any;
+  const data = await getPublic(String(userId));
+  return res.json({ user: data });
+}
+export { get as getPublicProfile };
+
+// GET /me
+export async function me(req: Request, res: Response) {
+  const userId = ((req as any).user?.id ?? 'me') as string;
+  const data = await getMe(userId);
+  return res.json({ user: data });
+}
+
+# ==== FILE: src/controllers/auth/registerController.ts ====
+
+import type { Request, Response } from 'express';
+import { db, admin } from '../../config/firebase.js';
+
+export async function register(req: Request, res: Response) {
+  try {
+    const { email, password, firstName, lastName, city, birthDate } = (req.body ?? {}) as Record<string, any>;
+    if (!email || !password) {
+      return res.status(400).json({ error: 'bad_request', details: 'email_and_password_required' });
+    }
+
+    // Nutzer anlegen oder vorhandenen holen
+    let authUser;
+    try {
+      authUser = await admin.auth().getUserByEmail(email);
+    } catch {
+      authUser = await admin.auth().createUser({ email, password, displayName: [firstName, lastName].filter(Boolean).join(' ') });
+    }
+
+    const uid = authUser.uid;
+    const now = admin.firestore.FieldValue.serverTimestamp();
+
+    await db.collection('users').doc(uid).set({
+      id: uid,
+      email,
+      firstName: firstName ?? null,
+      lastName: lastName ?? null,
+      city: city ?? null,
+      birthDate: birthDate ?? null,
+      isVerified: false,
+      createdAt: now,
+      updatedAt: now,
+    }, { merge: true });
+
+    // Verifizierungs-Mail (optional – wenn Service vorhanden)
+    try {
+      const mod = await import('../../services/auth/email.service.js').catch(() => null) as any;
+      if (mod?.sendVerificationEmail) {
+        const linkMod = await import('../../services/auth/jwt.service.js').catch(() => null) as any;
+        const token = linkMod?.signEmailVerification ? await linkMod.signEmailVerification({ userId: uid, email }) : null;
+        const base = process.env.APP_BASEURL || 'https://growgram-app.com';
+        const verifyUrl = token
+          ? `${base}/api/auth/verify-email?uid=${encodeURIComponent(uid)}&token=${encodeURIComponent(token)}`
+          : `${base}/api/auth/verify-email?uid=${encodeURIComponent(uid)}`;
+        await mod.sendVerificationEmail({ firstName, email, verificationUrl: verifyUrl });
+      }
+    } catch (e) {
+      console.warn('[register] verification email not sent:', e);
+    }
+
+    return res.status(201).json({ ok: true, userId: uid });
+  } catch (e: any) {
+    console.error('[register]', e);
+    return res.status(500).json({ error: 'internal', details: 'register_failed' });
+  }
+}
+
+# ==== FILE: src/controllers/auth/verifyController.ts ====
+
+import type { Request, Response } from 'express';
+
+export async function verifyEmail(_req: Request, res: Response) {
+  // TODO: Token prüfen & User verifizieren
+  return res.json({ ok: true });
+}
+
+# ==== FILE: src/controllers/avatar/avatarController.ts ====
+
+import type { Request, Response } from 'express';
+
+export async function uploadAvatar(_req: Request, res: Response) {
+  // TODO: Upload speichern
+  return res.json({ ok: true });
+}
+
+// Alias für Routes, die uploadAvatarBinary erwarten
+export { uploadAvatar as uploadAvatarBinary };
+
+# ==== FILE: src/controllers/chat/chatController.ts ====
+
+import type { Request, Response } from 'express';
+
+// ---- stubs ----
+async function openDM(_userId: string, _peerId: string) {
+  return { id: 'chat-1', members: [_userId, _peerId] };
+}
+async function sendMsg(_chatId: string, _userId: string, _text: string, _replyToId?: string) {
+  return { id: 'msg-1', text: _text, replyToId: _replyToId ?? null };
+}
+async function listMsgs(_chatId: string, _userId: string, _opts: { limit?: number; cursor?: string }) {
+  return { messages: [], nextCursor: null as null | string };
+}
+async function setRead(_chatId: string, _userId: string) { /* noop */ }
+// ----------------
+
+export async function open(req: Request, res: Response) {
+  const userId = (req as any).user?.id ?? 'me';
+  const { peerId } = (req as any).body || {};
+  const chat = await openDM(String(userId), String(peerId || 'peer'));
+  return res.json({ chat });
+}
+
+export async function listMessages(req: Request, res: Response) {
+  const userId = (req as any).user?.id ?? 'me';
+  const { chatId } = req.params as any;
+  const { limit, cursor } = (req as any).query || {};
+  const data = await listMsgs(String(chatId), String(userId), {
+    limit: limit ? Number(limit) : undefined,
+    cursor: cursor ? String(cursor) : undefined,
+  });
+  return res.json(data);
+}
+
+export async function sendMessage(req: Request, res: Response) {
+  const userId = (req as any).user?.id ?? 'me';
+  const { chatId } = req.params as any;
+  const { text, replyToId } = (req as any).body || {};
+  const m = await sendMsg(String(chatId), String(userId), String(text || ''), replyToId ? String(replyToId) : undefined);
+  return res.json({ message: m });
+}
+
+export async function editMessage(_req: Request, res: Response)   { return res.status(501).json({ error: 'not_implemented' }); }
+export async function unsendMessage(_req: Request, res: Response) { return res.status(501).json({ error: 'not_implemented' }); }
+export async function sendMedia(_req: Request, res: Response)     { return res.status(501).json({ error: 'not_implemented' }); }
+
+export async function markRead(req: Request, res: Response) {
+  const userId = (req as any).user?.id ?? 'me';
+  const { chatId } = req.params as any;
+  await setRead(String(chatId), String(userId));
+  return res.status(204).end();
+}
+
+# ==== FILE: src/controllers/chat/groupController.ts ====
+
+import type { Request, Response } from 'express';
+import { db, admin } from '../../config/firebase.js';
+
+const now = () => admin.firestore.FieldValue.serverTimestamp();
+
+function uniq(arr: string[]) {
+  return Array.from(new Set(arr));
+}
+
+/**
+ * POST /chat/group
+ * Body: { name: string, members: string[] }
+ * Erstellt eine Gruppen-Konversation.
+ */
+export async function createGroup(req: Request, res: Response) {
+  try {
+    const ownerId = (req as any).user?.userId;
+    if (!ownerId) return res.status(401).json({ error: 'unauthorized' });
+
+    const { name, members } = (req.body ?? {}) as { name?: string; members?: string[] };
+    const mem = uniq([ownerId, ...(members ?? [])]).filter(Boolean);
+    if (!name?.trim() || mem.length < 2) {
+      return res.status(400).json({ error: 'bad_request', details: 'name_and_min_two_members_required' });
+    }
+
+    const ref = db.collection('chats').doc();
+    const doc = {
+      id: ref.id,
+      type: 'group' as const,
+      name: name.trim(),
+      ownerId,
+      participants: mem,
+      admins: [ownerId],
+      createdAt: now(),
+      updatedAt: now(),
+      lastMessageAt: now(),
+    };
+    await ref.set(doc);
+    return res.status(201).json({ chat: doc });
+  } catch (e: any) {
+    console.error('[createGroup]', e);
+    return res.status(500).json({ error: 'internal' });
+  }
+}
+
+/**
+ * PATCH /chat/group/:chatId
+ * Body: { name?: string, add?: string[], remove?: string[] }
+ * Nur Owner/Admins dürfen ändern.
+ */
+export async function updateGroup(req: Request, res: Response) {
+  try {
+    const uid = (req as any).user?.userId;
+    if (!uid) return res.status(401).json({ error: 'unauthorized' });
+
+    const { chatId } = req.params as any;
+    const { name, add = [], remove = [] } = (req.body ?? {}) as { name?: string; add?: string[]; remove?: string[] };
+
+    const ref = db.collection('chats').doc(chatId);
+    const snap = await ref.get();
+    if (!snap.exists) return res.status(404).json({ error: 'not_found' });
+
+    const data = snap.data() as any;
+    if (data.type !== 'group') return res.status(400).json({ error: 'bad_request', details: 'not_a_group' });
+
+    const isAdmin = (data.admins ?? []).includes(uid);
+    const isOwner = data.ownerId === uid;
+    if (!isAdmin && !isOwner) return res.status(403).json({ error: 'forbidden' });
+
+    const patch: any = { updatedAt: now() };
+
+    if (name && name.trim() && (isOwner || isAdmin)) patch.name = name.trim();
+
+    if (Array.isArray(add) && add.length) {
+      const merged = uniq([...(data.participants ?? []), ...add]);
+      patch.participants = merged;
+    }
+
+    if (Array.isArray(remove) && remove.length) {
+      const filtered = (patch.participants ?? data.participants ?? []).filter((u: string) => !remove.includes(u));
+      // Owner darf nicht entfernt werden
+      if (!filtered.includes(data.ownerId)) filtered.push(data.ownerId);
+      patch.participants = uniq(filtered);
+    }
+
+    await ref.set(patch, { merge: true });
+    return res.json({ ok: true });
+  } catch (e: any) {
+    console.error('[updateGroup]', e);
+    return res.status(500).json({ error: 'internal' });
+  }
+}
+
+/**
+ * POST /chat/group/:chatId/messages
+ * Body: { text?: string, mediaUrls?: string[] }
+ */
+export async function sendGroupMessage(req: Request, res: Response) {
+  try {
+    const uid = (req as any).user?.userId;
+    if (!uid) return res.status(401).json({ error: 'unauthorized' });
+
+    const { chatId } = req.params as any;
+    const { text = '', mediaUrls = [] } = (req.body ?? {}) as any;
+
+    const ref = db.collection('chats').doc(chatId);
+    const snap = await ref.get();
+    if (!snap.exists) return res.status(404).json({ error: 'not_found' });
+    const data = snap.data() as any;
+    if (data.type !== 'group') return res.status(400).json({ error: 'bad_request', details: 'not_a_group' });
+
+    const members: string[] = data.participants ?? [];
+    if (!members.includes(uid)) return res.status(403).json({ error: 'forbidden' });
+
+    const msgRef = ref.collection('messages').doc();
+    const doc = {
+      id: msgRef.id,
+      chatId,
+      senderId: uid,
+      text: String(text || ''),
+      mediaUrls: Array.isArray(mediaUrls) ? mediaUrls : [],
+      createdAt: now(),
+      editedAt: null as any,
+      deletedAt: null as any,
+      readBy: [uid],
+      type: 'text' as const,
+    };
+
+    await msgRef.set(doc);
+    await ref.set(
+      { lastMessageAt: now(), lastMessage: { text: doc.text, senderId: uid, createdAt: now() }, updatedAt: now() },
+      { merge: true }
+    );
+
+    // Optional Fanout
+    try {
+      const svc = await import('../../services/chat/message.service.js').catch(() => null) as any;
+      if (svc?.fanoutNewMessage) await svc.fanoutNewMessage({ chatId, message: { ...doc, createdAt: new Date().toISOString() } });
+    } catch (e) {
+      console.warn('[sendGroupMessage] fanout skipped:', e);
+    }
+
+    return res.status(201).json({ message: doc });
+  } catch (e: any) {
+    console.error('[sendGroupMessage]', e);
+    return res.status(500).json({ error: 'internal' });
+  }
+}
+
+# ==== FILE: src/controllers/feed/feed.controller.ts ====
+
+import type { Request, Response } from 'express';
+
+// Platzhalter-Services
+async function serviceTrending(_opts: any) { return { items: [], nextCursor: null }; }
+async function serviceForYou(_opts: any)   { return { items: [], nextCursor: null }; }
+async function serviceTrendingTags(_n: number) { return ['grow', 'cannabis', 'tips']; }
+
+export async function trending(req: Request, res: Response) {
+  const { limit, cursor, tag } = (req as any).query || {};
+  const data = await serviceTrending({ limit: Number(limit) || 20, cursor: String(cursor || ''), tag: tag ? String(tag) : undefined });
+  return res.json(data);
+}
+export async function forYou(req: Request, res: Response) {
+  const { limit, cursor } = (req as any).query || {};
+  const data = await serviceForYou({ userId: (req as any).user?.id ?? 'me', limit: Number(limit) || 20, cursor: String(cursor || '') });
+  return res.json(data);
+}
+export async function searchPosts(_req: Request, res: Response) { return res.json({ items: [], nextCursor: null }); }
+
+export async function trendingTags(_req: Request, res: Response) {
+  const tags = await serviceTrendingTags(20);
+  return res.json({ tags });
+}
+
+# ==== FILE: src/controllers/feed/searchController.ts ====
+
+import type { Request, Response } from 'express';
+import { db } from '../../config/firebase.js';
+
+export async function searchPosts(req: Request, res: Response) {
+  try {
+    const { q = '', limit = 20, tag } = (req.query ?? {}) as any;
+    const needle = String(q).toLowerCase().trim();
+
+    let snap;
+    if (tag) {
+      snap = await db.collection('posts').where('visibility', '==', 'public').where('tags', 'array-contains', String(tag)).limit(200).get();
+    } else {
+      // Firestore hat keine Volltextsuche → simple client-seitige Filterung
+      snap = await db.collection('posts').where('visibility', '==', 'public').orderBy('createdAt','desc').limit(200).get();
+    }
+    const all = snap.docs.map(d => d.data());
+    const filtered = needle
+      ? all.filter((p: any) => String(p.text || '').toLowerCase().includes(needle) || (Array.isArray(p.tags) && p.tags.join(' ').toLowerCase().includes(needle)))
+      : all;
+
+    return res.json({ posts: filtered.slice(0, Number(limit)), nextCursor: null });
+  } catch (e: any) {
+    console.error('[searchPosts]', e);
+    return res.status(500).json({ error: 'internal' });
+  }
+}
+
+# ==== FILE: src/controllers/files/mediaController.ts ====
+
+import type { Request, Response } from 'express';
+
+export async function redirectSignedDownload(_req: Request, res: Response) {
+  // TODO: signierte URL erzeugen und redirecten
+  return res.status(404).json({ error: { code: 'not_found' } });
+}
+
+# ==== FILE: src/controllers/health.controller.ts ====
+
+import type { Request, Response } from 'express';
+
+export function healthz(_req: Request, res: Response) {
+  return res.status(200).send('OK');
+}
+
+# ==== FILE: src/controllers/posts/commentsController.ts ====
+
+import type { Request, Response } from 'express';
+
+export async function listByPost(_req: Request, res: Response) {
+  return res.json({ comments: [], nextCursor: null });
+}
+
+export async function createForPost(_req: Request, res: Response) {
+  return res.json({ comment: { id: 'c1', text: '' } });
+}
+
+export async function likeComment(_req: Request, res: Response) {
+  return res.status(204).end();
+}
+
+export async function unlikeComment(_req: Request, res: Response) {
+  return res.status(204).end();
+}
+
+# ==== FILE: src/controllers/posts/likesController.ts ====
+
+import type { Request, Response } from 'express';
+
+export async function like(_req: Request, res: Response)   { return res.status(204).end(); }
+export async function unlike(_req: Request, res: Response) { return res.status(204).end(); }
+
+# ==== FILE: src/controllers/posts/postsController.ts ====
+
+import type { Request, Response } from 'express';
+
+export async function createJsonPost(_req: Request, res: Response) {
+  return res.json({ post: { id: 'p1' } });
+}
+
+export async function setVisibility(_req: Request, res: Response) {
+  return res.status(204).end();
+}
+
+export async function patchPost(_req: Request, res: Response) {
+  return res.status(501).json({ error: 'not_implemented' });
+}
+
+# ==== FILE: src/controllers/posts/postUploadController.ts ====
+
+import type { Request, Response } from 'express';
+
+export async function uploadBinaryCreatePost(_req: Request, res: Response) {
+  return res.json({ post: { id: 'p-bin-1' } });
+}
+
+# ==== FILE: src/controllers/taxonomy/taxonomyController.ts ====
+
+import type { Request, Response } from 'express';
+
+export async function listTags(_req: Request, res: Response) {
+  return res.json({ tags: [] });
+}
+export async function listStrains(_req: Request, res: Response) {
+  return res.json({ strains: [] });
+}
+
+# ==== FILE: src/controllers/version.controller.ts ====
+
+import type { Request, Response } from 'express';
+
+export function version(_req: Request, res: Response) {
+  return res.json({
+    ok: true,
+    name: 'growgram-backend',
+    env: process.env.NODE_ENV || 'development',
+    region: process.env.FUNCTION_REGION || 'europe-west3',
+    ts: new Date().toISOString(),
+  });
+}
+
+# ==== FILE: src/docs/openapi.yaml ====
+
+openapi: 3.0.3
+info:
+  title: GrowGram Backend API
+  version: 1.0.0
+  description: >
+    Offizielle API-Spezifikation für die GrowGram Mobile & Web Clients.
+    Alle Endpunkte (sofern nicht anders erwähnt) erwarten JWT Bearer Auth.
+    Produktionsbasis ist Firebase Functions (Region europe-west3).
+
+servers:
+  - url: https://europe-west3-growgram-backend.cloudfunctions.net/api
+    description: Production (Cloud Functions)
+  - url: http://127.0.0.1:5001/growgram-backend/europe-west3/api
+    description: Local Emulator (recommended)
+  - url: http://localhost:5001/growgram-backend/europe-west3/api
+    description: Local Emulator (alt)
+
+tags:
+  - name: Auth
+  - name: Users
+  - name: Feed
+  - name: Search
+  - name: Posts
+  - name: Chat
+  - name: Media
+  - name: System
+  - name: Legal
+
+security:
+  - bearerAuth: []
+
+paths:
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Benutzer registrieren
+      security: []   # Registrierung ohne Token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [firstName, lastName, email, password, birthDate]
+              properties:
+                firstName: { type: string }
+                lastName:  { type: string }
+                email:     { type: string, format: email }
+                password:  { type: string, format: password }
+                birthDate: { type: string, format: date }
+                city:      { type: string }
+            example:
+              firstName: "Martin"
+              lastName: "Erdelyi"
+              email: "ceo@growgram-app.com"
+              password: "••••••••"
+              birthDate: "2000-01-01"
+              city: "Wiesbaden"
+      responses:
+        '201':
+          description: Registriert
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+                  user:  { $ref: '#/components/schemas/User' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login
+      security: []   # Login ohne Token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:    { type: string, format: email }
+                password: { type: string, format: password }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+                  user:  { $ref: '#/components/schemas/User' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout (serverseitig optional)
+      responses:
+        '204': { description: Logged out }
+        '200': { description: OK }
+
+  /auth/verify-email:
+    get:
+      tags: [Auth]
+      summary: E-Mail verifizieren
+      security: []   # Wird über Mail-Link aufgerufen
+      parameters:
+        - in: query
+          name: token
+          schema: { type: string }
+          required: true
+        - in: query
+          name: userId
+          schema: { type: string }
+          required: true
+      responses:
+        '200': { description: Verifiziert }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /auth/compliance-ack:
+    post:
+      tags: [Auth]
+      summary: Compliance- & Ü18-Bestätigung speichern
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [agree, over18]
+              properties:
+                agree:  { type: boolean }
+                over18: { type: boolean }
+                version:{ type: string, default: "1.0.0" }
+      responses:
+        '200': { description: OK }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /users/me:
+    get:
+      tags: [Users]
+      summary: Eigenes Profil (me)
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+    patch:
+      tags: [Users]
+      summary: Eigenes Profil aktualisieren
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserPatch'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+
+  /users/{userId}:
+    get:
+      tags: [Users]
+      summary: Öffentliches Profil eines Users
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/User'
+                  - type: object
+                    required: [id]
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /users/me/avatar-binary:
+    post:
+      tags: [Users, Media]
+      summary: Avatar hochladen (Binary Upload)
+      description: >
+        Direktes Binary-Upload. Aliase im Backend können zusätzlich
+        `/auth/me/avatar-binary` oder `/auth/avatar-binary` sein.
+      parameters:
+        - in: query
+          name: filename
+          schema: { type: string, default: "avatar.jpg" }
+      requestBody:
+        required: true
+        content:
+          image/jpeg: { schema: { type: string, format: binary } }
+          application/octet-stream: { schema: { type: string, format: binary } }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url: { type: string, format: uri }
+
+  /feed/trending:
+    get:
+      tags: [Feed]
+      summary: Trending Feed
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Tag'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  posts:
+                    type: array
+                    items: { $ref: '#/components/schemas/FeedPost' }
+                  nextCursor: { type: string, nullable: true }
+
+  /feed/trending-tags:
+    get:
+      tags: [Feed]
+      summary: Beliebte Tags
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tags:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        tag:   { type: string }
+                        count: { type: integer }
+
+  /feed/for-you:
+    get:
+      tags: [Feed]
+      summary: For-You Feed
+      parameters:
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  posts:
+                    type: array
+                    items: { $ref: '#/components/schemas/FeedPost' }
+                  nextCursor: { type: string, nullable: true }
+
+  /feed/search:
+    get:
+      tags: [Search]
+      summary: Suche in Posts
+      parameters:
+        - in: query
+          name: q
+          required: true
+          schema: { type: string }
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Cursor'
+        - $ref: '#/components/parameters/Tag'
+        - in: query
+          name: mode
+          schema:
+            type: string
+            enum: [prefix, exact, tag]
+            default: prefix
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  posts:
+                    type: array
+                    items: { $ref: '#/components/schemas/FeedPost' }
+                  nextCursor: { type: string, nullable: true }
+
+  /posts/upload-binary:
+    post:
+      tags: [Posts, Media]
+      summary: Bild-Upload + Post anlegen (Binary Upload)
+      parameters:
+        - in: query
+          name: filename
+          schema: { type: string, default: "upload.jpg" }
+        - in: query
+          name: visibility
+          schema: { type: string, enum: [public, private], default: public }
+        - in: query
+          name: text
+          schema: { type: string }
+        - in: query
+          name: tags
+          description: JSON-Array als String
+          schema: { type: string, example: "[\"sativa\",\"indoor\"]" }
+        - in: query
+          name: folder
+          schema: { type: string, default: "uploads" }
+      requestBody:
+        required: true
+        content:
+          image/jpeg: { schema: { type: string, format: binary } }
+          application/octet-stream: { schema: { type: string, format: binary } }
+      responses:
+        '201':
+          description: Post erstellt
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  post: { $ref: '#/components/schemas/FeedPost' }
+
+  /posts/mine:
+    get:
+      tags: [Posts]
+      summary: Eigene Posts (paginiert)
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Cursor'
+        - in: query
+          name: visibility
+          schema: { type: string, enum: [public, private] }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  posts:
+                    type: array
+                    items: { $ref: '#/components/schemas/FeedPost' }
+                  nextCursor: { type: string, nullable: true }
+
+  /posts/by-user/{userId}:
+    get:
+      tags: [Posts]
+      summary: Posts eines Users (paginiert)
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Cursor'
+        - in: query
+          name: visibility
+          schema: { type: string, enum: [public, private] }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  posts:
+                    type: array
+                    items: { $ref: '#/components/schemas/FeedPost' }
+                  nextCursor: { type: string, nullable: true }
+
+  /posts/{postId}:
+    patch:
+      tags: [Posts]
+      summary: Post patchen (z.B. Sichtbarkeit)
+      parameters:
+        - $ref: '#/components/parameters/PostId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                visibility: { type: string, enum: [public, private] }
+      responses:
+        '200': { description: OK }
+    delete:
+      tags: [Posts]
+      summary: Post löschen
+      parameters:
+        - $ref: '#/components/parameters/PostId'
+      responses:
+        '204': { description: Deleted }
+
+  /posts/{postId}/visibility:
+    post:
+      tags: [Posts]
+      summary: Sichtbarkeit setzen (Legacy-Alias)
+      parameters:
+        - $ref: '#/components/parameters/PostId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [visibility]
+              properties:
+                visibility: { type: string, enum: [public, private] }
+      responses:
+        '200': { description: OK }
+
+  /posts/{postId}/like:
+    post:
+      tags: [Posts]
+      summary: Post liken
+      parameters:
+        - $ref: '#/components/parameters/PostId'
+      responses:
+        '200': { description: OK }
+
+  /posts/{postId}/unlike:
+    post:
+      tags: [Posts]
+      summary: Like entfernen
+      parameters:
+        - $ref: '#/components/parameters/PostId'
+      responses:
+        '200': { description: OK }
+
+  /posts/{postId}/comments:
+    get:
+      tags: [Posts]
+      summary: Kommentare eines Posts
+      parameters:
+        - $ref: '#/components/parameters/PostId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  comments:
+                    type: array
+                    items: { $ref: '#/components/schemas/Comment' }
+    post:
+      tags: [Posts]
+      summary: Kommentar erstellen
+      parameters:
+        - $ref: '#/components/parameters/PostId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text]
+              properties:
+                text: { type: string }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  comment: { $ref: '#/components/schemas/Comment' }
+
+  /posts/{postId}/comments/{commentId}/like:
+    post:
+      tags: [Posts]
+      summary: Kommentar liken
+      parameters:
+        - $ref: '#/components/parameters/PostId'
+        - $ref: '#/components/parameters/CommentId'
+      responses:
+        '200': { description: OK }
+
+  /posts/{postId}/comments/{commentId}/unlike:
+    post:
+      tags: [Posts]
+      summary: Kommentar-Unlike
+      parameters:
+        - $ref: '#/components/parameters/PostId'
+        - $ref: '#/components/parameters/CommentId'
+      responses:
+        '200': { description: OK }
+
+  /chat/list:
+    get:
+      tags: [Chat]
+      summary: Chatliste (Threads) des Users
+      parameters:
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Cursor'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  chats:
+                    type: array
+                    items: { $ref: '#/components/schemas/Chat' }
+                  nextCursor: { type: string, nullable: true }
+
+  /chat/open:
+    post:
+      tags: [Chat]
+      summary: DM öffnen/erstellen
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [peerId]
+              properties:
+                peerId: { type: string, description: "Ziel-User-ID" }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  chat: { $ref: '#/components/schemas/Chat' }
+                  created: { type: boolean }
+
+  /chat/{chatId}/messages:
+    get:
+      tags: [Chat]
+      summary: Nachrichten eines Chats
+      parameters:
+        - $ref: '#/components/parameters/ChatId'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/Cursor'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  messages:
+                    type: array
+                    items: { $ref: '#/components/schemas/ChatMessage' }
+                  nextCursor: { type: string, nullable: true }
+    post:
+      tags: [Chat]
+      summary: Nachricht senden (Text + optional Medien-URLs)
+      parameters:
+        - $ref: '#/components/parameters/ChatId'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text: { type: string }
+                replyToId: { type: string, nullable: true }
+                mediaUrls:
+                  type: array
+                  items: { type: string, format: uri }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { $ref: '#/components/schemas/ChatMessage' }
+
+  /chat/{chatId}/media:
+    post:
+      tags: [Chat, Media]
+      summary: Medien in Chat hochladen (multipart/form-data)
+      parameters:
+        - $ref: '#/components/parameters/ChatId'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201': { description: Created }
+
+  /chat/{chatId}/messages/{messageId}/edit:
+    post:
+      tags: [Chat]
+      summary: Nachricht bearbeiten
+      parameters:
+        - $ref: '#/components/parameters/ChatId'
+        - $ref: '#/components/parameters/MessageId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text]
+              properties:
+                text: { type: string }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { $ref: '#/components/schemas/ChatMessage' }
+
+  /chat/{chatId}/messages/{messageId}/unsend:
+    post:
+      tags: [Chat]
+      summary: Nachricht zurückziehen
+      parameters:
+        - $ref: '#/components/parameters/ChatId'
+        - $ref: '#/components/parameters/MessageId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+
+  /chat/{chatId}/read:
+    post:
+      tags: [Chat]
+      summary: Chat als gelesen markieren
+      parameters:
+        - $ref: '#/components/parameters/ChatId'
+      responses:
+        '200': { description: OK }
+
+  /files/{path}:
+    get:
+      tags: [Media]
+      summary: Signierten Download-Link liefern (302 Redirect)
+      parameters:
+        - name: path
+          in: path
+          required: true
+          description: Pfad relativ zum Bucket-Root (URL-encoded; kann Schrägstriche enthalten)
+          schema: { type: string }
+      responses:
+        '302': { description: Redirect to signed URL }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /healthz:
+    get:
+      tags: [System]
+      summary: Healthcheck
+      security: []  # öffentlich
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema: { type: string, example: "OK" }
+
+  /version:
+    get:
+      tags: [System]
+      summary: Version & Meta
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:    { type: boolean }
+                  name:  { type: string }
+                  env:   { type: string }
+                  region:{ type: string }
+                  ts:    { type: string, format: date-time }
+
+  /legal/terms:
+    get:
+      tags: [Legal]
+      summary: Nutzungsbedingungen (Text)
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema: { type: string }
+
+  /legal/guidelines:
+    get:
+      tags: [Legal]
+      summary: Community-Richtlinien (Text)
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema: { type: string }
+
+  /legal/privacy:
+    get:
+      tags: [Legal]
+      summary: Datenschutz (Text)
+      security: []
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema: { type: string }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    Limit:
+      name: limit
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 200, default: 20 }
+    Cursor:
+      name: cursor
+      in: query
+      schema: { type: string, description: "Opaque cursor oder ISO-Date (je nach Endpoint)" }
+    Tag:
+      name: tag
+      in: query
+      schema: { type: string }
+    UserId:
+      name: userId
+      in: path
+      required: true
+      schema: { type: string }
+    PostId:
+      name: postId
+      in: path
+      required: true
+      schema: { type: string }
+    CommentId:
+      name: commentId
+      in: path
+      required: true
+      schema: { type: string }
+    ChatId:
+      name: chatId
+      in: path
+      required: true
+      schema: { type: string }
+    MessageId:
+      name: messageId
+      in: path
+      required: true
+      schema: { type: string }
+
+  responses:
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Not Found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:   { type: string }
+        message: { type: string }
+        details: { type: string }
+
+    User:
+      type: object
+      properties:
+        id:          { type: string }
+        firstName:   { type: string }
+        lastName:    { type: string }
+        email:       { type: string, format: email }
+        username:    { type: string }
+        city:        { type: string }
+        birthDate:   { type: string, format: date }
+        bio:         { type: string }
+        avatarUrl:   { type: string, format: uri }
+        privateProfile: { type: boolean }
+        hideSensitive:  { type: boolean }
+        pushOptIn:      { type: boolean }
+
+    UserPatch:
+      type: object
+      properties:
+        firstName:   { type: string }
+        lastName:    { type: string }
+        username:    { type: string }
+        city:        { type: string }
+        birthDate:   { type: string, format: date }
+        bio:         { type: string }
+        avatarUrl:   { type: string, format: uri }
+        privateProfile: { type: boolean }
+        hideSensitive:  { type: boolean }
+        pushOptIn:      { type: boolean }
+
+    FeedPost:
+      type: object
+      properties:
+        id:            { type: string }
+        text:          { type: string }
+        mediaUrls:
+          type: array
+          items: { type: string, format: uri }
+        tags:
+          type: array
+          items: { type: string }
+        likesCount:    { type: integer }
+        commentsCount: { type: integer }
+        score:         { type: number }
+        visibility:
+          type: string
+          enum: [public, private]
+        createdAt:     { type: string }
+        _liked:        { type: boolean }
+
+    CommentAuthor:
+      type: object
+      properties:
+        id:        { type: string }
+        name:      { type: string }
+        avatarUrl: { type: string, format: uri }
+
+    Comment:
+      type: object
+      properties:
+        id:        { type: string }
+        postId:    { type: string }
+        text:      { type: string }
+        author:    { $ref: '#/components/schemas/CommentAuthor' }
+        likesCount:{ type: integer }
+        liked:     { type: boolean }
+        createdAt: { type: string, format: date-time }
+
+    Chat:
+      type: object
+      properties:
+        id:          { type: string }
+        type:        { type: string, enum: [dm, group] }
+        name:        { type: string, nullable: true }
+        participants:
+          type: array
+          items: { type: string }
+        lastMessage:
+          type: object
+          nullable: true
+          properties:
+            text:      { type: string }
+            senderId:  { type: string }
+            createdAt: { type: string }
+        lastMessageAt: { type: string }
+        updatedAt:     { type: string }
+
+    ChatMessage:
+      type: object
+      properties:
+        id:        { type: string }
+        chatId:    { type: string }
+        senderId:  { type: string }
+        type:      { type: string, enum: [text] }
+        text:      { type: string }
+        mediaUrls:
+          type: array
+          items: { type: string, format: uri }
+        readBy:
+          type: array
+          items: { type: string }
+        createdAt: { type: string }
+        editedAt:  { type: string, nullable: true }
+        deletedAt: { type: string, nullable: true }
+
+# ==== FILE: src/index.ts ====
+
+import * as functions from "firebase-functions/v1";
+import { initializeApp, getApps } from "firebase-admin/app";
+import type { Express, Request, Response } from "express";
+import { initApp } from "./app/app.js";
+
+// Firebase Admin idempotent initialisieren
+if (getApps().length === 0) {
+  initializeApp();
+}
+
+// Express-App nur einmal bauen und cachen
+let cachedApp: Express | null = null;
+async function getApp(): Promise<Express> {
+  if (!cachedApp) {
+    cachedApp = await initApp();
+  }
+  return cachedApp;
+}
+
+// Bestehende Function-ID (falls sie sauber aktualisiert werden kann)
+export const apiV1 = functions
+  .region("europe-west3")
+  .runWith({ timeoutSeconds: 120, memory: "512MB" })
+  .https.onRequest(async (req: Request, res: Response) => {
+    try {
+      const app = await getApp();
+      return (app as any)(req, res);
+    } catch (err: any) {
+      console.error("apiV1 fatal:", err?.message || err);
+      res.status(500).send("Internal Server Error");
+    }
+  });
+
+// Neue, alternative Function-ID zum „Hard Reset“, falls apiV1 hängt
+export const api = functions
+  .region("europe-west3")
+  .runWith({ timeoutSeconds: 120, memory: "512MB" })
+  .https.onRequest(async (req: Request, res: Response) => {
+    try {
+      const app = await getApp();
+      return (app as any)(req, res);
+    } catch (err: any) {
+      console.error("api fatal:", err?.message || err);
+      res.status(500).send("Internal Server Error");
+    }
+  });
+
+// Sanity-Check (direkt aufrufbar)
+export const ping = functions
+  .region("europe-west3")
+  .https.onRequest((_req: Request, res: Response) => {
+    res.status(200).send("ok");
+  });
+
+# ==== FILE: src/jobs/reindex.job.ts ====
+
+// src/jobs/reindex.job.ts
+import { db, admin } from '../config/firebase.js';
+
+/**
+ * Ziel: Suchfelder/Normalisierung für Posts pflegen.
+ * - idempotent: kann beliebig oft laufen
+ * - batchweise: <=500 Mutationen/Batch
+ * - locking: Firestore-basiert, um parallele Läufe zu verhindern
+ */
+
+export type ReindexStats = {
+  scanned: number;
+  updated: number;
+  skipped: number;
+  errors: number;
+  batches: number;
+  durationMs: number;
+};
+
+type LockDoc = {
+  owner: string;
+  lockedAt: admin.firestore.Timestamp;
+  ttlMs: number;
+};
+
+const POSTS_COL = 'posts';
+const LOCK_PATH = 'jobs/locks/reindexPosts';
+
+/** Firestore-„Lock“. Gibt true zurück, wenn Lock erworben wurde. */
+async function acquireLock(key: string, ttlMs: number, owner = `reindex:${Date.now()}`): Promise<boolean> {
+  const ref = db.doc(key);
+  try {
+    await db.runTransaction(async (tx) => {
+      const snap = await tx.get(ref);
+      const now = admin.firestore.Timestamp.now();
+
+      if (snap.exists) {
+        const data = snap.data() as LockDoc;
+        const age = now.toMillis() - data.lockedAt.toMillis();
+        if (age < (data.ttlMs ?? ttlMs)) {
+          throw new Error('LOCKED');
+        }
+      }
+      tx.set(ref, { owner, lockedAt: now, ttlMs }, { merge: true });
+    });
+    return true;
+  } catch (e: any) {
+    if (e?.message === 'LOCKED') return false;
+    throw e;
+  }
+}
+
+/** Lock freigeben (best effort). */
+async function releaseLock(key: string, ownerStartsWith = 'reindex:'): Promise<void> {
+  const ref = db.doc(key);
+  try {
+    await db.runTransaction(async (tx) => {
+      const snap = await tx.get(ref);
+      if (!snap.exists) return;
+      const data = snap.data() as LockDoc;
+      if (String(data.owner || '').startsWith(ownerStartsWith)) {
+        tx.delete(ref);
+      }
+    });
+  } catch {
+    /* noop */
+  }
+}
+
+/** normale Tokenizer/Normalizer für Volltext/TAG-Suche (einfach, schnell) */
+function normalizeText(t: string): string {
+  return (t || '')
+    .normalize('NFKD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase()
+    .trim();
+}
+
+function normalizeTags(tags: unknown): string[] {
+  if (!Array.isArray(tags)) return [];
+  return Array.from(
+    new Set(
+      tags
+        .map((x) => String(x || '').trim().toLowerCase())
+        .filter(Boolean)
+    )
+  );
+}
+
+function keywordsFrom(text: string, tags: string[]): string[] {
+  const base = normalizeText(text)
+    .split(/\s+/)
+    .filter((w) => w.length >= 2 && w.length <= 32);
+  return Array.from(new Set([...base, ...tags]));
+}
+
+/**
+ * Reindiziert die posts-Collection.
+ * @param pageSize Größe pro Firestore-Seite (Default 250)
+ * @param maxPages Sicherheitslimit für Seiten (Default 9999 – quasi unlimitiert)
+ */
+export async function reindexPosts(pageSize = 250, maxPages = 9999): Promise<ReindexStats> {
+  const t0 = Date.now();
+  const stats: ReindexStats = {
+    scanned: 0,
+    updated: 0,
+    skipped: 0,
+    errors: 0,
+    batches: 0,
+    durationMs: 0,
+  };
+
+  const locked = await acquireLock(LOCK_PATH, /*ttlMs*/ 10 * 60_000);
+  if (!locked) {
+    console.warn('[reindexPosts] another run is active – skipping');
+    return stats;
+  }
+
+  try {
+    let cursor: FirebaseFirestore.QueryDocumentSnapshot | null = null;
+    let page = 0;
+
+    while (page < maxPages) {
+      let q = db.collection(POSTS_COL).orderBy(admin.firestore.FieldPath.documentId()).limit(pageSize);
+      if (cursor) q = q.startAfter(cursor);
+
+      const snap = await q.get();
+      if (snap.empty) break;
+
+      // Batch vorbereiten
+      let batch = db.batch();
+      let batchOps = 0;
+
+      for (const doc of snap.docs) {
+        stats.scanned++;
+        cursor = doc;
+
+        try {
+          const d = doc.data() as any;
+          const text = String(d?.text || '');
+          const tags = normalizeTags(d?.tags);
+          const textLc = normalizeText(text);
+          const kws = keywordsFrom(textLc, tags);
+
+          const existsSame =
+            d?.search?.text_lc === textLc &&
+            Array.isArray(d?.search?.tags) &&
+            d.search.tags.join('|') === tags.join('|') &&
+            Array.isArray(d?.search?.keywords) &&
+            d.search.keywords.join('|') === kws.join('|');
+
+          if (existsSame) {
+            stats.skipped++;
+            continue;
+          }
+
+          const ref = doc.ref;
+          batch.update(ref, {
+            search: {
+              text_lc: textLc,
+              tags: tags,
+              keywords: kws,
+              updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+            },
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+          batchOps++;
+
+          if (batchOps >= 450) {
+            await batch.commit();
+            stats.batches++;
+            batch = db.batch();
+            batchOps = 0;
+          }
+        } catch (e) {
+          stats.errors++;
+          console.error('[reindexPosts] doc error', { id: doc.id, err: (e as Error)?.message || e });
+        }
+      }
+
+      if (batchOps > 0) {
+        await batch.commit();
+        stats.batches++;
+      }
+
+      page++;
+      if (snap.size < pageSize) break; // letzte Seite
+    }
+  } finally {
+    await releaseLock(LOCK_PATH);
+    stats.durationMs = Date.now() - t0;
+    console.log('[reindexPosts] done', stats);
+  }
+
+  // updated = scanned - skipped - errors (näherungsweise; Batch-Fails werden geloggt)
+  stats.updated = Math.max(0, stats.scanned - stats.skipped - stats.errors);
+  return stats;
+}
+
+# ==== FILE: src/jobs/thumbnails.job.ts ====
+
+// src/jobs/thumbnails.job.ts
+import { db, admin, storage } from '../config/firebase.js';
+
+/**
+ * Ziel: Medien-Backfill/Thumbnails vorbereiten.
+ * Ohne zusätzliche Bildbibliotheken generieren wir hier KEINE echten Thumbs,
+ * sondern sorgen für konsistente Felder:
+ * - mediaUrls[] vorhanden -> thumbs[] auffüllen (z. B. identisch oder CDN-Derivate)
+ * - width/height/aspect optional abspeichern, falls Metadaten in Storage vorhanden sind
+ * - idempotent, batchweise, mit Locking
+ */
+
+export type ThumbStats = {
+  scanned: number;
+  updated: number;
+  skipped: number;
+  errors: number;
+  batches: number;
+  durationMs: number;
+};
+
+type LockDoc = {
+  owner: string;
+  lockedAt: admin.firestore.Timestamp;
+  ttlMs: number;
+};
+
+const POSTS_COL = 'posts';
+const LOCK_PATH = 'jobs/locks/thumbnails';
+const DEFAULT_THUMB_WIDTH = 512;
+
+/** Firestore-„Lock“. */
+async function acquireLock(key: string, ttlMs: number, owner = `thumbs:${Date.now()}`): Promise<boolean> {
+  const ref = db.doc(key);
+  try {
+    await db.runTransaction(async (tx) => {
+      const snap = await tx.get(ref);
+      const now = admin.firestore.Timestamp.now();
+
+      if (snap.exists) {
+        const data = snap.data() as LockDoc;
+        const age = now.toMillis() - data.lockedAt.toMillis();
+        if (age < (data.ttlMs ?? ttlMs)) {
+          throw new Error('LOCKED');
+        }
+      }
+      tx.set(ref, { owner, lockedAt: now, ttlMs }, { merge: true });
+    });
+    return true;
+  } catch (e: any) {
+    if (e?.message === 'LOCKED') return false;
+    throw e;
+  }
+}
+
+/** Lock freigeben. */
+async function releaseLock(key: string, ownerStartsWith = 'thumbs:'): Promise<void> {
+  const ref = db.doc(key);
+  try {
+    await db.runTransaction(async (tx) => {
+      const snap = await tx.get(ref);
+      if (!snap.exists) return;
+      const data = snap.data() as LockDoc;
+      if (String(data.owner || '').startsWith(ownerStartsWith)) {
+        tx.delete(ref);
+      }
+    });
+  } catch {
+    /* noop */
+  }
+}
+
+/** Konstruiert – wenn sinnvoll – eine "Thumb-URL".
+ *  Hier: konservativ – gleiche URL zurückgeben (idempotent), 
+ *  oder (wenn du später einen CDN/Resizer nutzt) Parameter anhängen.
+ */
+function deriveThumbUrl(url: string, w = DEFAULT_THUMB_WIDTH): string {
+  try {
+    const u = new URL(url);
+    // Wenn dein CDN Resizing unterstützt, hier setzen (Beispiel-Parameter):
+    if (!u.searchParams.has('w')) u.searchParams.set('w', String(w));
+    if (!u.searchParams.has('fit')) u.searchParams.set('fit', 'cover');
+    return u.toString();
+  } catch {
+    // Fallback: unverändert
+    return url;
+  }
+}
+
+/** liest – best effort – Bildmetadaten aus GCS (wenn URL auf GCS-Bucket zeigt) */
+async function fetchGcsMetadataIfPossible(url: string): Promise<{ width?: number; height?: number } | null> {
+  try {
+    // Nur rudimentär: erwarte "https://storage.googleapis.com/<bucket>/<path>" oder "gs://<bucket>/<path>"
+    let bucketName = '';
+    let filePath = '';
+
+    if (url.startsWith('gs://')) {
+      const noScheme = url.slice(5);
+      const slash = noScheme.indexOf('/');
+      bucketName = noScheme.slice(0, slash);
+      filePath = noScheme.slice(slash + 1);
+    } else if (url.includes('storage.googleapis.com')) {
+      const u = new URL(url);
+      const parts = u.pathname.split('/').filter(Boolean);
+      bucketName = parts.shift() || '';
+      filePath = decodeURIComponent(parts.join('/'));
+    } else {
+      return null; // kein GCS – z. B. CDN/extern
+    }
+
+    if (!bucketName || !filePath) return null;
+    const file = storage.bucket(bucketName).file(filePath);
+    const [meta] = await file.getMetadata();
+    const w = meta?.metadata?.width ? Number(meta.metadata.width) : undefined;
+    const h = meta?.metadata?.height ? Number(meta.metadata.height) : undefined;
+    if (w && h) return { width: w, height: h };
+  } catch {
+    /* ignore */
+  }
+  return null;
+}
+
+/**
+ * Füllt fehlende thumbs[]/metadata für Posts mit mediaUrls[].
+ * @param pageSize Batchgröße
+ * @param maxPages Sicherheitslimit Seiten
+ */
+export async function backfillThumbnails(pageSize = 200, maxPages = 9999): Promise<ThumbStats> {
+  const t0 = Date.now();
+  const stats: ThumbStats = {
+    scanned: 0,
+    updated: 0,
+    skipped: 0,
+    errors: 0,
+    batches: 0,
+    durationMs: 0,
+  };
+
+  const locked = await acquireLock(LOCK_PATH, /*ttlMs*/ 10 * 60_000);
+  if (!locked) {
+    console.warn('[thumbnails] another run is active – skipping');
+    return stats;
+  }
+
+  try {
+    let cursor: FirebaseFirestore.QueryDocumentSnapshot | null = null;
+    let page = 0;
+
+    while (page < maxPages) {
+      let q = db
+        .collection(POSTS_COL)
+        .orderBy(admin.firestore.FieldPath.documentId())
+        .limit(pageSize);
+
+      if (cursor) q = q.startAfter(cursor);
+
+      const snap = await q.get();
+      if (snap.empty) break;
+
+      let batch = db.batch();
+      let ops = 0;
+
+      for (const doc of snap.docs) {
+        stats.scanned++;
+        cursor = doc;
+
+        try {
+          const d = doc.data() as any;
+          const mediaUrls: string[] = Array.isArray(d?.mediaUrls) ? d.mediaUrls : [];
+          if (mediaUrls.length === 0) {
+            stats.skipped++;
+            continue;
+          }
+
+          const hasThumbs =
+            Array.isArray(d?.thumbs) &&
+            d.thumbs.length === mediaUrls.length &&
+            d.thumbs.every((x: any) => typeof x === 'string' && x.length > 0);
+
+          // Wenn bereits konsistent, überspringen
+          if (hasThumbs && d?.meta?.aspect) {
+            stats.skipped++;
+            continue;
+          }
+
+          const thumbs = mediaUrls.map((u) => deriveThumbUrl(u));
+          const meta = { ...(d?.meta || {}) };
+
+          // Best effort: Bildmaße über GCS-Metadaten (nur, falls leer)
+          if (!meta?.width || !meta?.height) {
+            const md = await fetchGcsMetadataIfPossible(mediaUrls[0]);
+            if (md?.width && md?.height) {
+              meta.width = md.width;
+              meta.height = md.height;
+              meta.aspect = Number((md.width / md.height).toFixed(5));
+            }
+          }
+
+          batch.update(doc.ref, {
+            thumbs,
+            meta,
+            thumbsCheckedAt: admin.firestore.FieldValue.serverTimestamp(),
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+          ops++;
+
+          if (ops >= 450) {
+            await batch.commit();
+            stats.batches++;
+            batch = db.batch();
+            ops = 0;
+          }
+        } catch (e) {
+          stats.errors++;
+          console.error('[thumbnails] doc error', { id: doc.id, err: (e as Error)?.message || e });
+        }
+      }
+
+      if (ops > 0) {
+        await batch.commit();
+        stats.batches++;
+      }
+
+      page++;
+      if (snap.size < pageSize) break;
+    }
+  } finally {
+    await releaseLock(LOCK_PATH);
+    stats.durationMs = Date.now() - t0;
+    // updated = scanned - skipped - errors (näherungsweise)
+    stats.updated = Math.max(0, stats.scanned - stats.skipped - stats.errors);
+    console.log('[thumbnails] done', stats);
+  }
+
+  return stats;
+}
+
+# ==== FILE: src/loaders/express.ts ====
+
+// src/loaders/express.ts
+import type { Express } from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+import { initApp, type AppOptions } from '../app/app.js';
+import type { OriginRule } from '../app/cors.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+/** Erzeugt eine robuste Origin-Whitelist aus ENV + sinnvollen Defaults. */
+export function buildAllowedOriginsFromEnv(): OriginRule[] {
+  const envList = (process.env.APP_ALLOWED_ORIGINS || '')
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean);
+
+  const base = [
+    process.env.APP_BASEURL?.trim(),
+    ...envList,
+    // lokale Dev-Patterns
+    /^http:\/\/localhost(?::\d+)?$/,
+    /^http:\/\/127\.0\.0\.1(?::\d+)?$/,
+    // Firebase Hosting
+    /^https:\/\/.*\.web\.app$/,
+    /^https:\/\/.*\.firebaseapp\.com$/,
+    // Deine Domain(s)
+    'https://growgram-app.com',
+    'https://www.growgram-app.com',
+  ].filter(Boolean) as OriginRule[];
+
+  // Deduplizieren (Strings)
+  const seen = new Set<string>();
+  const out: OriginRule[] = [];
+  for (const r of base) {
+    if (typeof r === 'string') {
+      if (seen.has(r)) continue;
+      seen.add(r);
+    }
+    out.push(r);
+  }
+  return out;
+}
+
+export type BuildAppOptions = Partial<AppOptions> & {
+  /** Überschreibe die Auto-Origins, falls gewünscht */
+  allowedOrigins?: OriginRule[];
+};
+
+/** Baut die Express-App mit Security, CORS, Parsern & Routen. */
+export async function buildExpressApp(opts: BuildAppOptions = {}): Promise<Express> {
+  const allowedOrigins = opts.allowedOrigins ?? buildAllowedOriginsFromEnv();
+
+  const app = await initApp({
+    allowedOrigins,
+    jsonLimit: process.env.APP_JSON_LIMIT || '2mb',
+    urlencodedLimit: process.env.APP_URLENC_LIMIT || '200kb',
+    staticDir: path.join(__dirname, '..', 'public'),
+    rateLimiter: opts.rateLimiter, // optional extern injizierbar
+  });
+
+  return app;
+}
+
+# ==== FILE: src/loaders/jobs.ts ====
+
+// src/loaders/jobs.ts
+import { reindexPosts, type ReindexStats } from '../jobs/reindex.job.js';
+import { backfillThumbnails, type ThumbStats } from '../jobs/thumbnails.job.js';
+
+export type JobName = 'reindex' | 'thumbnails';
+
+export type JobResult =
+  | { name: 'reindex'; ok: true; stats: ReindexStats }
+  | { name: 'thumbnails'; ok: true; stats: ThumbStats };
+
+/**
+ * Führt einen benannten Job aus. Wirft nicht, sondern gibt ok:false bei Fehler zurück,
+ * damit Admin-Routen einfache Antworten liefern können.
+ */
+export async function runJob(name: JobName): Promise<JobResult | { name: JobName; ok: false; error: string }> {
+  try {
+    if (name === 'reindex') {
+      const stats = await reindexPosts();
+      return { name, ok: true, stats };
+    }
+    if (name === 'thumbnails') {
+      const stats = await backfillThumbnails();
+      return { name, ok: true, stats };
+    }
+    return { name, ok: false, error: 'unknown_job' };
+  } catch (e: any) {
+    return { name, ok: false, error: e?.message || String(e) };
+  }
+}
+
+/**
+ * Optionaler Bootstrap aus ENV – standardmäßig NOOP.
+ * Setze z. B. JOB_BOOT=reindex oder JOB_BOOT=thumbnails (oder all),
+ * wenn du beim Kaltstart einmalig anstoßen willst.
+ * Achtung: In Cloud Functions meist NICHT empfohlen → lieber Admin-Route/Crons nutzen.
+ */
+export async function bootJobsFromEnv(): Promise<void> {
+  const mode = (process.env.JOB_BOOT || '').trim().toLowerCase();
+  if (!mode) return;
+
+  const doOne = async (n: JobName) => {
+    const r = await runJob(n);
+    if ('ok' in r && !r.ok) {
+      console.warn('[bootJobsFromEnv]', n, 'failed:', r.error);
+    } else {
+      console.log('[bootJobsFromEnv]', n, 'done.');
+    }
+  };
+
+  if (mode === 'all') {
+    await doOne('reindex');
+    await doOne('thumbnails');
+  } else if (mode === 'reindex' || mode === 'thumbnails') {
+    await doOne(mode);
+  }
+}
+
+# ==== FILE: src/loaders/routes.ts ====
+
+// src/loaders/routes.ts
+
+/**
+ * Diese Datei liefert nur string-typsichere Konstanten für Basispfade.
+ * Praktisch für Tests, Health-Checks oder zentrale Doku.
+ * Das eigentliche Mounting passiert in src/app/routes.ts.
+ */
+
+export const ApiBases = {
+  Auth: '/auth',
+  Users: '/users',
+  Posts: '/posts',
+  Feed: '/feed',
+  Files: '/files',
+  Chat: '/chat',
+  Admin: '/admin',
+  Taxonomy: '/taxonomy',
+  Meta: '/meta',
+  Waitlist: '/waitlist',
+  SystemRoot: '/',   // health/version auf root & /api
+  ApiRoot: '/api',
+} as const;
+
+export type ApiBase =
+  | typeof ApiBases.Auth
+  | typeof ApiBases.Users
+  | typeof ApiBases.Posts
+  | typeof ApiBases.Feed
+  | typeof ApiBases.Files
+  | typeof ApiBases.Chat
+  | typeof ApiBases.Admin
+  | typeof ApiBases.Taxonomy
+  | typeof ApiBases.Meta
+  | typeof ApiBases.Waitlist
+  | typeof ApiBases.SystemRoot
+  | typeof ApiBases.ApiRoot;
+
+/** Hilfsfunktion für Tests/Probes: gibt alle Basispfade zurück. */
+export function listApiBases(): ApiBase[] {
+  return Object.values(ApiBases);
+}
+
+# ==== FILE: src/middleware/auth/auth.middleware.ts ====
+
+import type { Request, Response, NextFunction, RequestHandler } from 'express';
+import { verifyAccessToken } from '../../services/auth/jwt.service.js';
+
+export const authRequired: RequestHandler = (req: Request, res: Response, next: NextFunction) => {
+  const hdr = req.headers.authorization || '';
+  const token = hdr.replace(/^Bearer\s+/i, '').trim();
+  if (!token) {
+    return res.status(401).json({ error: 'unauthorized', reason: 'missing_token' });
+  }
+  try {
+    const payload = verifyAccessToken(token);
+    (req as any).user = {
+      id: payload.sub || payload.userId || payload.id,
+      email: payload.email,
+      role: payload.role || 'user',
+    };
+    next();
+  } catch {
+    return res.status(401).json({ error: 'unauthorized', reason: 'invalid_token' });
+  }
+};
+
+# ==== FILE: src/middleware/auth/roles.middleware.ts ====
+
+// src/middleware/auth/roles.middleware.ts
+import type { Request, Response, NextFunction } from 'express';
+export { authRequired } from './auth.middleware.js';
+
+export function requireRole(...roles: string[]) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const user = (req as any).user;
+    if (!user) return res.status(401).json({ error: { code: 'unauthorized' } });
+    const ok = Array.isArray(user.roles) && roles.some(r => user.roles.includes(r));
+    if (!ok) return res.status(403).json({ error: { code: 'forbidden', need: roles } });
+    next();
+  };
+}
+
+// Alias, weil deine Routes `requireRoles` importieren
+export const requireRoles = requireRole;
+
+# ==== FILE: src/middleware/errors/error.handler.ts ====
+
+// src/middleware/errors/error.handler.ts
+import type { NextFunction, Request, Response } from 'express';
+
+/**
+ * Router-lokaler Error-Handler. Nützlich, wenn du für einen Teilbaum
+ * eigene Fehlerantworten willst. Ist kompatibel zu deinem globalen
+ * attachErrorHandlers() in src/app/errors.ts.
+ */
+export function routerErrorHandler(err: any, req: Request, res: Response, next: NextFunction) {
+  void req;
+  if (res.headersSent) return next(err);
+
+  const requestId = res.locals.requestId as string | undefined;
+  const status = Math.max(~~(err?.status || 500), 400);
+  const code = String(err?.code || err?.name || 'internal_error');
+  const message =
+    err?.message ||
+    (status === 403 ? 'Forbidden' : status === 404 ? 'Not found' : 'Unexpected error');
+
+  const payload: any = { error: { code, message }, status };
+  if (requestId) payload.requestId = requestId;
+  if (process.env.NODE_ENV !== 'production' && err?.details) payload.details = err.details;
+
+  if (status >= 500) {
+    console.error('[routerErrorHandler]', { requestId, err: err?.stack || err });
+  }
+  return res.status(status).json(payload);
+}
+
+# ==== FILE: src/middleware/errors/notfound.handler.ts ====
+
+// src/middleware/errors/notfound.handler.ts
+import type { Request, Response } from 'express';
+
+/** Simple 404-Handler, wenn du auf Router-Ebene einen Abschluss brauchst. */
+export function notFoundHandler(_req: Request, res: Response) {
+  return res.status(404).json({
+    error: { code: 'not_found', message: 'Not found' },
+    status: 404,
+  });
+}
+
+# ==== FILE: src/middleware/upload.middleware.ts ====
+
+// src/middleware/upload.middleware.ts
+import type { NextFunction, Request, Response } from 'express';
+import multer, { MulterError } from 'multer';
+
+const DEFAULT_LIMIT_MB = 10;
+const DEFAULT_ALLOWED = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+  'application/octet-stream',
+]);
+
+function buildMulter(allowed: Set<string>, mbLimit: number) {
+  const storage = multer.memoryStorage();
+  return multer({
+    storage,
+    limits: { fileSize: mbLimit * 1024 * 1024, files: 1 },
+    fileFilter: (_req, file, cb) => {
+      if (allowed.has(file.mimetype)) return cb(null, true);
+      const err = new MulterError('LIMIT_UNEXPECTED_FILE');
+      (err as any).field = file.fieldname;
+      // Fehlerpfad: NUR EIN Argument
+      return cb(err as any);
+    },
+  });
+}
+
+function toHttp(err: unknown) {
+  if (err instanceof MulterError) {
+    const e: any = new Error(err.message);
+    e.status = 400; e.code = 'upload_error';
+    return e;
+  }
+  return err;
+}
+
+export function uploadSingle(field: string, opts?: { mbLimit?: number; allowed?: string[] }) {
+  const m = buildMulter(new Set(opts?.allowed ?? Array.from(DEFAULT_ALLOWED)), opts?.mbLimit ?? DEFAULT_LIMIT_MB);
+  const mw = m.single(field);
+  return (req: Request, res: Response, next: NextFunction) => mw(req, res, (err) => next(toHttp(err)));
+}
+
+export function uploadArray(field: string, max = 5, opts?: { mbLimit?: number; allowed?: string[] }) {
+  const m = buildMulter(new Set(opts?.allowed ?? Array.from(DEFAULT_ALLOWED)), opts?.mbLimit ?? DEFAULT_LIMIT_MB);
+  const mw = m.array(field, max);
+  return (req: Request, res: Response, next: NextFunction) => mw(req, res, (err) => next(toHttp(err)));
+}
+
+export function uploadAny(opts?: { mbLimit?: number; allowed?: string[] }) {
+  const m = buildMulter(new Set(opts?.allowed ?? Array.from(DEFAULT_ALLOWED)), opts?.mbLimit ?? DEFAULT_LIMIT_MB);
+  const mw = m.any();
+  return (req: Request, res: Response, next: NextFunction) => mw(req, res, (err) => next(toHttp(err)));
+}
+
+// Named exports wie in deinen Routes
+export const single = uploadSingle;
+export const array  = uploadArray;
+export const any    = uploadAny;
+
+// Default-Objekt, damit import upload ... upload.single('file') funktioniert
+const upload = { single, array, any };
+export default upload;
+
+# ==== FILE: src/middleware/validate.middleware.ts ====
+
+// src/middleware/validate.middleware.ts
+import type { Request, Response, NextFunction, RequestHandler } from 'express';
+import type { ZodSchema } from 'zod';
+
+function wrap(schema: ZodSchema, pick: 'body'|'query'|'params'): RequestHandler {
+  return async (req: Request, _res: Response, next: NextFunction) => {
+    try {
+      const parsed = await schema.parseAsync((req as any)[pick]);
+      (req as any)[pick] = parsed;
+      next();
+    } catch (err: any) {
+      const e: any = new Error('validation_error');
+      e.status = 400; e.code = 'validation_error'; e.details = err?.errors || err?.message;
+      next(e);
+    }
+  };
+}
+
+// bewusst lax typisiert, um deine existierenden Funktionsaufrufe zu erlauben
+const validate: any = {
+  body  : (s: ZodSchema) => wrap(s, 'body'),
+  query : (s: ZodSchema) => wrap(s, 'query'),
+  params: (s: ZodSchema) => wrap(s, 'params'),
+};
+
+export type Schemas = { body?: ZodSchema; query?: ZodSchema; params?: ZodSchema };
+
+// optionaler No-Op (compat, falls wo validate(schemas) aufgerufen wird)
+export default Object.assign(
+  (_schemas?: Schemas) => ((_req: Request, _res: Response, next: NextFunction) => next()),
+  validate
+);
+
+export { validate };
+
+# ==== FILE: src/models/chatModel.ts ====
+
+// src/models/chatModel.ts
+import type { DocumentData, QueryDocumentSnapshot } from 'firebase-admin/firestore';
+import { Timestamp, FieldValue } from 'firebase-admin/firestore';
+import { db } from '../config/firebase.js';
+
+export type ChatType = 'dm' | 'group';
+
+export type ChatDoc = {
+  type: ChatType;
+  name?: string | null;             // nur bei group
+  memberIds: string[];              // User IDs
+  lastMessage?: {
+    text?: string;
+    senderId?: string;
+    createdAt?: Timestamp;
+  } | null;
+  lastMessageAt?: Timestamp | null;
+  unread?: Record<string, number>;  // userId -> count
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+  archivedBy?: string[];            // userIds, optional
+  mutedBy?: string[];               // userIds, optional
+};
+
+export type Chat = {
+  id: string;
+  type: ChatType;
+  name?: string | null;
+  memberIds: string[];
+  lastMessage?: {
+    text?: string;
+    senderId?: string;
+    createdAt?: string; // ISO
+  } | null;
+  lastMessageAt?: string | null;
+  unread?: Record<string, number>;
+  createdAt: string;
+  updatedAt: string;
+  archivedBy?: string[];
+  mutedBy?: string[];
+};
+
+export type ChatMessageDoc = {
+  chatId: string;
+  senderId: string;
+  type: 'text';              // erweiterbar: 'image', 'audio'...
+  text?: string;
+  mediaUrls?: string[];
+  readBy?: string[];         // userIds
+  createdAt: Timestamp;
+  editedAt?: Timestamp | null;
+  deletedAt?: Timestamp | null;
+};
+
+export type ChatMessage = {
+  id: string;
+  chatId: string;
+  senderId: string;
+  type: 'text';
+  text?: string;
+  mediaUrls?: string[];
+  readBy?: string[];
+  createdAt: string;         // ISO
+  editedAt?: string | null;
+  deletedAt?: string | null;
+};
+
+const toISO = (t?: Timestamp | null) => (t ? t.toDate().toISOString() : undefined);
+
+export const chatConverter = {
+  toFirestore(c: Partial<Chat>): DocumentData {
+    const now = FieldValue.serverTimestamp();
+    const doc: Partial<ChatDoc> = {
+      type: c.type ?? 'dm',
+      name: c.name ?? null,
+      memberIds: c.memberIds ?? [],
+      lastMessage: c.lastMessage
+        ? {
+            text: c.lastMessage.text,
+            senderId: c.lastMessage.senderId,
+            createdAt: c.lastMessage.createdAt
+              ? Timestamp.fromDate(new Date(c.lastMessage.createdAt))
+              : undefined,
+          }
+        : null,
+      lastMessageAt: c.lastMessageAt ? Timestamp.fromDate(new Date(c.lastMessageAt)) : null,
+      unread: c.unread ?? {},
+      updatedAt: now as any,
+      ...(c.createdAt ? {} : { createdAt: now as any }),
+      archivedBy: c.archivedBy ?? [],
+      mutedBy: c.mutedBy ?? [],
+    };
+    return doc as DocumentData;
+  },
+
+  fromFirestore(snap: QueryDocumentSnapshot<ChatDoc>): Chat {
+    const d = snap.data();
+    return {
+      id: snap.id,
+      type: d.type ?? 'dm',
+      name: d.name ?? null,
+      memberIds: d.memberIds ?? [],
+      lastMessage: d.lastMessage
+        ? {
+            text: d.lastMessage.text,
+            senderId: d.lastMessage.senderId,
+            createdAt: toISO(d.lastMessage.createdAt),
+          }
+        : null,
+      lastMessageAt: d.lastMessageAt ? toISO(d.lastMessageAt)! : null,
+      unread: d.unread ?? {},
+      createdAt: toISO(d.createdAt) || new Date(0).toISOString(),
+      updatedAt: toISO(d.updatedAt) || new Date(0).toISOString(),
+      archivedBy: d.archivedBy ?? [],
+      mutedBy: d.mutedBy ?? [],
+    };
+  },
+};
+
+export const chatCol = () => db.collection('chats').withConverter(chatConverter);
+export const chatRef = (id: string) => chatCol().doc(id);
+
+export const chatMessagesCol = (chatId: string) =>
+  db.collection('chats').doc(chatId).collection('messages');
+
+export const chatMessageConverter = {
+  toFirestore(m: Partial<ChatMessage>): DocumentData {
+    const doc: Partial<ChatMessageDoc> = {
+      chatId: m.chatId!,
+      senderId: m.senderId!,
+      type: m.type ?? 'text',
+      text: m.text,
+      mediaUrls: m.mediaUrls ?? [],
+      readBy: m.readBy ?? [],
+      createdAt: m.createdAt
+        ? Timestamp.fromDate(new Date(m.createdAt))
+        : (FieldValue.serverTimestamp() as any),
+      editedAt: m.editedAt ? Timestamp.fromDate(new Date(m.editedAt)) : null,
+      deletedAt: m.deletedAt ? Timestamp.fromDate(new Date(m.deletedAt)) : null,
+    };
+    return doc as DocumentData;
+  },
+
+  fromFirestore(snap: QueryDocumentSnapshot<ChatMessageDoc>): ChatMessage {
+    const d = snap.data();
+    return {
+      id: snap.id,
+      chatId: d.chatId,
+      senderId: d.senderId,
+      type: d.type ?? 'text',
+      text: d.text,
+      mediaUrls: d.mediaUrls ?? [],
+      readBy: d.readBy ?? [],
+      createdAt: toISO(d.createdAt) || new Date(0).toISOString(),
+      editedAt: d.editedAt ? toISO(d.editedAt)! : null,
+      deletedAt: d.deletedAt ? toISO(d.deletedAt)! : null,
+    };
+  },
+};
+
+# ==== FILE: src/models/commentModel.ts ====
+
+// src/models/commentModel.ts
+import type { DocumentData, QueryDocumentSnapshot } from 'firebase-admin/firestore';
+import { Timestamp, FieldValue } from 'firebase-admin/firestore';
+import { db } from '../config/firebase.js';
+
+export type CommentDoc = {
+  postId: string;
+  authorId: string;
+  text: string;
+  likesCount?: number;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+  deletedAt?: Timestamp | null;
+};
+
+export type Comment = {
+  id: string;
+  postId: string;
+  authorId: string;
+  text: string;
+  likesCount: number;
+  createdAt: string; // ISO
+  updatedAt: string; // ISO
+  deletedAt?: string | null;
+};
+
+const toISO = (t?: Timestamp | null) => (t ? t.toDate().toISOString() : undefined);
+
+export const commentConverter = {
+  toFirestore(c: Partial<Comment>): DocumentData {
+    const now = FieldValue.serverTimestamp();
+    const doc: Partial<CommentDoc> = {
+      postId: c.postId!,
+      authorId: c.authorId!,
+      text: c.text!,
+      likesCount: c.likesCount ?? 0,
+      updatedAt: now as any,
+      ...(c.createdAt ? {} : { createdAt: now as any }),
+      deletedAt: c.deletedAt ? Timestamp.fromDate(new Date(c.deletedAt)) : undefined,
+    };
+    return doc as DocumentData;
+  },
+
+  fromFirestore(snap: QueryDocumentSnapshot<CommentDoc>): Comment {
+    const d = snap.data();
+    return {
+      id: snap.id,
+      postId: d.postId,
+      authorId: d.authorId,
+      text: d.text,
+      likesCount: d.likesCount ?? 0,
+      createdAt: toISO(d.createdAt) || new Date(0).toISOString(),
+      updatedAt: toISO(d.updatedAt) || new Date(0).toISOString(),
+      deletedAt: d.deletedAt ? toISO(d.deletedAt)! : null,
+    };
+  },
+};
+
+// Root-Collection für „flat“ Comments (falls du sie global indexierst)
+export const commentsCol = () => db.collection('comments').withConverter(commentConverter);
+export const commentRef = (id: string) => commentsCol().doc(id);
+
+// Subcollection unter posts/{postId}/comments – falls du diese Struktur nutzt:
+export const commentsSubCol = (postId: string) =>
+  db.collection('posts').doc(postId).collection('comments').withConverter(commentConverter);
+
+# ==== FILE: src/models/index.ts ====
+
+// src/models/index.ts
+export * from './userModel.js';
+export * from './postModel.js';
+export * from './commentModel.js';
+export * from './chatModel.js';
+
+# ==== FILE: src/models/postModel.ts ====
+
+// src/models/postModel.ts
+import type { DocumentData, QueryDocumentSnapshot } from 'firebase-admin/firestore';
+import { Timestamp, FieldValue } from 'firebase-admin/firestore';
+import { db } from '../config/firebase.js';
+
+export type Visibility = 'public' | 'private';
+
+export type PostDoc = {
+  authorId: string;
+  text?: string;
+  mediaUrls?: string[];
+  tags?: string[];
+  likesCount?: number;
+  commentsCount?: number;
+  score?: number;
+  visibility: Visibility;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+  deletedAt?: Timestamp | null;
+};
+
+export type Post = {
+  id: string;
+  authorId: string;
+  text?: string;
+  mediaUrls: string[];
+  tags: string[];
+  likesCount: number;
+  commentsCount: number;
+  score: number;
+  visibility: Visibility;
+  createdAt: string; // ISO
+  updatedAt: string; // ISO
+  deletedAt?: string | null;
+};
+
+const toISO = (t?: Timestamp | null) => (t ? t.toDate().toISOString() : undefined);
+
+export const postConverter = {
+  toFirestore(p: Partial<Post>): DocumentData {
+    const now = FieldValue.serverTimestamp();
+    const doc: Partial<PostDoc> = {
+      authorId: p.authorId!,
+      text: p.text,
+      mediaUrls: p.mediaUrls ?? [],
+      tags: p.tags ?? [],
+      likesCount: p.likesCount ?? 0,
+      commentsCount: p.commentsCount ?? 0,
+      score: p.score ?? 0,
+      visibility: p.visibility ?? 'public',
+      updatedAt: now as any,
+      ...(p.createdAt ? {} : { createdAt: now as any }),
+      deletedAt: p.deletedAt ? Timestamp.fromDate(new Date(p.deletedAt)) : undefined,
+    };
+    return doc as DocumentData;
+  },
+
+  fromFirestore(snap: QueryDocumentSnapshot<PostDoc>): Post {
+    const d = snap.data();
+    return {
+      id: snap.id,
+      authorId: d.authorId,
+      text: d.text,
+      mediaUrls: d.mediaUrls ?? [],
+      tags: d.tags ?? [],
+      likesCount: d.likesCount ?? 0,
+      commentsCount: d.commentsCount ?? 0,
+      score: d.score ?? 0,
+      visibility: d.visibility ?? 'public',
+      createdAt: toISO(d.createdAt) || new Date(0).toISOString(),
+      updatedAt: toISO(d.updatedAt) || new Date(0).toISOString(),
+      deletedAt: d.deletedAt ? toISO(d.deletedAt)! : null,
+    };
+  },
+};
+
+export const postsCol = () => db.collection('posts').withConverter(postConverter);
+export const postRef = (id: string) => postsCol().doc(id);
+
+// Subcollection „comments“ unter einem Post
+export const postCommentsCol = (postId: string) =>
+  postsCol().doc(postId).collection('comments');
+
+# ==== FILE: src/models/userModel.ts ====
+
+// src/models/userModel.ts
+import type { DocumentData, QueryDocumentSnapshot } from 'firebase-admin/firestore';
+import { Timestamp, FieldValue } from 'firebase-admin/firestore';
+import { db } from '../config/firebase.js';
+
+/** Firestore-Speicherform (ohne id) */
+export type UserDoc = {
+  firstName?: string;
+  lastName?: string;
+  email: string;
+  username?: string;
+  city?: string;
+  birthDate?: string; // ISO YYYY-MM-DD (Absicht!)
+  bio?: string;
+  avatarUrl?: string;
+  privateProfile?: boolean;
+  hideSensitive?: boolean;
+  pushOptIn?: boolean;
+
+  isVerified?: boolean; // E-Mail verifiziert
+
+  compliance?: {
+    agreed?: boolean;
+    over18?: boolean;
+    version?: string;
+    agreedAt?: Timestamp;
+  };
+
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+};
+
+/** Domain-Form (App-Schicht) */
+export type User = {
+  id: string;
+  firstName?: string;
+  lastName?: string;
+  email: string;
+  username?: string;
+  city?: string;
+  birthDate?: string; // ISO YYYY-MM-DD
+  bio?: string;
+  avatarUrl?: string;
+  privateProfile?: boolean;
+  hideSensitive?: boolean;
+  pushOptIn?: boolean;
+
+  isVerified?: boolean;
+  compliance?: {
+    agreed?: boolean;
+    over18?: boolean;
+    version?: string;
+    agreedAt?: string; // ISO
+  };
+
+  createdAt: string; // ISO
+  updatedAt: string; // ISO
+};
+
+const toISO = (t?: Timestamp | null) => (t ? t.toDate().toISOString() : undefined);
+
+export const userConverter = {
+  toFirestore(u: Partial<User>): DocumentData {
+    const now = FieldValue.serverTimestamp();
+    const doc: Partial<UserDoc> = {
+      firstName: u.firstName,
+      lastName: u.lastName,
+      email: u.email!,
+      username: u.username,
+      city: u.city,
+      birthDate: u.birthDate,
+      bio: u.bio,
+      avatarUrl: u.avatarUrl,
+      privateProfile: u.privateProfile ?? false,
+      hideSensitive: u.hideSensitive ?? false,
+      pushOptIn: u.pushOptIn ?? false,
+      isVerified: u.isVerified ?? false,
+      compliance: u.compliance
+        ? {
+            agreed: u.compliance.agreed ?? true,
+            over18: u.compliance.over18 ?? true,
+            version: u.compliance.version ?? '1.0.0',
+            // agreedAt nur setzen, wenn nicht schon vorhanden
+            agreedAt: Timestamp.fromDate(new Date(u.compliance.agreedAt || Date.now())),
+          }
+        : undefined,
+      updatedAt: now as any,
+      // createdAt nur bei Create – Repositories sollten dies steuern
+      ...(u.createdAt ? {} : { createdAt: now as any }),
+    };
+    return doc as DocumentData;
+  },
+
+  fromFirestore(snap: QueryDocumentSnapshot<UserDoc>): User {
+    const d = snap.data();
+    return {
+      id: snap.id,
+      firstName: d.firstName,
+      lastName: d.lastName,
+      email: d.email,
+      username: d.username,
+      city: d.city,
+      birthDate: d.birthDate,
+      bio: d.bio,
+      avatarUrl: d.avatarUrl,
+      privateProfile: d.privateProfile ?? false,
+      hideSensitive: d.hideSensitive ?? false,
+      pushOptIn: d.pushOptIn ?? false,
+      isVerified: d.isVerified ?? false,
+      compliance: d.compliance
+        ? {
+            agreed: d.compliance.agreed ?? true,
+            over18: d.compliance.over18 ?? true,
+            version: d.compliance.version ?? '1.0.0',
+            agreedAt: toISO(d.compliance.agreedAt),
+          }
+        : undefined,
+      createdAt: toISO(d.createdAt) || new Date(0).toISOString(),
+      updatedAt: toISO(d.updatedAt) || new Date(0).toISOString(),
+    };
+  },
+};
+
+export const usersCol = () => db.collection('users').withConverter(userConverter);
+export const userRef = (id: string) => usersCol().doc(id);
+
+# ==== FILE: src/repositories/_utils.ts ====
+
+// src/repositories/_utils.ts
+import { Timestamp, FieldValue } from 'firebase-admin/firestore';
+import type { Query } from 'firebase-admin/firestore';
+
+/** ISO ⇄ Firestore Timestamp */
+export const tsFromISO = (iso?: string | null) =>
+  (iso ? Timestamp.fromDate(new Date(iso)) : undefined)!;
+
+export const isoFromTs = (t?: Timestamp | null) =>
+  (t ? t.toDate().toISOString() : undefined);
+
+/** Standard Paginierungs-Optionen */
+export type PageOpts = {
+  limit?: number;
+  cursor?: string | null;
+  order?: 'desc' | 'asc';
+  cursorField?: string; // default 'createdAt'
+};
+
+export const DEFAULT_PAGE = (over?: PageOpts): Required<PageOpts> => ({
+  limit: Math.min(Math.max(over?.limit ?? 20, 1), 200),
+  cursor: over?.cursor ?? null,
+  order: over?.order ?? 'desc',
+  cursorField: over?.cursorField ?? 'createdAt',
+});
+
+/**
+ * Baut eine Query mit Order + optionalem Cursor (string ISO)
+ * Erwartet, dass das Feld `cursorField` ein Timestamp ist (z.B. createdAt).
+ */
+export function applyPaging<T>(
+  q: Query<T>,
+  opts?: PageOpts
+): Query<T> {
+  const cfg = DEFAULT_PAGE(opts);
+  let qq = q.orderBy(cfg.cursorField, cfg.order);
+  if (cfg.cursor) {
+    const cts = tsFromISO(cfg.cursor);
+    if (cts) {
+      // startAfter bei desc bedeutet "älter als", bei asc "neuer als"
+      qq = qq.startAfter(cts);
+    }
+  }
+  return qq.limit(cfg.limit);
+}
+
+/** FieldValue Helper */
+export const inc = (n: number) => FieldValue.increment(n);
+export const now = () => FieldValue.serverTimestamp();
+
+# ==== FILE: src/repositories/chats.repo.ts ====
+
+import { db, FieldValue, nowISO } from '../config/firebase.js';
+
+export type Chat = {
+  id: string;
+  type: 'dm' | 'group';
+  name: string | null;
+  memberIds: string[];
+  lastMessage: { text: string; senderId: string; createdAt: string } | null;
+  lastMessageAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type ChatMessage = {
+  id: string;
+  chatId: string;
+  senderId: string;
+  type: 'text';
+  text: string;
+  mediaUrls: string[];
+  readBy: string[];
+  createdAt: string;
+  editedAt: string | null;
+  deletedAt: string | null;
+};
+
+const CHATS = db.collection('chats');
+
+const S = (v: any, fb = '') => (typeof v === 'string' ? v : fb);
+const A = <T>(v: any, map: (x: any) => T, fb: T[] = []) => (Array.isArray(v) ? v.map(map) : fb);
+
+function mapChat(doc: FirebaseFirestore.DocumentSnapshot): Chat {
+  const d: any = doc.data() || {};
+  return {
+    id: doc.id,
+    type: d.type === 'group' ? 'group' : 'dm',
+    name: d.name ?? null,
+    memberIds: A(d.memberIds, String),
+    lastMessage: d.lastMessage
+      ? { text: S(d.lastMessage.text), senderId: S(d.lastMessage.senderId), createdAt: S(d.lastMessage.createdAt, nowISO()) }
+      : null,
+    lastMessageAt: d.lastMessageAt ?? null,
+    createdAt: d.createdAt ?? nowISO(),
+    updatedAt: d.updatedAt ?? nowISO(),
+  };
+}
+
+function mapMessage(chatId: string, doc: FirebaseFirestore.DocumentSnapshot): ChatMessage {
+  const x: any = doc.data() || {};
+  return {
+    id: doc.id,
+    chatId,
+    senderId: S(x.senderId),
+    type: 'text',
+    text: S(x.text),
+    mediaUrls: A(x.mediaUrls, String),
+    readBy: A(x.readBy, String),
+    createdAt: x.createdAt ?? nowISO(),
+    editedAt: x.editedAt ?? null,
+    deletedAt: x.deletedAt ?? null,
+  };
+}
+
+export async function listByUser(
+  userId: string,
+  { limit = 20, cursor }: { limit?: number; cursor?: string } = {},
+) {
+  let q = CHATS.where('memberIds', 'array-contains', String(userId))
+    .orderBy('updatedAt', 'desc')
+    .limit(limit);
+  if (cursor) {
+    const cur = await CHATS.doc(cursor).get();
+    if (cur.exists) q = q.startAfter(cur);
+  }
+  const snap = await q.get();
+  return { chats: snap.docs.map(mapChat), nextCursor: snap.size === limit ? snap.docs.at(-1)!.id : null };
+}
+
+export async function upsertDM(a: string, b: string) {
+  const memberIds = [String(a), String(b)].sort();
+  const key = memberIds.join('__');
+  const hit = await CHATS.where('type', '==', 'dm').where('key', '==', key).limit(1).get();
+  if (!hit.empty) return { chat: mapChat(hit.docs[0]), created: false };
+
+  const payload = {
+    type: 'dm' as const,
+    key,
+    name: null,
+    memberIds,
+    lastMessage: null,
+    lastMessageAt: null,
+    createdAt: nowISO(),
+    updatedAt: nowISO(),
+  };
+  const ref = await CHATS.add(payload);
+  return { chat: { id: ref.id, ...payload }, created: true };
+}
+
+export async function createGroup(name: string, memberIds: string[]) {
+  const payload = {
+    type: 'group' as const,
+    name: S(name),
+    memberIds: memberIds.map(String),
+    lastMessage: null,
+    lastMessageAt: null,
+    createdAt: nowISO(),
+    updatedAt: nowISO(),
+  };
+  const ref = await CHATS.add(payload);
+  return { id: ref.id, ...payload };
+}
+
+export async function listMessages(
+  chatId: string, { limit = 30, cursor }: { limit?: number; cursor?: string } = {},
+) {
+  const col = CHATS.doc(chatId).collection('messages');
+  let q = col.orderBy('createdAt', 'desc').limit(limit);
+  if (cursor) {
+    const cur = await col.doc(cursor).get();
+    if (cur.exists) q = q.startAfter(cur);
+  }
+  const snap = await q.get();
+  return { messages: snap.docs.map((d) => mapMessage(chatId, d)), nextCursor: snap.size === limit ? snap.docs.at(-1)!.id : null };
+}
+
+export async function appendMessage(
+  chatId: string,
+  message: { senderId: string; text: string; mediaUrls?: string[]; replyToId?: string },
+): Promise<ChatMessage> {
+  const payload = {
+    chatId, senderId: S(message.senderId), type: 'text' as const,
+    text: S(message.text), mediaUrls: A(message.mediaUrls, String), readBy: [],
+    createdAt: nowISO(), editedAt: null as string | null, deletedAt: null as string | null,
+  };
+  const col = CHATS.doc(chatId).collection('messages');
+  const ref = await col.add(payload);
+  await CHATS.doc(chatId).set(
+    { lastMessage: { text: payload.text, senderId: payload.senderId, createdAt: payload.createdAt }, lastMessageAt: payload.createdAt, updatedAt: nowISO() },
+    { merge: true },
+  );
+  return { id: ref.id, ...payload };
+}
+
+async function markReadMessageId(chatId: string, messageId: string, userId: string): Promise<void> {
+  const msgRef = CHATS.doc(chatId).collection('messages').doc(messageId);
+  await msgRef.set({ readBy: FieldValue.arrayUnion(String(userId)) }, { merge: true });
+}
+
+export async function markRead(chatId: string, userId: string): Promise<void> {
+  const col = CHATS.doc(chatId).collection('messages');
+  const snap = await col.orderBy('createdAt', 'desc').limit(1).get();
+  if (snap.empty) return;
+  await markReadMessageId(chatId, snap.docs[0].id, userId);
+}
+
+/** Aliase für Services */
+export const listChatThreads = (userId: string, p: { limit?: number; cursor?: string }) => listByUser(userId, p);
+export const openDirectMessage = (a: string, b: string) => upsertDM(a, b);
+export const getMessages = listMessages;
+export const sendMessage = appendMessage;
+
+// Platzhalter
+export const setArchived = async (_chatId: string, _userId: string, _to: boolean) => {};
+export const setMuted    = async (_chatId: string, _userId: string, _to: boolean) => {};
+export const leaveThread = async (_chatId: string, _userId: string) => {};
+export const deleteThread= async (_chatId: string, _userId: string) => {};
+export const attachMedia = async (_chatId: string, _userId: string, _urls: string[]) => {};
+
+# ==== FILE: src/repositories/comments.repo.ts ====
+
+import { db, nowISO, FieldValue } from '../config/firebase.js';
+
+export type Comment = {
+  id: string;
+  postId: string;
+  text: string;
+  author: { id: string; name: string; avatarUrl: string };
+  likesCount: number;
+  liked: boolean;
+  createdAt: string;
+};
+
+const COMMENTS = db.collection('comments');
+
+function map(d: FirebaseFirestore.DocumentSnapshot): Comment {
+  const x: any = d.data() || {};
+  return {
+    id: d.id,
+    postId: String(x.postId || ''),
+    text: String(x.text || ''),
+    author: x.author || { id: '', name: '', avatarUrl: '' },
+    likesCount: Number(x.likesCount || 0),
+    liked: !!x.liked,
+    createdAt: x.createdAt || nowISO(),
+  };
+}
+
+export async function listByPost(postId: string, limit = 30, cursor?: string) {
+  let q: FirebaseFirestore.Query = COMMENTS.where('postId', '==', String(postId))
+    .orderBy('createdAt', 'desc')
+    .limit(limit);
+  if (cursor) {
+    const cur = await COMMENTS.doc(cursor).get();
+    if (cur.exists) q = q.startAfter(cur);
+  }
+  const snap = await q.get();
+  return {
+    comments: snap.docs.map(map),
+    nextCursor: snap.size === limit ? snap.docs.at(-1)!.id : null,
+  };
+}
+
+export async function create(postId: string, author: Comment['author'], text: string) {
+  const payload = { postId, author, text, likesCount: 0, liked: false, createdAt: nowISO() };
+  const ref = await COMMENTS.add(payload);
+  return { id: ref.id, ...payload } as Comment;
+}
+
+export async function like(commentId: string, userId: string) {
+  await COMMENTS.doc(commentId).set(
+    { likesCount: FieldValue.increment(1), [`likes.${userId}`]: true },
+    { merge: true },
+  );
+}
+export async function unlike(commentId: string, userId: string) {
+  await COMMENTS.doc(commentId).set(
+    { likesCount: FieldValue.increment(-1), [`likes.${userId}`]: FieldValue.delete() as any },
+    { merge: true },
+  );
+}
+
+# ==== FILE: src/repositories/files.repo.ts ====
+
+// src/repositories/files.repo.ts
+import { admin } from '../config/firebase.js';
+import { v4 as uuid } from 'uuid';
+
+/** Signierte (zeitlich limitierte) Download-URL für einen Bucket-Pfad */
+export async function getSignedDownloadUrl(
+  path: string,
+  opts?: { expiresInSeconds?: number }
+): Promise<string> {
+  const bucket = admin.storage().bucket();
+  const file = bucket.file(path);
+  const [exists] = await file.exists();
+  if (!exists) throw new Error('file_not_found');
+
+  const [url] = await file.getSignedUrl({
+    action: 'read',
+    expires: Date.now() + (opts?.expiresInSeconds ?? 60 * 60 * 1000), // 1h
+    version: 'v4',
+  });
+  return url;
+}
+
+/** Einfacher Upload-Helfer, wenn du z.B. aus Buffer hochladen willst */
+export async function uploadBuffer(
+  destPath: string,
+  buffer: Buffer,
+  contentType = 'application/octet-stream',
+  makePublic = false
+): Promise<{ path: string; publicUrl?: string }> {
+  const bucket = admin.storage().bucket();
+  const file = bucket.file(destPath);
+  const token = uuid();
+
+  await file.save(buffer, {
+    contentType,
+    metadata: {
+      metadata: { firebaseStorageDownloadTokens: token },
+      cacheControl: 'public, max-age=31536000, immutable',
+    },
+    resumable: false,
+    validation: 'crc32c',
+  });
+
+  if (makePublic) {
+    await file.makePublic();
+    return { path: destPath, publicUrl: file.publicUrl() };
+  }
+  // v2 download URL
+  const publicUrl =
+    `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/` +
+    encodeURIComponent(destPath) +
+    `?alt=media&token=${token}`;
+  return { path: destPath, publicUrl };
+}
+
+# ==== FILE: src/repositories/index.ts ====
+
+// src/repositories/index.ts
+export * from './_utils.js';
+export * from './users.repo.js';
+export * from './posts.repo.js';
+export * from './comments.repo.js';
+export * from './chats.repo.js';
+export * from './files.repo.js';
+export * from './waitlist.repo.js';
+
+# ==== FILE: src/repositories/posts.repo.ts ====
+
+/**
+ * Posts Repository
+ * - deckt alle von Services verwendeten Methoden ab
+ * - Cursor-Pagination per Dokument
+ * - Trending/ForYou/Search schlank implementiert
+ */
+import { db, FieldValue, nowISO } from '../config/firebase.js';
+
+export type Visibility = 'public' | 'private';
+
+export type FeedPost = {
+  id: string;
+  text: string;
+  mediaUrls: string[];
+  tags: string[];
+  likesCount: number;
+  commentsCount: number;
+  score: number;
+  visibility: Visibility;
+  createdAt: string;
+  _liked?: boolean;
+  authorId?: string;
+};
+
+const POSTS = db.collection('posts');
+
+const S = (v: any, fb = '') => (typeof v === 'string' ? v : fb);
+const A = <T>(v: any, map: (x: any) => T, fb: T[] = []) => (Array.isArray(v) ? v.map(map) : fb);
+const N = (v: any, fb = 0) => (typeof v === 'number' ? v : fb);
+
+function mapPost(doc: FirebaseFirestore.DocumentSnapshot): FeedPost {
+  const d: any = doc.data() || {};
+  return {
+    id: doc.id,
+    text: S(d.text),
+    mediaUrls: A(d.mediaUrls, String),
+    tags: A(d.tags, String),
+    likesCount: N(d.likesCount),
+    commentsCount: N(d.commentsCount),
+    score: N(d.score),
+    visibility: d.visibility === 'private' ? 'private' : 'public',
+    createdAt: d.createdAt ?? nowISO(),
+    _liked: !!d._liked,
+    authorId: d.authorId ? String(d.authorId) : undefined,
+  };
+}
+
+/** Create (binary-upload-svc ruft diese idR) */
+export async function createPostRepo(
+  userId: string | undefined,
+  data: Partial<Pick<FeedPost, 'text' | 'mediaUrls' | 'tags' | 'visibility'>>,
+): Promise<FeedPost> {
+  const payload = {
+    text: S(data.text),
+    mediaUrls: A(data.mediaUrls, String),
+    tags: A(data.tags, String),
+    likesCount: 0,
+    commentsCount: 0,
+    score: 0,
+    visibility: (data.visibility === 'private' ? 'private' : 'public') as Visibility,
+    createdAt: nowISO(),
+    authorId: userId ? String(userId) : undefined,
+  };
+  const ref = await POSTS.add(payload);
+  return { id: ref.id, ...payload };
+}
+
+/** Visibility setzen (alias für Legacy-Route) */
+export async function setPostVisibility(postId: string, _userId: string, visibility: Visibility) {
+  // (optional) Ownership check später einbauen
+  await POSTS.doc(postId).set({ visibility }, { merge: true });
+}
+
+/** Like/Unlike */
+export async function likePost(postId: string, userId: string) {
+  await POSTS.doc(postId).set(
+    { likesCount: FieldValue.increment(1), [`likes.${userId}`]: true },
+    { merge: true },
+  );
+}
+export async function unlikePost(postId: string, userId: string) {
+  await POSTS.doc(postId).set(
+    { likesCount: FieldValue.increment(-1), [`likes.${userId}`]: FieldValue.delete() as any },
+    { merge: true },
+  );
+}
+
+/** Delete */
+export async function deletePost(postId: string, _userId: string) {
+  await POSTS.doc(postId).delete();
+}
+
+/** My posts / posts by user */
+export async function fetchMyPosts(
+  userId: string,
+  { limit = 20, cursor, visibility }: { limit?: number; cursor?: string; visibility?: Visibility },
+) {
+  let q: FirebaseFirestore.Query = POSTS.where('authorId', '==', String(userId))
+    .orderBy('createdAt', 'desc')
+    .limit(limit);
+  if (visibility) q = q.where('visibility', '==', visibility);
+  if (cursor) {
+    const cur = await POSTS.doc(cursor).get();
+    if (cur.exists) q = q.startAfter(cur);
+  }
+  const snap = await q.get();
+  return { posts: snap.docs.map(mapPost), nextCursor: snap.size === limit ? snap.docs.at(-1)!.id : null };
+}
+
+export async function fetchPostsByUser(
+  userId: string,
+  p: { limit?: number; cursor?: string; visibility?: Visibility },
+) {
+  return fetchMyPosts(userId, p);
+}
+
+/** Trending (Score/createdAt) */
+export async function fetchTrending({ limit = 20, cursor, tag }: { limit?: number; cursor?: string; tag?: string }) {
+  let q: FirebaseFirestore.Query = POSTS.where('visibility', '==', 'public')
+    .orderBy('score', 'desc')
+    .orderBy('createdAt', 'desc')
+    .limit(limit);
+
+  if (tag) q = q.where('tags', 'array-contains', String(tag));
+  if (cursor) {
+    const cur = await POSTS.doc(cursor).get();
+    if (cur.exists) q = q.startAfter(cur);
+  }
+  const snap = await q.get();
+  return { posts: snap.docs.map(mapPost), nextCursor: snap.size === limit ? snap.docs.at(-1)!.id : null };
+}
+
+/** For-You (Placeholder: aktuell == Trending) */
+export async function fetchForYou(params: {
+  userId: string;
+  limit?: number;
+  cursor?: string;
+}) {
+  const { limit = 20, cursor } = params;
+  return fetchTrending({ limit, cursor });
+}
+
+/** Search (prefix/exact/tag) */
+export async function searchPosts(params: { q: string; mode?: 'prefix' | 'exact' | 'tag'; limit?: number; cursor?: string }) {
+  const { q, mode = 'prefix', limit = 20, cursor } = params;
+
+  let query: FirebaseFirestore.Query = POSTS.where('visibility', '==', 'public')
+    .orderBy('createdAt', 'desc')
+    .limit(limit);
+
+  if (mode === 'tag') {
+    query = query.where('tags', 'array-contains', q);
+  } else if (mode === 'exact') {
+    query = query.where('text', '==', q);
+  } else {
+    // prefix: simple startsWith über naive index-Felder (optional)
+    query = query.where('textPrefix', '==', q.slice(0, 3).toLowerCase());
+  }
+
+  if (cursor) {
+    const cur = await POSTS.doc(cursor).get();
+    if (cur.exists) query = query.startAfter(cur);
+  }
+
+  const snap = await query.get();
+  return { posts: snap.docs.map(mapPost), nextCursor: snap.size === limit ? snap.docs.at(-1)!.id : null };
+}
+
+/** Trending Tags (count) – naive Aggregation */
+export async function listTrendingTags(limit = 20) {
+  const snap = await POSTS.where('visibility', '==', 'public').limit(500).get();
+  const counts = new Map<string, number>();
+  for (const d of snap.docs) {
+    const tags: string[] = (d.get('tags') as any) || [];
+    for (const t of tags) counts.set(t, (counts.get(t) || 0) + 1);
+  }
+  const arr = Array.from(counts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limit)
+    .map(([tag, count]) => ({ tag, count }));
+  return arr;
+}
+
+/** Reindex/Score Update (Admin) */
+export async function updatePostScore(postId: string, score: number) {
+  await POSTS.doc(postId).set({ score: Number(score) }, { merge: true });
+}
+
+# ==== FILE: src/repositories/users.repo.ts ====
+
+import { db, nowISO } from '../config/firebase.js';
+
+export type User = {
+  id: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  username?: string;
+  city?: string;
+  birthDate?: string;
+  bio?: string;
+  avatarUrl?: string;
+  privateProfile?: boolean;
+  hideSensitive?: boolean;
+  pushOptIn?: boolean;
+  isVerified?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+const USERS = db.collection('users');
+
+function mapUser(doc: FirebaseFirestore.DocumentSnapshot): User {
+  return { id: doc.id, ...(doc.data() as any) };
+}
+
+export async function createUser(id: string, data: Partial<User>) {
+  const payload = { ...data, createdAt: nowISO(), updatedAt: nowISO() };
+  await USERS.doc(id).set(payload, { merge: true });
+  return { id, ...payload } as User;
+}
+export async function getUserByEmail(email: string) {
+  const q = await USERS.where('email', '==', String(email)).limit(1).get();
+  return q.empty ? null : mapUser(q.docs[0]);
+}
+export async function getUserById(id: string) {
+  const snap = await USERS.doc(id).get();
+  return snap.exists ? mapUser(snap) : null;
+}
+export async function updateUser(id: string, patch: Partial<User>) {
+  await USERS.doc(id).set({ ...patch, updatedAt: nowISO() }, { merge: true });
+}
+
+# ==== FILE: src/repositories/waitlist.repo.ts ====
+
+import { db, FieldValue, nowISO } from '../config/firebase.js';
+
+const WL = db.collection('waitlist');
+
+export async function addToWaitlist(email: string) {
+  const doc = WL.doc(email.toLowerCase());
+  await doc.set({ email: email.toLowerCase(), joinedAt: nowISO() }, { merge: true });
+  return { email };
+}
+
+export async function countWaitlist(): Promise<number> {
+  const snap = await WL.get();
+  return snap.size;
+}
+
+export async function bumpMetrics(key: string) {
+  const ref = db.collection('metrics').doc('counters');
+  await ref.set({ [key]: FieldValue.increment(1) }, { merge: true });
+}
+
+# ==== FILE: src/routes/admin/index.ts ====
+
+import { Router } from 'express';
+import seed from './seed.routes.js';
+import reindex from './reindex.routes.js';
+
+const r = Router();
+r.use(seed);
+r.use(reindex);
+export default r;
+
+# ==== FILE: src/routes/admin/reindex.routes.ts ====
+
+import { Router } from 'express';
+import { authRequired, requireRoles } from '../../middleware/auth/roles.middleware.js';
+import * as ctrl from '../../controllers/admin/devSeedController.js';
+
+/** Admin-only Reindex (oder in eigenem Controller, z.B. reindexController) */
+const r = Router();
+r.post('/reindex', authRequired, requireRoles('admin'), ctrl.reindex);
+
+export default r;
+
+# ==== FILE: src/routes/admin/seed.routes.ts ====
+
+import { Router } from 'express';
+import { authRequired, requireRoles } from '../../middleware/auth/roles.middleware.js';
+import * as ctrl from '../../controllers/admin/seedController.js';
+
+/** Admin-only Seeds */
+const r = Router();
+r.post('/seed', authRequired, requireRoles('admin'), ctrl.seed);
+r.post('/dev-seed', authRequired, requireRoles('admin'), ctrl.devSeed);
+
+export default r;
+
+# ==== FILE: src/routes/auth/compliance.routes.ts ====
+
+import { Router } from 'express';
+import { validate } from '../../middleware/validate.middleware.js';
+import { Auth } from '../../validators/index.js';
+import { authRequired } from '../../middleware/auth/auth.middleware.js';
+import * as ctrl from '../../controllers/auth/complianceController.js';
+
+/** POST /auth/compliance-ack (private) */
+const r = Router();
+r.post('/compliance-ack', authRequired, validate.body(Auth.ComplianceAckBody), ctrl.complianceAck);
+export default r;
+
+# ==== FILE: src/routes/auth/index.ts ====
+
+import { Router } from 'express';
+import register from './register.routes.js';
+import login from './login.routes.js';
+import verify from './verify.routes.js';
+import compliance from './compliance.routes.js';
+import me from './me.routes.js';
+
+const r = Router();
+
+r.use(register);
+r.use(login);
+r.use(verify);
+r.use(compliance);
+r.use(me); // /auth/me + Aliasse
+
+export default r;
+
+# ==== FILE: src/routes/auth/login.routes.ts ====
+
+import { Router } from 'express';
+import { validate } from '../../middleware/validate.middleware.js';
+import { Auth } from '../../validators/index.js';
+import * as ctrl from '../../controllers/auth/loginController.js';
+import { authRequired } from '../../middleware/auth/auth.middleware.js';
+
+const r = Router();
+
+/** POST /auth/login (public) */
+r.post('/login', validate.body(Auth.LoginBody), ctrl.login);
+
+/** POST /auth/logout (optional server-side) */
+r.post('/logout', authRequired, ctrl.logout);
+
+export default r;
+
+# ==== FILE: src/routes/auth/me.routes.ts ====
+
+import { Router } from 'express';
+import { authRequired } from '../../middleware/auth/auth.middleware.js';
+import { validate } from '../../middleware/validate.middleware.js';
+import { Users } from '../../validators/index.js';
+import * as profile from '../../controllers/auth/profileController.js';
+import * as avatar from '../../controllers/avatar/avatarController.js';
+
+/**
+ * Aliasse für alte Mobile-Clients, die /auth/me und /auth/me/avatar-binary nutzen.
+ * Spiegeln die /users/me Endpunkte.
+ */
+const r = Router();
+
+r.get('/me', authRequired, profile.me);
+r.patch('/me', authRequired, validate.body(Users.UserPatchBody), profile.updateMe);
+
+/** Binary-Avatar (Content-Type: image/jpeg) – Controller puffert Body selbst */
+r.post('/me/avatar-binary', authRequired, validate.query(Users.AvatarBinaryQuery), avatar.uploadAvatarBinary);
+
+export default r;
+
+# ==== FILE: src/routes/auth/register.routes.ts ====
+
+import { Router } from 'express';
+import { validate } from '../../middleware/validate.middleware.js';
+import { Auth } from '../../validators/index.js';
+import * as ctrl from '../../controllers/auth/registerController.js';
+
+const r = Router();
+
+/** POST /auth/register (public) */
+r.post('/register', validate.body(Auth.RegisterBody), ctrl.register);
+
+export default r;
+
+# ==== FILE: src/routes/auth/verify.routes.ts ====
+
+import { Router } from 'express';
+import { validate } from '../../middleware/validate.middleware.js';
+import { Auth } from '../../validators/index.js';
+import * as ctrl from '../../controllers/auth/verifyController.js';
+
+/** GET /auth/verify-email?token&userId (public) */
+const r = Router();
+r.get('/verify-email', validate.query(Auth.VerifyEmailQuery), ctrl.verifyEmail);
+export default r;
+
+# ==== FILE: src/routes/chat/index.ts ====
+
+import { Router } from 'express';
+import open from './open.routes.js';
+import messages from './messages.routes.js';
+import media from './media.routes.js';
+import read from './read.routes.js';
+
+const r = Router();
+
+r.use(open);
+r.use(messages);
+r.use(media);
+r.use(read);
+
+export default r;
+
+# ==== FILE: src/routes/chat/media.routes.ts ====
+
+import { Router } from 'express';
+import { authRequired } from '../../middleware/auth/auth.middleware.js';
+import { validate } from '../../middleware/validate.middleware.js';
+import { Chat } from '../../validators/index.js';
+import * as upload from '../../middleware/upload.middleware.js';
+import * as ctrl from '../../controllers/chat/chatController.js';
+
+const r = Router();
+
+/** POST /chat/:chatId/media (multipart/form-data; field: "file") */
+r.post('/:chatId/media',
+  authRequired,
+  validate.params(Chat.ChatIdParam),
+  upload.single('file'),
+  ctrl.sendMedia
+);
+
+export default r;
+
+# ==== FILE: src/routes/chat/messages.routes.ts ====
+
+import { Router } from 'express';
+import { authRequired } from '../../middleware/auth/auth.middleware.js';
+import { validate } from '../../middleware/validate.middleware.js';
+import { Chat, Feed } from '../../validators/index.js';
+import * as ctrl from '../../controllers/chat/chatController.js';
+
+const r = Router();
+
+/** GET /chat/:chatId/messages?limit&cursor */
+r.get('/:chatId/messages',
+  authRequired,
+  validate.params(Chat.ChatIdParam),
+  validate.query(Feed.PaginationQuery),
+  ctrl.listMessages
+);
+
+/** POST /chat/:chatId/messages (text / replyToId / mediaUrls) */
+r.post('/:chatId/messages',
+  authRequired,
+  validate.params(Chat.ChatIdParam),
+  validate.body(Chat.ChatSendMessageBody),
+  ctrl.sendMessage
+);
+
+/** POST /chat/:chatId/messages/:messageId/edit */
+r.post('/:chatId/messages/:messageId/edit',
+  authRequired,
+  validate.params(Chat.ChatIdParam.merge(Chat.MessageIdParam)),
+  ctrl.editMessage
+);
+
+/** POST /chat/:chatId/messages/:messageId/unsend */
+r.post('/:chatId/messages/:messageId/unsend',
+  authRequired,
+  validate.params(Chat.ChatIdParam.merge(Chat.MessageIdParam)),
+  ctrl.unsendMessage
+);
+
+export default r;
+
+# ==== FILE: src/routes/chat/open.routes.ts ====
+
+import { Router } from 'express';
+import { authRequired } from '../../middleware/auth/auth.middleware.js';
+import { validate } from '../../middleware/validate.middleware.js';
+import { Chat } from '../../validators/index.js';
+import * as ctrl from '../../controllers/chat/chatController.js';
+
+const r = Router();
+
+/** POST /chat/open { peerId } → öffnet/erstellt DM */
+r.post('/open', authRequired, validate.body(Chat.ChatOpenBody), ctrl.open);
+
+export default r;
+
+# ==== FILE: src/routes/chat/read.routes.ts ====
+
+import { Router } from 'express';
+import { authRequired } from '../../middleware/auth/auth.middleware.js';
+import { validate } from '../../middleware/validate.middleware.js';
+import { Chat } from '../../validators/index.js';
+import * as ctrl from '../../controllers/chat/chatController.js';
+
+const r = Router();
+
+/** POST /chat/:chatId/read */
+r.post('/:chatId/read', authRequired, validate.params(Chat.ChatIdParam), ctrl.markRead);
+
+export default r;
+
+# ==== FILE: src/routes/feed/for-you.routes.ts ====
+
+import { Router } from 'express';
+import { validate } from '../../middleware/validate.middleware.js';
+import { Feed } from '../../validators/index.js';
+import * as ctrl from '../../controllers/feed/feed.controller.js';
+
+const r = Router();
+r.get('/for-you', validate.query(Feed.PaginationQuery), ctrl.forYou);
+export default r;
+
+# ==== FILE: src/routes/feed/index.ts ====
+
+import { Router } from 'express';
+import trendingRoutes from './trending.routes.js';
+import forYouRoutes from './for-you.routes.js';
+import tagsRoutes from './tags.routes.js';
+import searchRoutes from './search.routes.js';
+
+const router = Router();
+
+router.use('/trending', trendingRoutes);
+router.use('/for-you', forYouRoutes);
+router.use('/tags', tagsRoutes);
+router.use('/search', searchRoutes);
+
+export default router;
+
+# ==== FILE: src/routes/feed/search.routes.ts ====
+
+import { Router } from 'express';
+const router = Router();
+router.get('/', (_req, res) => res.status(200).json({ route: 'search' }));
+export default router;
+
+# ==== FILE: src/routes/feed/tags.routes.ts ====
+
+import { Router } from 'express';
+const router = Router();
+router.get('/', (_req, res) => res.status(200).json({ route: 'tags' }));
+export default router;
+
+# ==== FILE: src/routes/feed/trending.routes.ts ====
+
+import { Router } from 'express';
+const router = Router();
+router.get('/', (_req, res) => res.status(200).json({ route: 'trending' }));
+export default router;
+
+# ==== FILE: src/routes/index.ts ====
+
+import { Router } from 'express';
+
+import system from './system/index.js';
+import auth from './auth/index.js';
+import users from './users/index.js';
+import posts from './posts/index.js';
+import feed from './feed/index.js';
+import media from './media/files.routes.js';
+import chat from './chat/index.js';
+import admin from './admin/index.js';
+import taxonomy from './taxonomy/index.js';
+import meta from './meta/index.js';
+import waitlist from './waitlist/index.js';
+
+/**
+ * Haupt-Router (wird in app/routes.ts unter "/" UND "/api" gemounted).
+ * Hier KEINE absolute Präfixe setzen – nur Feature-Namespaces.
+ */
+const router = Router();
+
+router.use(system);     // /healthz, /version, /legal/*
+router.use('/auth', auth);
+router.use('/users', users);
+router.use('/posts', posts);
+router.use('/feed', feed);
+router.use('/files', media); // GET /files/:path(*)
+router.use('/chat', chat);
+router.use('/admin', admin);
+router.use('/taxonomy', taxonomy);
+router.use('/meta', meta);
+router.use('/waitlist', waitlist);
+
+export default router;
+
+# ==== FILE: src/routes/media/files.routes.ts ====
+
+import { Router } from 'express';
+import * as ctrl from '../../controllers/files/mediaController.js';
+
+/**
+ * GET /files/:path(*) → 302 Redirect auf signierte URL
+ * Wichtig: :path mit ".*" aufnehmen, damit Slashes im Pfad funktionieren.
+ */
+const r = Router();
+
+r.get('/:path(*)', ctrl.redirectSignedDownload);
+
+export default r;
+
+# ==== FILE: src/routes/meta/index.ts ====
+
+import { Router } from 'express';
+import taxonomyForward from './taxonomy.routes.js';
+
+const r = Router();
+
+/** Falls du Meta-spezifische Endpunkte hast, hier ergänzen.
+ *  Als Platzhalter forwarden wir Taxonomy-Metadaten.
+ */
+r.use('/taxonomy', taxonomyForward);
+
+export default r;
+
+# ==== FILE: src/routes/meta/taxonomy.routes.ts ====
+
+import { Router } from 'express';
+import * as ctrl from '../../controllers/taxonomy/taxonomyController.js';
+
+const r = Router();
+r.get('/tags', ctrl.listTags);
+export default r;
+
+# ==== FILE: src/routes/posts/comments.routes.ts ====
+
+import { Router } from 'express';
+import { authRequired } from '../../middleware/auth/auth.middleware.js';
+import { validate } from '../../middleware/validate.middleware.js';
+import { Posts } from '../../validators/index.js';
+import * as c from '../../controllers/posts/commentsController.js';
+
+const r = Router();
+
+/** GET /posts/:postId/comments */
+r.get('/:postId/comments', validate.params(Posts.PostIdParam), c.listByPost);
+
+/** POST /posts/:postId/comments (private) */
+r.post('/:postId/comments',
+  authRequired,
+  validate.params(Posts.PostIdParam),
+  validate.body(Posts.CommentCreateBody),
+  c.createForPost
+);
+
+/** POST /posts/:postId/comments/:commentId/like */
+r.post('/:postId/comments/:commentId/like',
+  authRequired,
+  validate.params(Posts.PostIdParam.merge(Posts.CommentIdParam)),
+  c.likeComment
+);
+
+/** POST /posts/:postId/comments/:commentId/unlike */
+r.post('/:postId/comments/:commentId/unlike',
+  authRequired,
+  validate.params(Posts.PostIdParam.merge(Posts.CommentIdParam)),
+  c.unlikeComment
+);
+
+export default r;
+
+# ==== FILE: src/routes/posts/create.routes.ts ====
+
+import { Router } from 'express';
+import { authRequired } from '../../middleware/auth/auth.middleware.js';
+import * as ctrl from '../../controllers/posts/postsController.js';
+
+/**
+ * Optionaler JSON-Create (falls du zusätzlich zu Binary-Upload JSON-Create willst).
+ * Body: { text, tags[], mediaUrls[], visibility }
+ */
+const r = Router();
+r.post('/create', authRequired, ctrl.createJsonPost);
+export default r;
+
+# ==== FILE: src/routes/posts/index.ts ====
+
+import { Router } from 'express';
+import uploadBinary from './upload-binary.routes.js';
+import create from './create.routes.js';
+import visibility from './visibility.routes.js';
+import likes from './likes.routes.js';
+import comments from './comments.routes.js';
+
+const r = Router();
+
+r.use(uploadBinary);
+r.use(create);
+r.use(visibility);
+r.use(likes);
+r.use(comments);
+
+export default r;
+
+# ==== FILE: src/routes/posts/likes.routes.ts ====
+
+import { Router } from 'express';
+import { authRequired } from '../../middleware/auth/auth.middleware.js';
+import { validate } from '../../middleware/validate.middleware.js';
+import { Posts } from '../../validators/index.js';
+import * as likes from '../../controllers/posts/likesController.js';
+
+const r = Router();
+
+r.post('/:postId/like', authRequired, validate.params(Posts.PostIdParam), likes.like);
+r.post('/:postId/unlike', authRequired, validate.params(Posts.PostIdParam), likes.unlike);
+
+export default r;
+
+# ==== FILE: src/routes/posts/upload-binary.routes.ts ====
+
+import { Router } from 'express';
+import { authRequired } from '../../middleware/auth/auth.middleware.js';
+import { validate } from '../../middleware/validate.middleware.js';
+import { Posts } from '../../validators/index.js';
+import * as ctrl from '../../controllers/posts/postUploadController.js';
+
+/**
+ * POST /posts/upload-binary
+ * Binary-Upload (image/jpeg) + Metadaten in Query
+ * Controller übernimmt Body-Pufferung/Erkennung des Content-Types.
+ */
+const r = Router();
+r.post('/upload-binary', authRequired, validate.query(Posts.UploadBinaryQuery), ctrl.uploadBinaryCreatePost);
+export default r;
+
+# ==== FILE: src/routes/posts/visibility.routes.ts ====
+
+import { Router } from 'express';
+import { authRequired } from '../../middleware/auth/auth.middleware.js';
+import { validate } from '../../middleware/validate.middleware.js';
+import { Posts } from '../../validators/index.js';
+import * as ctrl from '../../controllers/posts/postsController.js';
+
+const r = Router();
+
+/** PATCH /posts/:postId — moderne Variante */
+r.patch('/:postId', authRequired, validate.params(Posts.PostIdParam), validate.body(Posts.PostPatchBody), ctrl.patchPost);
+
+/** POST /posts/:postId/visibility — Legacy-Alias */
+r.post('/:postId/visibility', authRequired, validate.params(Posts.PostIdParam), validate.body(Posts.PostPatchBody), ctrl.setVisibility);
+
+export default r;
+
+# ==== FILE: src/routes/search/posts.routes.ts ====
+
+import { Router } from 'express';
+import { validate } from '../../middleware/validate.middleware.js';
+import { Feed } from '../../validators/index.js';
+import * as ctrl from '../../controllers/feed/searchController.js';
+
+const r = Router();
+
+/** GET /search/posts?q=... */
+r.get('/posts', validate.query(Feed.SearchQuery), ctrl.searchPosts);
+
+export default r;
+
+# ==== FILE: src/routes/system/health.routes.ts ====
+
+import { Router } from 'express';
+
+const r = Router();
+
+/** Public healthcheck */
+r.get('/healthz', (_req, res) => res.type('text/plain').status(200).send('OK'));
+
+/** Version & Meta */
+r.get('/version', (_req, res) => {
+  res.json({
+    ok: true,
+    name: 'growgram-backend',
+    env: process.env.NODE_ENV || 'development',
+    region: 'europe-west3',
+    ts: new Date().toISOString(),
+  });
+});
+
+export default r;
+
+# ==== FILE: src/routes/system/index.ts ====
+
+import { Router } from 'express';
+import health from './health.routes.js';
+import legal from './legal.routes.js';
+
+const r = Router();
+
+r.use(health);
+r.use('/legal', legal);
+
+export default r;
+
+# ==== FILE: src/routes/system/legal.routes.ts ====
+
+import { Router } from 'express';
+const r = Router();
+
+r.get('/legal', (_req, res) => {
+  res.json({
+    imprint: { company: 'GrowGram', country: 'DE' },
+    privacy: { version: '1.0.0' },
+  });
+});
+
+export default r;
+
+# ==== FILE: src/routes/system/version.routes.ts ====
+
+import { Router } from "express";
+const r = Router();
+export default r;
+
+
+# ==== FILE: src/routes/taxonomy/index.ts ====
+
+import { Router } from 'express';
+import taxonomy from './taxonomy.routes.js';
+
+const r = Router();
+r.use(taxonomy);
+export default r;
+
+# ==== FILE: src/routes/taxonomy/taxonomy.routes.ts ====
+
+import { Router } from 'express';
+import * as ctrl from '../../controllers/taxonomy/taxonomyController.js';
+
+/** Beispiel: GET /taxonomy/strains, /taxonomy/tags ... */
+const r = Router();
+
+r.get('/strains', ctrl.listStrains);
+r.get('/tags', ctrl.listTags);
+
+export default r;
+
+# ==== FILE: src/routes/users/avatar.routes.ts ====
+
+import { Router } from 'express';
+import { authRequired } from '../../middleware/auth/auth.middleware.js';
+import { validate } from '../../middleware/validate.middleware.js';
+import { Users } from '../../validators/index.js';
+import * as avatar from '../../controllers/avatar/avatarController.js';
+
+const r = Router();
+
+/**
+ * POST /users/me/avatar-binary
+ * Expo sendet Binary (image/jpeg). Der Controller liest Raw-Body und speichert im Storage.
+ * Query: ?filename=avatar.jpg
+ */
+r.post('/me/avatar-binary', authRequired, validate.query(Users.AvatarBinaryQuery), avatar.uploadAvatarBinary);
+
+export default r;
+
+# ==== FILE: src/routes/users/index.ts ====
+
+import { Router } from 'express';
+import profile from './profile.routes.js';
+import avatar from './avatar.routes.js';
+
+const r = Router();
+r.use(profile);
+r.use(avatar);
+export default r;
+
+# ==== FILE: src/routes/users/profile.routes.ts ====
+
+import { Router } from 'express';
+import { authRequired } from '../../middleware/auth/auth.middleware.js';
+import { validate } from '../../middleware/validate.middleware.js';
+import { Users } from '../../validators/index.js';
+import * as profile from '../../controllers/auth/profileController.js';
+
+const r = Router();
+
+/** GET /users/me (private) */
+r.get('/me', authRequired, profile.me);
+
+/** PATCH /users/me (private) */
+r.patch('/me', authRequired, validate.body(Users.UserPatchBody), profile.updateMe);
+
+/** GET /users/:userId (public) */
+r.get('/:userId', validate.params(Users.UserIdParam), profile.getPublicProfile);
+
+export default r;
+
+# ==== FILE: src/routes/waitlist/index.ts ====
+
+import { Router } from 'express';
+import waitlist from './waitlist.routes.js';
+
+const r = Router();
+r.use(waitlist);
+export default r;
+
+# ==== FILE: src/routes/waitlist/waitlist.routes.ts ====
+
+import { Router } from 'express';
+import { validate } from '../../middleware/validate.middleware.js';
+import { authRequired } from '../../middleware/auth/auth.middleware.js';
+import * as svc from '../../services/waitlist/waitlist.service.js';
+
+/**
+ * Beispiel-API:
+ *  POST /waitlist/join { email }
+ *  GET  /waitlist/count
+ * Rate-Limit bitte in app beim Mount setzen oder hier als Middleware ergänzen.
+ */
+const r = Router();
+
+r.post('/join', validate.body(
+  // Minimaler Zod-Inline-Validator, um Abhängigkeit zu sparen
+  (await import('zod')).z.object({ email: (await import('zod')).z.string().email() })
+), async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    const result = await svc.join(email);
+    res.status(201).json({ ok: true, ...result });
+  } catch (e) { next(e); }
+});
+
+r.get('/count', authRequired, async (_req, res, next) => {
+  try {
+    const n = await svc.count();
+    res.json({ ok: true, count: n });
+  } catch (e) { next(e); }
+});
+
+export default r;
+
+# ==== FILE: src/scripts/dev-seed.ts ====
+
+import type { Visibility } from '../types/domain.js';
+
+// Dummy-Stubs – ersetze mit echten Repos.
+const Users = {
+  async create(_id: string, _data: any) { /* noop */ },
+};
+const Posts = {
+  async createForAuthor(_authorId: string, _data: { text: string; tags: string[]; mediaUrls: string[]; visibility: Visibility }) {
+    /* noop */
+  },
+};
+
+async function run() {
+  for (let i = 0; i < 3; i++) {
+    const uid = `dev-seed-${i}`;
+    await Users.create(uid, {
+      email: `dev${i}@example.com`,
+      firstName: 'Dev',
+      lastName: `User${i}`,
+      isVerified: i % 2 === 0,
+      compliance: { agreed: true, over18: true, version: '1.0.0' }, // ✅ erlaubt
+    });
+
+    // ❗ KEIN authorId im Body
+    await Posts.createForAuthor(uid, {
+      text: `Seed post ${i}`,
+      tags: ['seed'],
+      mediaUrls: [],
+      visibility: 'public',
+    });
+  }
+}
+
+run().then(() => process.exit(0)).catch((e) => {
+  console.error(e);
+  process.exit(1);
+});
+
+# ==== FILE: src/scripts/fix-data.ts ====
+
+// src/scripts/fix-data.ts
+/**
+ * Data Fix / Migration Helper.
+ *
+ * Run examples:
+ *  - Emulator: npx ts-node --swc --transpile-only src/scripts/fix-data.ts -- --emulator
+ *  - Dry run:  npx ts-node --swc --transpile-only src/scripts/fix-data.ts -- --dry-run
+ *
+ * Flags:
+ *   --emulator               -> FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 (falls nicht gesetzt)
+ *   --dry-run                -> nur zählen/loggen, nicht schreiben
+ *   --limit=500              -> max Dokumente pro Collection
+ */
+
+import '../config/env.js';
+import { admin, db } from '../config/firebase.js';
+
+type Flags = {
+  emulator: boolean;
+  dryRun: boolean;
+  limit: number;
+};
+
+function parseFlags(): Flags {
+  const argv = process.argv.slice(process.argv.indexOf('--') + 1).filter(Boolean);
+
+  const getBool = (k: string) =>
+    argv.includes(`--${k}`) ||
+    argv.some(a => a.startsWith(`--${k}=`) && ['1','true','yes'].includes(a.split('=')[1]));
+
+  const getNum = (k: string, def: number) => {
+    const v = argv.find(a => a.startsWith(`--${k}=`));
+    if (!v) return def;
+    const n = Number(v.split('=')[1]);
+    return Number.isFinite(n) && n > 0 ? n : def;
+  };
+
+  return {
+    emulator: getBool('emulator'),
+    dryRun: getBool('dry-run'),
+    limit: getNum('limit', 500),
+  };
+}
+
+async function ensureEmulatorIfFlagged(emulator: boolean) {
+  if (emulator && !process.env.FIRESTORE_EMULATOR_HOST) {
+    process.env.FIRESTORE_EMULATOR_HOST = '127.0.0.1:8080';
+    console.log('↪️  Using Firestore Emulator at', process.env.FIRESTORE_EMULATOR_HOST);
+  }
+}
+
+async function fixUsers(limit: number, dry: boolean) {
+  console.log('👤 Fix users…');
+  const snap = await db.collection('users').limit(limit).get();
+  let writes = 0;
+
+  const batch = db.batch();
+  for (const doc of snap.docs) {
+    const d: any = doc.data() || {};
+    const patch: any = {};
+
+    // Email lower-case
+    if (typeof d.email === 'string' && d.email !== d.email.toLowerCase()) {
+      patch.email = d.email.toLowerCase();
+    }
+
+    // Defaults
+    if (typeof d.privateProfile !== 'boolean') patch.privateProfile = !!d.privateProfile;
+    if (typeof d.hideSensitive !== 'boolean') patch.hideSensitive = !!d.hideSensitive;
+    if (typeof d.pushOptIn !== 'boolean') patch.pushOptIn = !!d.pushOptIn;
+
+    // Compliance shape
+    if (d.compliance && typeof d.compliance === 'object') {
+      patch.compliance = {
+        agreed: !!d.compliance.agreed,
+        over18: !!d.compliance.over18,
+        version: d.compliance.version || '1.0.0',
+        agreedAt: d.compliance.agreedAt || admin.firestore.FieldValue.serverTimestamp(),
+      };
+    }
+
+    // Timestamps
+    if (!d.createdAt) patch.createdAt = admin.firestore.FieldValue.serverTimestamp();
+    patch.updatedAt = admin.firestore.FieldValue.serverTimestamp();
+
+    if (Object.keys(patch).length) {
+      writes++;
+      if (!dry) batch.set(doc.ref, patch, { merge: true });
+    }
+  }
+
+  if (!dry && writes) await batch.commit();
+  console.log(`   ✅ users fixed: ${writes}`);
+}
+
+async function fixPosts(limit: number, dry: boolean) {
+  console.log('🖼️  Fix posts…');
+  const snap = await db.collection('posts').limit(limit).get();
+  let writes = 0;
+  let i = 0;
+
+  let batch = db.batch();
+  const commitMaybe = async () => {
+    if (i > 0 && i % 400 === 0) {
+      if (!dry) await batch.commit();
+      batch = db.batch();
+    }
+  };
+
+  for (const doc of snap.docs) {
+    const d: any = doc.data() || {};
+    const patch: any = {};
+
+    if (!Array.isArray(d.mediaUrls)) patch.mediaUrls = Array.isArray(d.mediaUrls) ? d.mediaUrls : [];
+    if (!Array.isArray(d.tags)) patch.tags = Array.isArray(d.tags) ? d.tags : [];
+    if (!d.visibility) patch.visibility = 'public';
+    if (typeof d.likesCount !== 'number') patch.likesCount = Number(d.likesCount) || 0;
+    if (typeof d.commentsCount !== 'number') patch.commentsCount = Number(d.commentsCount) || 0;
+    if (typeof d.score !== 'number') patch.score = Number(d.score) || 0;
+
+    if (!d.createdAt) patch.createdAt = admin.firestore.FieldValue.serverTimestamp();
+    patch.updatedAt = admin.firestore.FieldValue.serverTimestamp();
+
+    if (Object.keys(patch).length) {
+      writes++;
+      if (!dry) batch.set(doc.ref, patch, { merge: true });
+      i++;
+      await commitMaybe();
+    }
+  }
+
+  if (!dry && i % 400 !== 0) await batch.commit();
+  console.log(`   ✅ posts fixed: ${writes}`);
+}
+
+async function main() {
+  const flags = parseFlags();
+  await ensureEmulatorIfFlagged(flags.emulator);
+
+  console.log('⚙️  fix-data flags:', flags);
+
+  await fixUsers(flags.limit, flags.dryRun);
+  await fixPosts(flags.limit, flags.dryRun);
+
+  console.log('✅ Data fix done.');
+  process.exit(0);
+}
+
+main().catch(err => {
+  console.error('❌ fix-data failed:', err);
+  process.exit(1);
+});
+
+# ==== FILE: src/services/admin/reindex.service.ts ====
+
+// src/services/admin/reindex.service.ts
+import * as Posts from '../../repositories/posts.repo.js';
+
+export async function reindexAll(limit = 500) {
+  // Beispiel: Score neu berechnen (vereinfachte Heuristik)
+  const { posts } = await Posts.fetchTrending({ limit: Math.min(limit, 500) });
+  let updated = 0;
+  for (const p of posts) {
+    const score = (Number(p.likesCount || 0) * 3) + Number(p.commentsCount || 0);
+    await Posts.updatePostScore(p.id, score);
+    updated++;
+  }
+  return { ok: true, updated };
+}
+
+# ==== FILE: src/services/admin/seed.service.ts ====
+
+import type { Visibility } from '../../types/domain.js';
+
+// Hier nur Dummy-Stubs der Repos, um Compile sicherzustellen.
+// Ersetze sie durch deine echten Implementierungen, falls vorhanden.
+const Users = {
+  async create(_id: string, _data: any) { /* noop */ },
+};
+
+const Posts = {
+  async createForAuthor(_authorId: string, _data: { text: string; tags: string[]; mediaUrls: string[]; visibility: Visibility }) {
+    /* noop */
+  },
+};
+
+export async function seed() {
+  const uid = 'seed-user-1';
+  await Users.create(uid, {
+    email: 'seed@example.com',
+    firstName: 'Seed',
+    lastName: 'User',
+    isVerified: true,
+    compliance: { agreed: true, over18: true, version: '1.0.0' }, // ✅ erlaubt durch Types-Fix
+  });
+
+  // ❗ KEIN authorId im Objekt – Autor separat übergeben
+  await Posts.createForAuthor(uid, {
+    text: 'Hello GrowGram 🌱',
+    tags: ['welcome', 'growgram'],
+    mediaUrls: [],
+    visibility: 'public',
+  });
+}
+
+export async function devSeed() {
+  return seed();
+}
+
+# ==== FILE: src/services/auth/email.service.ts ====
+
+// src/services/auth/email.service.ts
+import sg from '@sendgrid/mail';
+
+const SENDGRID_KEY = process.env.SENDGRID_API_KEY || '';
+const FROM_EMAIL = process.env.EMAIL_FROM || 'no-reply@growgram-app.com';
+const BRAND = 'GrowGram';
+
+if (SENDGRID_KEY) {
+  sg.setApiKey(SENDGRID_KEY);
+}
+
+export async function sendVerificationEmail(params: {
+  to: string;
+  firstName?: string;
+  verificationUrl: string;
+  unsubscribeUrl?: string;
+}) {
+  const { to, firstName = 'there', verificationUrl, unsubscribeUrl } = params;
+
+  const html = `
+    <div style="font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif">
+      <h2>${BRAND} – E-Mail bestätigen</h2>
+      <p>Hi ${firstName},</p>
+      <p>bitte bestätige deine E-Mail-Adresse:</p>
+      <p><a href="${verificationUrl}" style="background:#4CAF50;color:#0c1a10;padding:12px 18px;border-radius:8px;text-decoration:none;font-weight:700">E-Mail verifizieren</a></p>
+      <p>Sollte der Button nicht funktionieren, öffne diesen Link:<br/>${verificationUrl}</p>
+      ${unsubscribeUrl ? `<p style="font-size:12px;opacity:.7">Abmelden: <a href="${unsubscribeUrl}">${unsubscribeUrl}</a></p>` : ''}
+    </div>
+  `;
+
+  if (!SENDGRID_KEY) {
+    console.log('[email] (dry) verify →', { to, verificationUrl });
+    return { ok: true, dryRun: true };
+  }
+
+  await sg.send({ to, from: FROM_EMAIL, subject: `${BRAND}: E-Mail bestätigen`, html });
+  return { ok: true };
+}
+
+# ==== FILE: src/services/auth/jwt.service.ts ====
+
+import jwt, { type JwtPayload, type SignOptions } from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
+
+// jsonwebtoken@9: strengeres Typing für expiresIn -> sauber mappen
+function toExpiresIn(v: string | number | undefined): SignOptions['expiresIn'] {
+  return typeof v === 'number' ? v : (v as unknown as SignOptions['expiresIn']);
+}
+
+export type AccessClaims = JwtPayload & {
+  sub?: string;
+  userId?: string;
+  id?: string;
+  email?: string;
+  role?: string;
+};
+
+export function signAccessToken(
+  claims: AccessClaims,
+  expiresIn: string | number = '1d'
+): string {
+  const options: SignOptions = {
+    algorithm: 'HS256',
+    expiresIn: toExpiresIn(expiresIn),
+  };
+  return jwt.sign(claims, JWT_SECRET, options);
+}
+
+export function verifyAccessToken(token: string): AccessClaims {
+  return jwt.verify(token, JWT_SECRET) as AccessClaims;
+}
+
+# ==== FILE: src/services/auth/password.service.ts ====
+
+// src/services/auth/password.service.ts
+import bcrypt from 'bcryptjs';
+
+const DEFAULT_ROUNDS = Number(process.env.PASSWORD_ROUNDS || 12);
+
+export async function hashPassword(plain: string, rounds = DEFAULT_ROUNDS): Promise<string> {
+  if (!plain || plain.length < 6) throw new Error('password_too_short');
+  const salt = await bcrypt.genSalt(rounds);
+  return bcrypt.hash(plain, salt);
+}
+
+export async function verifyPassword(plain: string, hash: string): Promise<boolean> {
+  if (!plain || !hash) return false;
+  return bcrypt.compare(plain, hash);
+}
+
+# ==== FILE: src/services/chat/chat.service.ts ====
+
+import * as Chats from '../../repositories/chats.repo.js';
+
+export const listThreads = (userId: string, limit = 20, cursor?: string) =>
+  Chats.listChatThreads(userId, { limit, cursor });
+
+export const openDM = (userId: string, peerId: string) =>
+  Chats.openDirectMessage(userId, peerId);
+
+export const archive = (chatId: string, userId: string, to: boolean) =>
+  Chats.setArchived(chatId, userId, to);
+
+export const mute = (chatId: string, userId: string, mute: boolean) =>
+  Chats.setMuted(chatId, userId, mute);
+
+export const leave = (chatId: string, userId: string) =>
+  Chats.leaveThread(chatId, userId);
+
+export const remove = (chatId: string, userId: string) =>
+  Chats.deleteThread(chatId, userId);
+
+export const createGroup = (name: string, memberIds: string[]) =>
+  Chats.createGroup(name, memberIds);
+
+# ==== FILE: src/services/chat/media.service.ts ====
+
+// src/services/chat/media.service.ts
+import { admin } from '../../config/firebase.js';
+import * as Chats from '../../repositories/chats.repo.js';
+
+const BUCKET = admin.storage().bucket();
+
+export async function sendMedia(chatId: string, userId: string, file: { buffer: Buffer; filename: string; contentType: string }) {
+  const path = `chat/${chatId}/${Date.now()}-${file.filename}`;
+  const f = BUCKET.file(path);
+  await f.save(file.buffer, { contentType: file.contentType || 'application/octet-stream', resumable: false, public: false });
+  const [url] = await f.getSignedUrl({ action: 'read', expires: Date.now() + 1000 * 60 * 60 * 24 * 7 });
+  return Chats.attachMedia(chatId, userId, [url]);
+}
+
+# ==== FILE: src/services/chat/message.service.ts ====
+
+import * as Chats from '../../repositories/chats.repo.js';
+
+export const list = (chatId: string, limit = 30, cursor?: string) =>
+  Chats.getMessages(chatId, { limit, cursor });
+
+export const send = (chatId: string, userId: string, text: string, replyToId?: string) =>
+  Chats.sendMessage(chatId, { senderId: userId, text, replyToId });
+
+export const edit = (_chatId: string, _userId: string, _messageId: string, _text: string) =>
+  Promise.resolve(); // TODO: echtes Edit (Repo-API vorbereiten)
+
+export const unsend = (_chatId: string, _userId: string, _messageId: string) =>
+  Promise.resolve(); // TODO: echtes Unsend
+
+export const markRead = (chatId: string, userId: string) =>
+  Chats.markRead(chatId, userId);
+
+# ==== FILE: src/services/feed/feed.service.ts ====
+
+// src/services/feed/feed.service.ts
+import * as Posts from '../../repositories/posts.repo.js';
+
+export async function trending(limit = 20, cursor?: string, tag?: string) {
+  return Posts.fetchTrending({ limit, cursor, tag });
+}
+
+export async function trendingTags(limit = 16) {
+  return Posts.listTrendingTags(limit);
+}
+
+export async function forYou(userId: string, limit = 20, cursor?: string) {
+  return Posts.fetchForYou({ userId, limit, cursor });
+}
+
+# ==== FILE: src/services/feed/search.service.ts ====
+
+// src/services/feed/search.service.ts
+import * as Posts from '../../repositories/posts.repo.js';
+
+export async function searchPosts(params: {
+  q: string; limit?: number; cursor?: string; tag?: string; mode?: 'prefix'|'exact'|'tag';
+}) {
+  const { q } = params;
+  if (!q || !q.trim()) return { posts: [], nextCursor: null };
+  return Posts.searchPosts(params);
+}
+
+# ==== FILE: src/services/posts/post.service.ts ====
+
+import * as Posts from '../../repositories/posts.repo.js';
+
+export const myPosts = (userId: string, limit = 20, cursor?: string, visibility?: 'public'|'private') =>
+  Posts.fetchMyPosts(userId, { limit, cursor, visibility });
+
+export const byUser = (userId: string, limit = 20, cursor?: string, visibility?: 'public'|'private') =>
+  Posts.fetchPostsByUser(userId, { limit, cursor, visibility });
+
+export const like = (postId: string, userId: string) => Posts.likePost(postId, userId);
+export const unlike = (postId: string, userId: string) => Posts.unlikePost(postId, userId);
+export const remove = (postId: string, userId: string) => Posts.deletePost(postId, userId);
+
+# ==== FILE: src/services/posts/upload.service.ts ====
+
+import * as Posts from '../../repositories/posts.repo.js';
+
+export async function createFromBinary(input: {
+  userId: string;
+  mediaUrls: string[];
+  text?: string;
+  tags?: string[];
+  visibility?: 'public'|'private';
+}) {
+  const post = await Posts.createPostRepo(input.userId, {
+    text: input.text,
+    mediaUrls: input.mediaUrls,
+    tags: input.tags,
+    visibility: input.visibility,
+  });
+  return post;
+}
+
+# ==== FILE: src/services/posts/visibility.service.ts ====
+
+// src/services/posts/visibility.service.ts
+import * as Posts from '../../repositories/posts.repo.js';
+
+export async function setVisibility(postId: string, userId: string, visibility: 'public'|'private') {
+  if (!['public','private'].includes(visibility)) throw new Error('invalid_visibility');
+  await Posts.setPostVisibility(postId, userId, visibility);
+  return { ok: true };
+}
+
+# ==== FILE: src/services/users/avatar.service.ts ====
+
+// src/services/users/avatar.service.ts
+import { admin } from '../../config/firebase.js';
+
+const BUCKET = admin.storage().bucket();
+
+export async function saveAvatarBinary(userId: string, blob: Buffer, filename = 'avatar.jpg', contentType = 'image/jpeg') {
+  const path = `avatars/${userId}/${Date.now()}-${filename}`;
+  const file = BUCKET.file(path);
+  await file.save(blob, { contentType, resumable: false, public: false, metadata: { cacheControl: 'public,max-age=604800' } });
+  const [url] = await file.getSignedUrl({ action: 'read', expires: Date.now() + 1000 * 60 * 60 * 24 * 7 });
+  return { url, path };
+}
+
+# ==== FILE: src/services/users/profile.service.ts ====
+
+import type { User } from '../../repositories/users.repo.js';
+import * as Users from '../../repositories/users.repo.js';
+
+export async function getPublicProfile(userId: string): Promise<User | null> {
+  return Users.getUserById(userId);
+}
+
+export async function update(userId: string, patch: Partial<User>): Promise<User | null> {
+  const safe: Partial<User> = {
+    firstName: patch.firstName,
+    lastName : patch.lastName,
+    city     : patch.city,
+    bio      : patch.bio,
+    avatarUrl: patch.avatarUrl,
+    privateProfile: patch.privateProfile,
+    hideSensitive: patch.hideSensitive,
+    pushOptIn: patch.pushOptIn,
+  };
+  await Users.updateUser(userId, safe);
+  return Users.getUserById(userId);
+}
+
+# ==== FILE: src/services/waitlist/waitlist.service.ts ====
+
+import * as Repo from '../../repositories/waitlist.repo.js';
+
+export async function join(email: string) {
+  const saved = await Repo.addToWaitlist(email);
+  await Repo.bumpMetrics('waitlist_join');
+  return saved;
+}
+export async function count() {
+  return Repo.countWaitlist();
+}
+
+# ==== FILE: src/tests/e2e/auth-flow.e2e.test.ts ====
+
+
+
+# ==== FILE: src/tests/e2e/health.e2e.test.ts ====
+
+
+
+# ==== FILE: src/tests/e2e/unit/controllers/posts.controller.test.ts ====
+
+
+
+# ==== FILE: src/tests/e2e/unit/services/auth.service.test.ts ====
+
+
+
+# ==== FILE: src/triggers/firestore/onPostWrite.ts ====
+
+import * as functions from 'firebase-functions/v1';
+import { db, FieldValue, Timestamp } from '../../config/firebase.js';
+
+/**
+ * Firestore Trigger: posts/{postId}
+ * - create: Defaults setzen, Suchfield vorbereiten, User.postsCount++
+ * - update: Suchfield/Score nachziehen (wenn Text/Tags sich ändern)
+ * - delete: User.postsCount--
+ *
+ * Dieser Trigger ist **idempotent** genug für unsere Zwecke:
+ * wir prüfen, ob das relevante Feld bereits gesetzt ist, bevor wir schreiben.
+ */
+export const onPostWrite = functions
+  .region('europe-west3')
+  .firestore.document('posts/{postId}')
+  .onWrite(async (change, context) => {
+    const { postId } = context.params as { postId: string };
+
+    // DELETE
+    if (!change.after.exists) {
+      const before = change.before.data() as any | undefined;
+      const uid = before?.userId as string | undefined;
+      if (uid) {
+        await db.collection('users').doc(uid).set(
+          { stats: { postsCount: FieldValue.increment(-1) } },
+          { merge: true }
+        );
+      }
+      return;
+    }
+
+    const after = change.after.data() as any;
+    const uid = after.userId as string | undefined;
+    const ref = db.collection('posts').doc(postId);
+
+    // Hilfsfunktionen
+    const normalizeTags = (tags?: string[]) =>
+      Array.isArray(tags) ? [...new Set(tags.map(t => String(t).trim().toLowerCase()))] : [];
+
+    const makeSearch = (text?: string, tags?: string[]) =>
+      [String(text || ''), ...normalizeTags(tags)].join(' ').trim();
+
+    // CREATE
+    if (!change.before.exists) {
+      const patch: Record<string, any> = {};
+
+      if (!('createdAt' in after)) patch.createdAt = Timestamp.now();
+      if (!('likesCount' in after)) patch.likesCount = 0;
+      if (!('commentsCount' in after)) patch.commentsCount = 0;
+      if (!('score' in after)) patch.score = 0;
+
+      const tagsNorm = normalizeTags(after.tags);
+      if (JSON.stringify(tagsNorm) !== JSON.stringify(after.tags)) patch.tags = tagsNorm;
+
+      const search = makeSearch(after.text, tagsNorm.length ? tagsNorm : after.tags);
+      patch.search = search;
+
+      if (Object.keys(patch).length) {
+        await ref.set(patch, { merge: true });
+      }
+
+      if (uid) {
+        await db.collection('users').doc(uid).set(
+          { stats: { postsCount: FieldValue.increment(1) } },
+          { merge: true }
+        );
+      }
+      return;
+    }
+
+    // UPDATE
+    const before = change.before.data() as any;
+    const changedText = before.text !== after.text;
+    const changedTags = JSON.stringify(before.tags || []) !== JSON.stringify(after.tags || []);
+
+    if (changedText || changedTags) {
+      const tagsNorm = normalizeTags(after.tags);
+      const search = makeSearch(after.text, tagsNorm.length ? tagsNorm : after.tags);
+
+      const patch: Record<string, any> = { search };
+      if (JSON.stringify(tagsNorm) !== JSON.stringify(after.tags)) patch.tags = tagsNorm;
+
+      await ref.set(patch, { merge: true });
+    }
+  });
+
+# ==== FILE: src/triggers/storage/onImageUpload.ts ====
+
+import * as functions from 'firebase-functions/v1';
+import { bucket as defaultBucket } from '../../config/firebase.js';
+
+/**
+ * Storage Trigger: onObjectFinalized
+ * - Akzeptiert nur Bilder
+ * - Schreibt minimale Metadaten in /files (idempotent per overwrite merge)
+ * - Platzhalter für spätere Thumbnail/JOBS
+ */
+export const onImageUpload = functions
+  .region('europe-west3')
+  .storage.object()
+  .onFinalize(async (object) => {
+    const { name, contentType, bucket } = object;
+    if (!name) return;
+
+    // Nur Bilder verarbeiten
+    if (!contentType || !/^image\/(jpeg|png|webp)$/.test(contentType)) {
+      return;
+    }
+
+    // Dateimetadaten persistieren (einfaches Katalogisieren)
+    const filesCol = 'files';
+    const docId = encodeURIComponent(name);
+    await defaultBucket.file(name).getMetadata().catch(() => [undefined]);
+
+    await (await import('firebase-admin/firestore')).getFirestore()
+      .collection(filesCol)
+      .doc(docId)
+      .set(
+        {
+          path: name,
+          bucket,
+          contentType,
+          size: object.size ? Number(object.size) : undefined,
+          updatedAt: new Date().toISOString(),
+        },
+        { merge: true }
+      );
+
+    // Platz für zukünftige Thumbnail-Jobs:
+    // z.B. Job-Collection "jobs:thumbnails" füttern
+    // await db.collection('jobs').doc('thumbnails').collection('queue').add({ path: name });
+  });
+
+# ==== FILE: src/types/api.ts ====
+
+// Gemeinsame API-Utility-Typen
+
+export type Cursor = string;
+export type Limit = number;
+
+export type Page<T> = {
+  items: T[];
+  nextCursor?: Cursor | null;
+};
+
+export type ApiErrorPayload = {
+  code: string;
+  message: string;
+  details?: unknown;
+};
+
+export type ApiErrorResponse = {
+  status: number;
+  error: ApiErrorPayload;
+  requestId?: string;
+};
+
+export type ApiOk<T> = {
+  status: 'ok';
+  data: T;
+};
+
+export type ApiFail = {
+  status: 'error';
+  error: ApiErrorPayload;
+};
+
+export type ApiResponse<T> = ApiOk<T> | ApiFail;
+
+export type Result<T, E = ApiErrorPayload> =
+  | { ok: true; value: T }
+  | { ok: false; error: E };
+
+export type WithId<T> = T & { id: string };
+
+// JWT / Auth
+export type JwtClaims = {
+  uid: string;
+  email?: string | null;
+  roles?: string[];
+  // Standardfelder (iat/exp) kommen vom Signer
+  [k: string]: unknown;
+};
+
+# ==== FILE: src/types/domain.ts ====
+
+// Domain-Typen für User & Feed
+
+export type Compliance = {
+  agreed: boolean;
+  over18: boolean;
+  version?: string;
+};
+
+export interface User {
+  id: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  username?: string;
+  city?: string;
+  birthDate?: string;
+  bio?: string;
+  avatarUrl?: string;
+  privateProfile?: boolean;
+  hideSensitive?: boolean;
+  pushOptIn?: boolean;
+
+  // ✅ neu hinzugefügt
+  isVerified?: boolean;
+  compliance?: Compliance;
+
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export type Visibility = 'public' | 'followers' | 'private';
+
+export interface FeedPost {
+  id: string;
+  text: string;
+  tags: string[];
+  mediaUrls: string[];
+  visibility: Visibility;
+  createdAt?: string;
+  updatedAt?: string;
+  // (absichtlich KEIN authorId hier – der Autor wird i.d.R. separat geführt)
+}
+
+# ==== FILE: src/types/env.d.ts ====
+
+// types only – keine Runtime-Reads, keine Imports
+export {};
+
+declare global {
+  namespace NodeJS {
+    interface ProcessEnv {
+      // 🔗 API / Base
+      API_BASE?: string;
+      FIREBASE_PROJECT_ID?: string;
+      FIREBASE_REGION?: string;
+      USERS_COLLECTION?: string;
+      GCS_BUCKET_NAME?: string;
+
+      // 🔐 Auth / JWT
+      JWT_SECRET?: string;
+      JWT_EXPIRES?: string;
+      RESET_TOKEN_EXPIRES?: string;
+
+      // 🌍 App / Hosting
+      APP_BASEURL?: string;
+      APP_REDIRECTURL?: string;
+      APP_URL?: string;
+      VERIFY_URL?: string;
+      RESET_URL?: string;
+
+      // 📧 SendGrid
+      SENDGRID_KEY?: string;
+      SENDGRID_SENDER?: string;
+      SENDGRID_SENDER_NAME?: string;
+      SENDGRID_REPLY_TO?: string;
+      SENDGRID_TEMPLATE_VERIFY?: string;
+      SENDGRID_TEMPLATE_RESET?: string;
+      SENDGRID_TEMPLATE_WELCOME?: string;
+      SENDGRID_TEMPLATE_WAITLIST_WELCOME?: string;
+      SENDGRID_TEMPLATE_WAITLIST_CONFIRM?: string;
+      SENDGRID_SANDBOX?: string;
+
+      // 🧩 Dev / Test / Admin
+      DEV_LINK_SECRET?: string;
+      TEST_EMAIL?: string;
+      TEST_PASSWORD?: string;
+      ENABLE_DEBUG_LOGS?: string;
+      ADMIN_TASK_TOKEN?: string;
+      ADMIN_JOB_SECRET?: string;
+
+      // 🔑 3rd-Party
+      UNSPLASH_ACCESS_KEY?: string;
+      PEXELS_API_KEY?: string;
+      PIXABAY_API_KEY?: string;
+      SEED_KEY?: string;
+
+      // 🧠 Optional / AI
+      OPENAI_API_KEY?: string;
+      MODERATION_THRESHOLD?: string;
+
+      // Firebase Runtime Flags (nur zur Typisierung)
+      FUNCTIONS_EMULATOR?: string;
+      GCLOUD_PROJECT?: string;
+      FUNCTION_TARGET?: string;
+    }
+  }
+}
+
+# ==== FILE: src/types/express.d.ts ====
+
+// Express-Augmentation (Request.user, res.locals.requestId, etc.)
+import type { UserDoc } from './domain.js';
+
+declare global {
+  namespace Express {
+    interface Locals {
+      requestId?: string;
+      userId?: string;
+    }
+
+    interface Request {
+      auth?: {
+        uid: string;
+        email?: string | null;
+        claims?: Record<string, unknown>;
+      };
+      user?: UserDoc | null;
+    }
+  }
+}
+
+export {};
+
+# ==== FILE: src/types/index.ts ====
+
+export * from './domain.js';
+export * from './api.js';
+
+# ==== FILE: src/utils/crypto.ts ====
+
+import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
+
+export const sha256Hex = (s: string) => createHash('sha256').update(s).digest('hex');
+
+export const hmacSha256Hex = (key: string, data: string) =>
+  createHmac('sha256', key).update(data).digest('hex');
+
+export const randomHex = (bytes = 16) => randomBytes(bytes).toString('hex');
+
+export function safeEqual(a: string, b: string): boolean {
+  try {
+    const abuf = Buffer.from(a);
+    const bbuf = Buffer.from(b);
+    if (abuf.length !== bbuf.length) return false;
+    return timingSafeEqual(abuf, bbuf);
+  } catch {
+    return false;
+  }
+}
+
+# ==== FILE: src/utils/http.ts ====
+
+import type { Request, Response, NextFunction, RequestHandler } from "express";
+import { createError } from "../app/errors.js";
+
+/** Wrapper für async Handler, damit throw/Promise-Reject korrekt im Error-Handler landet */
+export const asyncHandler =
+  (fn: (req: Request, res: Response, next: NextFunction) => Promise<any> | any): RequestHandler =>
+  (req, res, next) =>
+    Promise.resolve(fn(req, res, next)).catch(next);
+
+/** Pflicht-URL-Parameter sicherstellen */
+export function requireParam(req: Request, name: string): string {
+  const v = req.params?.[name];
+  if (!v) throw createError(400, `Missing URL param "${name}"`, "missing_param");
+  return v;
+}
+
+/** Pflicht-Query-Parameter sicherstellen */
+export function requireQuery(req: Request, name: string): string {
+  const v = (req.query?.[name] as string | undefined) ?? undefined;
+  if (!v) throw createError(400, `Missing query "${name}"`, "missing_query");
+  return v;
+}
+
+/** Pflicht-Body-Felder prüfen – gibt typisierten Body zurück */
+export function requireBody<T = any>(req: Request, fields: string[]): T {
+  if (req.body == null || typeof req.body !== "object") {
+    throw createError(400, "Body must be a JSON object", "invalid_body");
+  }
+  for (const f of fields) {
+    if (!(f in req.body)) {
+      throw createError(400, `Missing body field "${f}"`, "missing_body_field");
+    }
+  }
+  return req.body as T;
+}
+
+/** Zahl aus Param/Query sicher parsen */
+export function parseNumber(value: string, field: string, { min, max }: { min?: number; max?: number } = {}): number {
+  const n = Number(value);
+  if (!Number.isFinite(n)) throw createError(400, `Field "${field}" must be a number`, "invalid_number");
+  if (min != null && n < min) throw createError(400, `Field "${field}" must be >= ${min}`, "number_min");
+  if (max != null && n > max) throw createError(400, `Field "${field}" must be <= ${max}`, "number_max");
+  return n;
+}
+
+# ==== FILE: src/utils/id.ts ====
+
+import { randomUUID, randomBytes } from 'node:crypto';
+
+/** Krypto-sichere, URL-freundliche ID (default 22 Zeichen). */
+export function shortId(len = 22): string {
+  // Base64url ohne Padding
+  const b = randomBytes(Math.ceil((len * 3) / 4))
+    .toString('base64')
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+  return b.slice(0, len);
+}
+
+/** UUID v4 ohne Bindestriche. */
+export function uuid(): string {
+  return randomUUID().replace(/-/g, '');
+}
+
+/** Zeitbasierte ID (Millis + Random) – gut sortierbar. */
+export function ksid(): string {
+  const t = Date.now().toString(36);
+  const r = shortId(10);
+  return `${t}_${r}`;
+}
+
+# ==== FILE: src/utils/image.ts ====
+
+const IMAGE_MIME = new Set(['image/jpeg', 'image/png', 'image/webp']);
+
+export const isImageMime = (m?: string | null) => !!m && IMAGE_MIME.has(m);
+
+export function extFromMime(mime?: string | null): '.jpg' | '.png' | '.webp' | '.bin' {
+  if (!mime) return '.bin';
+  if (mime === 'image/jpeg') return '.jpg';
+  if (mime === 'image/png') return '.png';
+  if (mime === 'image/webp') return '.webp';
+  return '.bin';
+}
+
+export function ensureJpgFilename(name: string) {
+  return name.replace(/\.(jpeg|jpg|png|webp)$/i, '') + '.jpg';
+}
+
+export function joinPath(...parts: string[]) {
+  return parts.join('/').replace(/\/{2,}/g, '/').replace(/^\/+/, '');
+}
+
+/** z.B. `uploads/{uid}/{yyyy-mm-dd}/file.jpg` */
+export function makeStoragePath(opts: { folder: string; uid: string; filename: string; date?: Date }) {
+  const d = opts.date || new Date();
+  const yyyy = d.getUTCFullYear();
+  const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const dd = String(d.getUTCDate()).padStart(2, '0');
+  return joinPath(opts.folder, opts.uid, `${yyyy}-${mm}-${dd}`, opts.filename);
+}
+
+# ==== FILE: src/utils/logger.ts ====
+
+type Level = 'debug' | 'info' | 'warn' | 'error';
+const ORDER: Record<Level, number> = { debug: 10, info: 20, warn: 30, error: 40 };
+
+function envLevel(): Level {
+  const raw = String(process.env.LOG_LEVEL || 'info').toLowerCase() as Level;
+  return (ORDER[raw] ? raw : 'info');
+}
+
+export function logger(scope?: string) {
+  const min = envLevel();
+  const minN = ORDER[min];
+
+  const base = (lvl: Level, msg: string, meta?: Record<string, unknown>) => {
+    if (ORDER[lvl] < minN) return;
+    const payload = {
+      ts: new Date().toISOString(),
+      lvl,
+      scope,
+      msg,
+      ...(meta && Object.keys(meta).length ? { meta } : {}),
+    };
+    const line = JSON.stringify(payload);
+    // route to console
+    if (lvl === 'error') console.error(line);
+    else if (lvl === 'warn') console.warn(line);
+    else console.log(line);
+  };
+
+  return {
+    debug: (m: string, meta?: Record<string, unknown>) => base('debug', m, meta),
+    info:  (m: string, meta?: Record<string, unknown>) => base('info', m, meta),
+    warn:  (m: string, meta?: Record<string, unknown>) => base('warn', m, meta),
+    error: (m: string, meta?: Record<string, unknown>) => base('error', m, meta),
+  };
+}
+
+export const log = logger('app');
+
+# ==== FILE: src/utils/sanitizer.ts ====
+
+/** Entfernt Steuerzeichen, Zero-Width usw. */
+export function stripControlChars(s: string): string {
+  return s.replace(/[\u0000-\u001F\u007F\u200B-\u200F\u2060\uFEFF]/g, '');
+}
+
+/** Sehr konservative Text-Sanitization für einfache Felder. */
+export function sanitizeText(
+  s: string,
+  opts: { maxLen?: number; allowNewlines?: boolean } = {}
+): string {
+  const { maxLen = 2000, allowNewlines = true } = opts;
+  let out = stripControlChars(s);
+  if (!allowNewlines) out = out.replace(/\r?\n+/g, ' ');
+  out = out.replace(/\s+/g, ' ').trim();
+  if (out.length > maxLen) out = out.slice(0, maxLen);
+  return out;
+}
+
+/** Safe JSON parse mit Default */
+export function safeJson<T = unknown>(raw: string, fallback: T): T {
+  try { return JSON.parse(raw) as T; } catch { return fallback; }
+}
+
+/** Kleine Helfer */
+export const clamp = (n: number, min: number, max: number) => Math.min(Math.max(n, min), max);
+export const toInt = (v: unknown, def = 0) => {
+  const n = Number.parseInt(String(v ?? ''), 10);
+  return Number.isFinite(n) ? n : def;
+};
+export const toBool = (v: unknown, def = false) => {
+  if (typeof v === 'boolean') return v;
+  if (typeof v === 'string') return /^(1|true|yes|on)$/i.test(v);
+  if (typeof v === 'number') return v !== 0;
+  return def;
+};
+
+# ==== FILE: src/utils/string.ts ====
+
+/** Führende/trailing Spaces weg + Mehrfach-Whitespace auf eins. */
+export function normalizeWhitespace(s: string): string {
+  return s.replace(/\s+/g, ' ').trim();
+}
+
+/** Umlaute/Diakritika entfernen (für Search/Slug). */
+export function stripDiacritics(s: string): string {
+  return s.normalize('NFD').replace(/\p{Diacritic}/gu, '');
+}
+
+/** Slugify: lowercase, diacritics weg, nicht-alphanumerisch → '-'. */
+export function slugify(s: string): string {
+  const base = stripDiacritics(s).toLowerCase();
+  return base.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
+
+/** Für Volltextsuche: lowercased, diacritics entfernt, kompakt. */
+export function toSearchable(...parts: (string | undefined | null)[]): string {
+  const joined = parts.filter(Boolean).join(' ');
+  return normalizeWhitespace(stripDiacritics(joined)).toLowerCase();
+}
+
+/** Tags in ein sauberes Set normalisieren. */
+export function normalizeTags(input: string[] | string | undefined | null): string[] {
+  if (!input) return [];
+  const arr = Array.isArray(input) ? input : input.split(/[,#\s]+/g);
+  const out = new Set<string>();
+  for (const raw of arr) {
+    const t = slugify(raw);
+    if (t) out.add(t);
+  }
+  return [...out];
+}
+
+# ==== FILE: src/utils/time.ts ====
+
+import type { Timestamp } from 'firebase-admin/firestore';
+
+export const now = () => new Date();
+export const nowIso = () => new Date().toISOString();
+
+export const addMinutes = (d: Date, m: number) => new Date(d.getTime() + m * 60_000);
+export const addHours   = (d: Date, h: number) => new Date(d.getTime() + h * 3_600_000);
+export const addDays    = (d: Date, days: number) => new Date(d.getTime() + days * 86_400_000);
+
+export const toIsoDate = (d: Date) =>
+  `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+
+export const fromISO = (s: string) => new Date(s);
+
+/** Lazy: Firestore Timestamp erzeugen ohne harten Import oben. */
+export async function toTimestamp(date: Date = now()): Promise<Timestamp> {
+  const { Timestamp } = await import('firebase-admin/firestore');
+  return Timestamp.fromDate(date);
+}
+
+# ==== FILE: src/utils/types.ts ====
+
+export function omitKeys<T extends Record<string, any>, K extends keyof T>(obj: T, ...keys: K[]): Omit<T, K> {
+  const s = new Set<K>(keys);
+  return Object.fromEntries(Object.entries(obj).filter(([k]) => !s.has(k as K))) as Omit<T, K>;
+}
+
+# ==== FILE: src/validators/auth.schema.ts ====
+
+import { z } from 'zod';
+
+export const RegisterBody = z.object({
+  email   : z.string().email(),
+  password: z.string().min(8),
+  firstName: z.string().min(1),
+  lastName : z.string().min(1),
+  agree   : z.boolean().refine(v => v === true, { message: 'must be true' }),
+  over18  : z.boolean().refine(v => v === true, { message: 'must be true' }),
+});
+
+export const LoginBody = z.object({
+  email   : z.string().email(),
+  password: z.string().min(8),
+});
+
+export const ComplianceAckBody = z.object({
+  device: z.string().min(2),
+  at: z.string().optional(),
+});
+
+export const VerifyEmailQuery = z.object({
+  token: z.string().min(20),
+  userId: z.string().min(1),
+});
+
+# ==== FILE: src/validators/chat.schema.ts ====
+
+import { z } from 'zod';
+
+const zTrim = () => z.string().trim();
+
+export const ChatIdParam = z.object({
+  chatId: zTrim().min(8),
+});
+
+export const MessageIdParam = z.object({
+  messageId: zTrim().min(8),
+});
+
+/** POST /chat/open */
+export const ChatOpenBody = z.object({
+  peerId: zTrim().min(6),
+});
+
+/** POST /chat/:chatId/messages */
+export const ChatSendMessageBody = z.object({
+  text     : zTrim().max(2000).optional(),
+  replyToId: zTrim().optional(),
+  mediaUrls: z.array(zTrim().url()).max(10).optional(),
+}).refine(d => d.text || (d.mediaUrls && d.mediaUrls.length > 0), {
+  message: 'either text or mediaUrls required',
+});
+
+export type TChatIdParam           = z.infer<typeof ChatIdParam>;
+export type TMessageIdParam        = z.infer<typeof MessageIdParam>;
+export type TChatOpenBody          = z.infer<typeof ChatOpenBody>;
+export type TChatSendMessageBody   = z.infer<typeof ChatSendMessageBody>;
+
+# ==== FILE: src/validators/compliance.schema.ts ====
+
+export { ComplianceAckBody } from './auth.schema.js';
+
+# ==== FILE: src/validators/feed.schema.ts ====
+
+import { z } from 'zod';
+
+const zTrim = () => z.string().trim();
+
+export const PaginationQuery = z.object({
+  limit : z.coerce.number().int().min(1).max(200).default(20),
+  cursor: zTrim().optional(),
+});
+
+export const TagQuery = z.object({
+  tag: zTrim().max(40).optional(),
+});
+
+export const SearchQuery = z.object({
+  q     : zTrim().min(1),
+  limit : z.coerce.number().int().min(1).max(200).default(20).optional(),
+  cursor: zTrim().optional(),
+  tag   : zTrim().max(40).optional(),
+  mode  : z.enum(['prefix', 'exact', 'tag']).default('prefix').optional(),
+});
+
+export type TPaginationQuery = z.infer<typeof PaginationQuery>;
+export type TTagQuery        = z.infer<typeof TagQuery>;
+export type TSearchQuery     = z.infer<typeof SearchQuery>;
+
+# ==== FILE: src/validators/index.ts ====
+
+export * as Auth        from './auth.schema.js';
+export * as Users       from './users.schema.js';
+export * as Posts       from './posts.schema.js';
+export * as Feed        from './feed.schema.js';
+export * as Chat        from './chat.schema.js';
+export * from './compliance.schema.js';
+
+# ==== FILE: src/validators/posts.schema.ts ====
+
+import { z } from 'zod';
+
+const zTrim = () => z.string().trim();
+
+export const PostIdParam = z.object({
+  postId: zTrim().min(8),
+});
+
+export const CommentIdParam = z.object({
+  commentId: zTrim().min(8),
+});
+
+/** Query für /posts/upload-binary */
+export const UploadBinaryQuery = z.object({
+  filename  : zTrim().max(140).default('upload.jpg'),
+  visibility: z.enum(['public', 'private']).default('public'),
+  text      : zTrim().max(2000).optional(),
+  tags      : zTrim().transform((raw) => {
+    if (!raw) return [] as string[];
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        return parsed.map(String).map(t => t.trim()).filter(Boolean);
+      }
+    } catch { /* fallthrough */ }
+    return String(raw).split(/[,#\s]+/g).map(t => t.trim()).filter(Boolean);
+  }).optional(),
+  folder    : zTrim().max(80).default('uploads'),
+});
+
+/** PATCH /posts/:postId */
+export const PostPatchBody = z.object({
+  visibility: z.enum(['public', 'private']).optional(),
+});
+
+/** POST /posts/:postId/comments */
+export const CommentCreateBody = z.object({
+  text: zTrim().min(1).max(1000),
+});
+
+export type TUploadBinaryQuery   = z.infer<typeof UploadBinaryQuery>;
+export type TPostPatchBody       = z.infer<typeof PostPatchBody>;
+export type TCommentCreateBody   = z.infer<typeof CommentCreateBody>;
+export type TPostIdParam         = z.infer<typeof PostIdParam>;
+export type TCommentIdParam      = z.infer<typeof CommentIdParam>;
+
+# ==== FILE: src/validators/users.schema.ts ====
+
+import { z } from 'zod';
+
+const zTrim = () => z.string().trim();
+
+/** GET/PATCH /users/me, GET /users/:userId */
+export const UserIdParam = z.object({
+  userId: zTrim().min(6),
+});
+
+/** PATCH body */
+export const UserPatchBody = z.object({
+  firstName     : zTrim().min(2).max(60).optional(),
+  lastName      : zTrim().min(2).max(60).optional(),
+  username      : zTrim().min(3).max(30).regex(/^[a-z0-9._]+$/i).optional(),
+  city          : zTrim().max(60).optional(),
+  birthDate     : z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  bio           : zTrim().max(300).optional(),
+  avatarUrl     : zTrim().url().optional(),
+  privateProfile: z.boolean().optional(),
+  hideSensitive : z.boolean().optional(),
+  pushOptIn     : z.boolean().optional(),
+});
+
+/** Query für Avatar Binary Upload */
+export const AvatarBinaryQuery = z.object({
+  filename: zTrim().max(120).default('avatar.jpg'),
+});
+
+export type TUserPatchBody      = z.infer<typeof UserPatchBody>;
+export type TUserIdParam        = z.infer<typeof UserIdParam>;
+export type TAvatarBinaryQuery  = z.infer<typeof AvatarBinaryQuery>;

@@ -2,6 +2,6 @@
   "files": [],
   "references": [
     { "path": "apps/backend/functions" },
-    { "path": "apps/backend/functions-next" }
+    { "path": "apps/backend/nexus" }
   ]
 }

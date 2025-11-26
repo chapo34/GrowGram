@@ -1,6 +1,6 @@
 {
   "name": "growgram-monorepo",
-  "private": true,
+   "private": true,
   "workspaces": [
     "apps/backend/functions",
     "apps/backend/functions-next"

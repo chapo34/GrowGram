@@ -1,0 +1,60 @@
+{
+  "name": "growgram-nexus",
+  "version": "0.1.2",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "clean": "rimraf dist",
+
+    "test": "vitest -c src/tests/vitest.config.ts",
+    "test:run": "vitest -c src/tests/vitest.config.ts run --reporter=verbose",
+    "test:watch": "vitest -c src/tests/vitest.config.ts",
+    "test:e2e": "vitest -c src/tests/vitest.config.ts run --dir src/tests/e2e --reporter=verbose",
+
+    "emu:test:e2e": "cross-env GCLOUD_PROJECT=growgram-backend REGION=europe-west3 EMAIL_DEV_MODE=1 JWT_SECRET=dev-secret FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 FIREBASE_AUTH_EMULATOR_HOST=127.0.0.1:9099 firebase emulators:exec --only firestore,auth \"vitest -c src/tests/vitest.config.ts run --dir src/tests/e2e --reporter=verbose\"",
+
+    "admin:age-verify": "node dist/scripts/admin-mark-age-verified.js"
+  },
+  "dependencies": {
+    "@google-cloud/storage": "^7.12.1",
+    "compression": "^1.8.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.4.0",
+    "firebase-admin": "^13.6.0",
+    "firebase-functions": "^6.6.0",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
+    "uuid": "^9.0.1",
+    "yaml": "^2.5.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/compression": "^1.7.5",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^4.17.21",
+    "@types/morgan": "^1.9.6",
+    "@types/multer": "^1.4.11",
+    "@types/node": "^20.14.9",
+    "@types/supertest": "^2.0.16",
+    "cross-env": "^7.0.3",
+    "eslint": "^9.14.0",
+    "firebase-tools": "^13.35.1",
+    "rimraf": "^6.0.1",
+    "supertest": "^7.1.4",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.9"
+  },
+  "overrides": {
+    "path-to-regexp": "0.1.12"
+  }
+}

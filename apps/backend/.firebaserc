@@ -1,5 +1,31 @@
 {
   "projects": {
-    "default": "growgram-backend"
-  }
+    "default": "growgram-backend",
+    "staging": "growgram-staging",
+    "prod": "growgram-prod"
+  },
+  "targets": {
+    "growgram-backend": {
+      "hosting": {
+        "app": [
+          "growgram-backend"
+        ]
+      }
+    },
+    "growgram-staging": {
+      "hosting": {
+        "app": [
+          "growgram-staging"
+        ]
+      }
+    },
+    "growgram-prod": {
+      "hosting": {
+        "app": [
+          "growgram-prod"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }
