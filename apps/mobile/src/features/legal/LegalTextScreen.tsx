@@ -9,8 +9,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { api, API_BASE } from '../../utils/api';
-
+import { api, API_BASE } from '@shared/lib/apiClient';
 type Kind = 'terms' | 'guidelines' | 'privacy';
 
 type RouteParams = {
@@ -97,7 +96,7 @@ export default function LegalTextScreen() {
 
       // Server liefert Plain-Text? Dann so:
       const res = await api.get(`${path}`, {
-        transformResponse: [(data) => data],
+transformResponse: [(data: any) => data],
         headers: { Accept: 'text/plain' },
       });
 

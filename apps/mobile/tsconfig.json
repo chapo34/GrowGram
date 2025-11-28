@@ -1,63 +1,43 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "target": "ES2022",
+    "target": "ESNext",
     "module": "ESNext",
     "jsx": "react-native",
-    "moduleResolution": "bundler",
+
     "strict": true,
     "noEmit": true,
-    "isolatedModules": true,
+
+    "allowJs": true,
+    "checkJs": false,
+
+    "moduleResolution": "bundler",
+    "customConditions": ["react-native"],
+
     "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
+
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "src/*"
-      ],
-      "@components/*": [
-        "src/components/*"
-      ],
-      "@screens/*": [
-        "src/screens/*"
-      ],
-      "@context/*": [
-        "src/context/*"
-      ],
-      "@navigation/*": [
-        "src/navigation/*"
-      ],
-      "@assets/*": [
-        "src/assets/*"
-      ],
-      "@utils/*": [
-        "src/utils/*"
-      ],
-      "@": [
-        "src"
-      ]
-    },
-    "types": [
-      "react",
-      "react-native"
-    ]
+      "@app/*": ["src/app/*"],
+      "@core/*": ["src/core/*"],
+      "@features/*": ["src/features/*"],
+      "@shared/*": ["src/shared/*"],
+      "@assets/*": ["src/assets/*"],
+      "@types/*": ["types/*"]
+    }
   },
   "include": [
-    "src",
     "App.tsx",
-    "index.ts",
-    "index.tsx",
-    "index.js",
-    "app.config.ts",
-    "app.config.js",
-    "babel.config.js",
-    "expo/AppEntry.js"
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "shared/**/*.ts",
+    "shared/**/*.tsx",
+    "types/**/*.d.ts"
   ],
   "exclude": [
     "node_modules",
-    "ios",
-    "android"
+    "dist"
   ]
 }

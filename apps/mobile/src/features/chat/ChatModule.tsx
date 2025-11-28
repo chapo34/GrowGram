@@ -28,7 +28,7 @@ import { Audio } from 'expo-av';
 import {
   api, me, chatList, chatOpen, chatSearchUsers, chatGetMessages,
   chatSendMessage, chatMarkRead, type Chat, type ChatMessage as ApiChatMessage,
-} from '../../utils/api';
+} from '@shared/lib/apiClient';
 
 /* ============================ Theme & Layout ============================ */
 

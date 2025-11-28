@@ -1,12 +1,22 @@
-// babel.config.js
 module.exports = function (api) {
   api.cache(true);
   return {
-    presets: ['babel-preset-expo'],
+    presets: ["babel-preset-expo"],
     plugins: [
-      ['module-resolver', { alias: { '@': './src' } }],
-      // WICHTIG: das Reanimated-Plugin MUSS als letztes stehen
-      'react-native-reanimated/plugin',
-    ],
+      [
+        "module-resolver",
+        {
+          root: ["./"],
+          extensions: [".ts", ".tsx", ".js", ".jsx", ".json"],
+          alias: {
+            "@app": "./src/app",
+            "@core": "./src/core",
+            "@features": "./src/features",
+            "@shared": "./src/shared"
+          }
+        }
+      ],
+      "react-native-reanimated/plugin"
+    ]
   };
 };

@@ -8,13 +8,17 @@ const API_BASE_FALLBACK =
 const config: ExpoConfig = {
   name: 'GrowGramMobile',
   slug: 'GrowGramMobile',
-  owner: 'martinchapo34',              // <-- hinzugefügt (wichtig für Redirect)
+  owner: 'martinchapo34',              // wichtig für EAS / Redirects
   scheme: 'growgram',
   version: '1.0.0',
   orientation: 'portrait',
 
   icon: './assets/icon.png',
   userInterfaceStyle: 'dark',
+
+  // 👉 WICHTIG: Hermes aus, JSC an
+  jsEngine: 'jsc',
+
   splash: {
     image: './assets/splash.png',
     resizeMode: 'contain',
@@ -90,18 +94,13 @@ const config: ExpoConfig = {
   ],
 
   extra: {
-    // API
     API_BASE_URL: API_BASE_FALLBACK,
 
-    // Google OAuth (alle aus .env mit EXPO_PUBLIC_*)
     GOOGLE_EXPO_CLIENT_ID: process.env.EXPO_PUBLIC_GOOGLE_EXPO_CLIENT_ID,
     GOOGLE_IOS_CLIENT_ID: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
     GOOGLE_ANDROID_CLIENT_ID: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
-
-    // Optional: nur drin lassen, wenn du es auch in .env setzt
     GOOGLE_WEB_CLIENT_ID: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
 
-    // Firebase (falls clientseitig genutzt)
     FIREBASE_API_KEY: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
     FIREBASE_AUTH_DOMAIN: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
     FIREBASE_PROJECT_ID: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
