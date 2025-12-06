@@ -12,7 +12,7 @@ console.error = (...args: any[]) => {
   // Alles, was mit diesem Bridgeless-Feature-Flag zu tun hat, einfach schlucken
   if (
     typeof first === 'string' &&
-    first.includes("disableEventLoopOnBridgeless")
+    first.includes('disableEventLoopOnBridgeless')
   ) {
     return;
   }
@@ -28,9 +28,8 @@ LogBox.ignoreLogs([
   'Could not access feature flag',
 ]);
 
-// ⬇️ WICHTIG: AppShell **erst jetzt** importieren,
-// damit der Patch oben schon aktiv ist, wenn RN anfängt zu meckern
-import { AppShell } from './src/app/AppShell';
+// ⬇️ WICHTIG: AppShell **als default importieren**
+import AppShell from './src/app/AppShell';
 
 export default function App() {
   return <AppShell />;

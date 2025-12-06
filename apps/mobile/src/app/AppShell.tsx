@@ -1,15 +1,33 @@
 // src/app/AppShell.tsx
+
 import React from 'react';
 import { View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
-import { Provider as PaperProvider, MD3DarkTheme, MD3Theme } from 'react-native-paper';
+import {
+  NavigationContainer,
+  DefaultTheme,
+  Theme as NavTheme,
+} from '@react-navigation/native';
+import {
+  Provider as PaperProvider,
+  MD3DarkTheme,
+  MD3Theme,
+} from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import {
+  SafeAreaProvider,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 
-import { RootNavigator } from '@app/navigation/RootNavigator';
+import RootNavigator from '@app/navigation/RootNavigator';
+import { navigationRef } from '@app/navigation/navigationRef';
+
 import { AuthProvider } from '@features/auth/context/AuthContext';
-import { useTheme } from '@core/theme/ThemeProvider'; // <-- HIER: von @shared auf @core
+import { ThemeProvider, useTheme } from '@core/theme/ThemeProvider';
+
+// ---------------------------------------------------------------------------
+// StatusBar Gradient
+// ---------------------------------------------------------------------------
 
 function StatusBarGradient() {
   const insets = useSafeAreaInsets();
@@ -33,10 +51,14 @@ function StatusBarGradient() {
   );
 }
 
-export function AppShell() {
+// ---------------------------------------------------------------------------
+// Innerer Shell-Content (braucht Theme-Context)
+// ---------------------------------------------------------------------------
+
+const ShellContent: React.FC = () => {
   const { colors, mode } = useTheme();
 
-  const navTheme = {
+  const navTheme: NavTheme = {
     ...DefaultTheme,
     colors: {
       ...DefaultTheme.colors,
@@ -65,7 +87,7 @@ export function AppShell() {
   return (
     <PaperProvider theme={paperTheme}>
       <AuthProvider>
-        <NavigationContainer theme={navTheme}>
+        <NavigationContainer ref={navigationRef} theme={navTheme}>
           <View style={{ flex: 1 }}>
             <StatusBar style="light" translucent backgroundColor="transparent" />
             <StatusBarGradient />
@@ -75,4 +97,20 @@ export function AppShell() {
       </AuthProvider>
     </PaperProvider>
   );
-}
+};
+
+// ---------------------------------------------------------------------------
+// Äußerer AppShell-Wrapper (Theme + SafeArea)
+// ---------------------------------------------------------------------------
+
+const AppShell: React.FC = () => {
+  return (
+    <ThemeProvider>
+      <SafeAreaProvider>
+        <ShellContent />
+      </SafeAreaProvider>
+    </ThemeProvider>
+  );
+};
+
+export default AppShell;
