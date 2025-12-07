@@ -7,6 +7,7 @@ export type ThemeName =
   | 'growgram-highcontrast';
 
 export type GGColors = {
+  [x: string]: string;
   // Backgrounds
   background: string;
   backgroundAlt: string;

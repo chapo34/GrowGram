@@ -1,127 +1,127 @@
 // src/core/http/httpClient.ts
-import axios, { AxiosError, AxiosRequestHeaders } from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import Constants from 'expo-constants';
+import axios, {
+  AxiosError,
+  AxiosInstance,
+  AxiosRequestConfig,
+  AxiosResponse,
+} from 'axios';
 import { API_BASE } from '@core/config/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export const STORAGE_KEYS = {
-  TOKEN: 'GG_TOKEN',
-  USER: 'GG_USER',
-  COMPLIANCE_PREFIX: '@growgram/compliance_ack:',
-  COMPLIANCE_ACK: '@growgram/compliance_ack',
-} as const;
+export type ApiErrorPayload = {
+  message?: string;
+  code?: string;
+  status?: number;
+  errors?: Record<string, string[]>;
+  [key: string]: unknown;
+};
 
-let inMemoryToken: string | null = null;
+export class ApiError extends Error {
+  status?: number;
+  code?: string;
+  payload?: ApiErrorPayload;
 
-function appHeaders() {
-  const ver =
-    (Constants.expoConfig as any)?.version ||
-    (Constants.manifest2 as any)?.extra?.appVersion ||
-    'dev';
-  const runtime = Constants.executionEnvironment || 'standalone';
-  const platform = (Constants.platform as any)?.ios
-    ? 'ios'
-    : (Constants.platform as any)?.android
-    ? 'android'
-    : 'web';
-
-  return {
-    'X-Client': 'GrowGram-Mobile',
-    'X-App-Version': String(ver),
-    'X-Platform': platform,
-    'X-Runtime': String(runtime),
-  } as Record<string, string>;
-}
-
-export const api = axios.create({
-  baseURL: API_BASE,
-  timeout: 15000,
-});
-
-export async function bootstrapAuthToken() {
-  try {
-    const t = await AsyncStorage.getItem(STORAGE_KEYS.TOKEN);
-    inMemoryToken = t;
-    if (t) api.defaults.headers.common.Authorization = `Bearer ${t}`;
-  } catch {
-    // ignore
-  }
-}
-
-export async function setAuthToken(token: string | null) {
-  inMemoryToken = token;
-  if (token) {
-    await AsyncStorage.setItem(STORAGE_KEYS.TOKEN, token);
-    api.defaults.headers.common.Authorization = `Bearer ${token}`;
-  } else {
-    await AsyncStorage.removeItem(STORAGE_KEYS.TOKEN);
-    delete (api.defaults.headers.common as any)?.Authorization;
-  }
-}
-
-api.interceptors.request.use(async (config) => {
-  if (!inMemoryToken) {
-    try {
-      inMemoryToken = await AsyncStorage.getItem(STORAGE_KEYS.TOKEN);
-      if (inMemoryToken) {
-        (config.headers ??= {} as AxiosRequestHeaders).Authorization = `Bearer ${inMemoryToken}`;
-      }
-    } catch {
-      // ignore
+  constructor(message: string, options?: ApiErrorPayload) {
+    super(message);
+    this.name = 'ApiError';
+    if (options) {
+      this.status = options.status;
+      this.code = options.code;
+      this.payload = options;
     }
   }
-
-  const h = (config.headers ??= {} as AxiosRequestHeaders);
-  h.Accept = 'application/json';
-
-  const isForm =
-    typeof FormData !== 'undefined' && config.data instanceof FormData;
-  if (!isForm && !h['Content-Type']) {
-    h['Content-Type'] = 'application/json';
-  }
-
-  const extra = appHeaders();
-  for (const k of Object.keys(extra)) {
-    (h as any)[k] = (extra as any)[k];
-  }
-
-  return config;
-});
-
-api.interceptors.response.use(
-  (res) => res,
-  async (err: AxiosError<any>) => {
-    const method = (err?.config?.method || 'get').toUpperCase();
-    const url = err?.config?.url || '';
-    const status = err?.response?.status;
-    const body = err?.response?.data;
-    console.log(
-      'API ERROR →',
-      method,
-      url,
-      '→',
-      status ?? err.code ?? err.message,
-      body ?? ''
-    );
-
-    if (status === 401) await setAuthToken(null);
-    return Promise.reject(err);
-  }
-);
-
-export function parseApiError(e: any): string {
-  const d = e?.response?.data;
-  return d?.details || d?.message || d?.error || e?.message || 'Unbekannter Fehler';
 }
 
-export async function tryJson<T>(
-  fn: () => Promise<T>,
-  fallback?: () => Promise<T>
+export const AUTH_STORAGE_KEYS = {
+  accessToken: 'gg_auth_access_token',
+  refreshToken: 'gg_auth_refresh_token',
+} as const;
+
+export const api: AxiosInstance = axios.create({
+  baseURL: API_BASE,
+  timeout: 15000,
+  withCredentials: false,
+});
+
+export function setAuthTokenHeader(token: string | null) {
+  if (!token) {
+    delete api.defaults.headers.common.Authorization;
+    return;
+  }
+  api.defaults.headers.common.Authorization = `Bearer ${token}`;
+}
+
+export function clearAuthTokenHeader() {
+  delete api.defaults.headers.common.Authorization;
+}
+
+export async function bootstrapAuthHeaderFromStorage(): Promise<string | null> {
+  try {
+    const token = await AsyncStorage.getItem(AUTH_STORAGE_KEYS.accessToken);
+    setAuthTokenHeader(token);
+    return token;
+  } catch {
+    return null;
+  }
+}
+
+export async function tryJson<T = unknown>(
+  fn: () => Promise<AxiosResponse<any>>,
 ): Promise<T> {
   try {
-    return await fn();
-  } catch (e: any) {
-    if (e?.response?.status === 404 && fallback) return await fallback();
-    throw e;
+    const res = await fn();
+    return res.data as T;
+  } catch (err) {
+    const axiosErr = err as AxiosError<any>;
+    if (axiosErr.response) {
+      const data = axiosErr.response.data as any;
+      const message =
+        data?.message ||
+        data?.error ||
+        `Request failed with status ${axiosErr.response.status}`;
+      throw new ApiError(message, {
+        status: axiosErr.response.status,
+        code: data?.code,
+        errors: data?.errors,
+        ...data,
+      });
+    }
+    if (axiosErr.request) {
+      throw new ApiError(
+        'Netzwerkfehler – bitte prüfe deine Verbindung oder versuche es später erneut.',
+      );
+    }
+    throw new ApiError(axiosErr.message || 'Unbekannter Fehler');
   }
+}
+
+// Kleine Convenience-Wrapper
+export async function getJson<T = unknown>(
+  url: string,
+  config?: AxiosRequestConfig,
+): Promise<T> {
+  return tryJson<T>(() => api.get(url, config));
+}
+
+export async function postJson<T = unknown>(
+  url: string,
+  data?: unknown,
+  config?: AxiosRequestConfig,
+): Promise<T> {
+  return tryJson<T>(() => api.post(url, data, config));
+}
+
+export async function patchJson<T = unknown>(
+  url: string,
+  data?: unknown,
+  config?: AxiosRequestConfig,
+): Promise<T> {
+  return tryJson<T>(() => api.patch(url, data, config));
+}
+
+export async function delJson<T = unknown>(
+  url: string,
+  config?: AxiosRequestConfig,
+): Promise<T> {
+  return tryJson<T>(() => api.delete(url, config));
 }
