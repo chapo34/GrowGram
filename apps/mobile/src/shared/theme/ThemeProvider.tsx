@@ -1,6 +1,8 @@
 import React, { createContext, useContext } from 'react';
+import { ColorValue } from 'react-native';
 
 export type ThemeColors = {
+  gold: ColorValue | undefined;
   bg: string;
   card: string;
   panel: string;
@@ -35,6 +37,7 @@ const defaultColors: ThemeColors = {
   muted: '#9fb7a5',
   accent: '#4CAF50',
   accentFg: '#041007',
+  gold: undefined
 };
 
 const ThemeContext = createContext<ThemeContextValue>({

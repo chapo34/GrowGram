@@ -1,13 +1,20 @@
-// src/shared/components/ui/SecondaryButton.tsx
 import React, { ReactNode } from 'react';
-import { Pressable, Text, StyleSheet, ViewStyle, View } from 'react-native';
+import {
+  Pressable,
+  StyleProp,
+  StyleSheet,
+  Text,
+  View,
+  ViewStyle,
+} from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 type Props = {
   text?: string;
   label?: string;
   onPress: () => void;
   disabled?: boolean;
-  style?: ViewStyle | ViewStyle[];
+  style?: StyleProp<ViewStyle>;
   iconLeft?: ReactNode;
 };
 
@@ -26,49 +33,69 @@ const SecondaryButton: React.FC<Props> = ({
       onPress={onPress}
       disabled={disabled}
       style={({ pressed }) => [
-        styles.button,
-        pressed && styles.pressed,
-        disabled && styles.disabled,
+        styles.buttonBase,
+        pressed && !disabled && styles.buttonPressed,
+        disabled && styles.buttonDisabled,
         style,
       ]}
     >
-      <View style={styles.contentRow}>
-        {iconLeft ? <View style={styles.iconLeft}>{iconLeft}</View> : null}
-        <Text style={styles.label}>{title}</Text>
-      </View>
+      {/* Gradient-Border → wirkt hochwertiger als plain border */}
+      <LinearGradient
+        colors={['#36D96A', '#1B8F45']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.borderGradient}
+      >
+        <View style={styles.inner}>
+          <View style={styles.contentRow}>
+            {iconLeft ? <View style={styles.iconLeft}>{iconLeft}</View> : null}
+            <Text style={styles.label}>{title}</Text>
+          </View>
+        </View>
+      </LinearGradient>
     </Pressable>
   );
 };
 
 const styles = StyleSheet.create({
-  button: {
+  buttonBase: {
     height: 48,
+    borderRadius: 999,
+    overflow: 'hidden',
+    marginVertical: 6,
+  },
+  buttonPressed: {
+    transform: [{ scale: 0.97 }],
+    opacity: 0.9,
+  },
+  buttonDisabled: {
+    opacity: 0.4,
+  },
+  borderGradient: {
+    flex: 1,
+    borderRadius: 999,
+    padding: 1.2, // „Hairline“ Gradient-Border
+  },
+  inner: {
+    flex: 1,
     borderRadius: 999,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#4CAF50',
-    backgroundColor: 'transparent',
-    marginVertical: 6,
-  },
-  pressed: {
-    opacity: 0.8,
-  },
-  disabled: {
-    opacity: 0.5,
+    backgroundColor: 'rgba(0,0,0,0.55)', // leicht dunkler als Background → wirkt „eingelassen“
   },
   contentRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
+    paddingHorizontal: 18,
   },
   iconLeft: {
     marginRight: 8,
   },
   label: {
-    color: '#4CAF50',
-    fontWeight: '600',
+    color: '#A8FFB0',
+    fontWeight: '700',
     fontSize: 15,
+    letterSpacing: 0.3,
   },
 });
 

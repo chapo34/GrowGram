@@ -1,51 +1,52 @@
 // src/app/navigation/RootNavigator.tsx
-import React, { useEffect, useState } from 'react';
-import { View, Text, Pressable } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Image } from 'expo-image';
+
+import React, { useEffect, useState } from "react";
+import { View, Text, Pressable } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { LinearGradient } from "expo-linear-gradient";
+import { Image } from "expo-image";
 import {
   createNativeStackNavigator,
   type NativeStackNavigationProp,
-} from '@react-navigation/native-stack';
+} from "@react-navigation/native-stack";
 
-import { useTheme } from '@core/theme/ThemeProvider';
+import { useTheme } from "@core/theme/ThemeProvider";
 import {
   STORAGE_KEYS,
   getComplianceAck,
   type FeedPost,
-} from '@shared/lib/apiClient';
+} from "@shared/lib/apiClient";
 
-import IntroScreen from '@features/onboarding/screens/IntroScreen';
-import WelcomeComplianceScreen from '@features/onboarding/screens/WelcomeComplianceScreen';
-import LegalTextScreen from '@features/legal/LegalTextScreen';
+import IntroScreen from "@features/onboarding/screens/IntroScreen";
+import WelcomeComplianceScreen from "@features/onboarding/screens/WelcomeComplianceScreen";
+import LegalTextScreen from "@features/legal/LegalTextScreen";
 
-import LoginScreen from '@features/auth/screens/LoginScreen';
-import RegisterScreen from '@features/auth/screens/RegisterScreen';
-import ForgotPasswordScreen from '@features/auth/screens/ForgotPasswordScreen';
-import ProfileSetupScreen from '@features/auth/screens/ProfileSetupScreen';
+import LoginScreen from "@features/auth/screens/LoginScreen";
+import RegisterScreen from "@features/auth/screens/RegisterScreen";
+import ForgotPasswordScreen from "@features/auth/screens/ForgotPasswordScreen";
+import ProfileSetupScreen from "@features/auth/screens/ProfileSetupScreen";
 
-import HomeScreen from '@features/feed/screens/HomeScreen';
-import ExploreScreen from '@features/feed/screens/ExploreScreen';
-import PostScreen from '@features/feed/screens/PostScreen';
-import PostCreateScreen from '@features/feed/screens/PostCreateScreen';
+import HomeScreen from "@features/feed/screens/HomeScreen";
+import ExploreScreen from "@features/feed/screens/ExploreScreen";
+import PostScreen from "@features/feed/screens/PostScreen";
+import PostCreateScreen from "@features/feed/screens/PostCreateScreen";
 
-import ProfileScreen from '@features/profile/screens/ProfileScreen';
+import ProfileScreen from "@features/profile/screens/ProfileScreen";
 
-import ChatsListScreen from '@features/chat/screens/ChatsListScreen';
-import ChatThreadScreen from '@features/chat/screens/ChatThreadScreen';
+import ChatsListScreen from "@features/chat/screens/ChatsListScreen";
+import ChatThreadScreen from "@features/chat/screens/ChatThreadScreen";
 
-import GrowDock from '@shared/components/dock/GrowDock';
+import GrowDock from "@shared/components/dock/GrowDock";
 
-import WaitlistSignupScreen from '@features/onboarding/screens/waitlistSignupScreen';
+import WaitlistSignupScreen from "@features/onboarding/screens/waitlistSignupScreen";
 // aktuell nutzen wir denselben Screen als Status-Page
-import WaitlistStatusScreen from '@features/onboarding/screens/waitlistSignupScreen';
+import WaitlistStatusScreen from "@features/onboarding/screens/waitlistSignupScreen";
 
 // ---------------------------------------------------------------------------
 // Routing-Flags
 // ---------------------------------------------------------------------------
 
-const INTRO_FLAG = 'growgram:intro:seen';
+const INTRO_FLAG = "growgram:intro:seen";
 const DEV_FORCE_INTRO = false;
 
 // ---------------------------------------------------------------------------
@@ -57,11 +58,14 @@ export type RootStackParamList = {
   Auth: undefined;
   Main: undefined;
   WelcomeCompliance?: { userId?: string };
-  Terms?: { kind?: 'terms'; title?: string };
-  Guidelines?: { kind?: 'guidelines'; title?: string };
+  Terms?: { kind?: "terms"; title?: string };
+  Guidelines?: { kind?: "guidelines"; title?: string };
   WaitlistSignup: undefined;
   WaitlistStatus:
-    | { publicId?: string; viewerToken?: string }
+    | {
+        publicId?: string;
+        viewerToken?: string;
+      }
     | undefined;
 };
 
@@ -126,7 +130,7 @@ function MainStackScreen() {
       <MainStack.Navigator
         screenOptions={{
           headerShown: false,
-          animation: 'slide_from_right',
+          animation: "slide_from_right",
           contentStyle: { backgroundColor: colors.bg },
         }}
       >
@@ -143,15 +147,15 @@ function MainStackScreen() {
           name="ChatThread"
           component={ChatThreadScreen as any}
           options={({ route, navigation }) => {
-            const title = route.params?.title || 'Unterhaltung';
+            const title = route.params?.title || "Unterhaltung";
             const avatar = route.params?.peerAvatarUrl;
 
             return {
               headerShown: true,
               headerTintColor: colors.text,
-              headerTitleAlign: 'left',
+              headerTitleAlign: "left",
               headerTitle: () => (
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
                   {avatar ? (
                     <Image
                       source={{ uri: avatar }}
@@ -169,18 +173,18 @@ function MainStackScreen() {
                         height: 28,
                         borderRadius: 8,
                         marginRight: 10,
-                        backgroundColor: '#133625',
-                        alignItems: 'center',
-                        justifyContent: 'center',
+                        backgroundColor: "#133625",
+                        alignItems: "center",
+                        justifyContent: "center",
                       }}
                     >
                       <Text
                         style={{
-                          color: '#b6ffc3',
-                          fontWeight: '900',
+                          color: "#b6ffc3",
+                          fontWeight: "900",
                         }}
                       >
-                        {(title?.[0] || 'C').toUpperCase()}
+                        {(title?.[0] || "C").toUpperCase()}
                       </Text>
                     </View>
                   )}
@@ -189,7 +193,7 @@ function MainStackScreen() {
                     style={{
                       color: colors.text,
                       fontSize: 16,
-                      fontWeight: '800',
+                      fontWeight: "800",
                       maxWidth: 220,
                     }}
                   >
@@ -228,7 +232,7 @@ function MainStackScreen() {
           component={PostScreen as any}
           options={{
             headerShown: true,
-            title: 'Beitrag',
+            title: "Beitrag",
             headerTintColor: colors.text,
             headerBackground: () => (
               <LinearGradient
@@ -247,8 +251,8 @@ function MainStackScreen() {
           component={PostCreateScreen as any}
           options={{
             headerShown: true,
-            title: 'Neuer Post',
-            presentation: 'modal',
+            title: "Neuer Post",
+            presentation: "modal",
             headerTintColor: colors.text,
             headerBackground: () => (
               <LinearGradient
@@ -265,8 +269,8 @@ function MainStackScreen() {
           component={ProfileSetupScreen as any}
           options={{
             headerShown: true,
-            title: 'Profil bearbeiten',
-            presentation: 'modal',
+            title: "Profil bearbeiten",
+            presentation: "modal",
             headerTintColor: colors.text,
             headerBackground: () => (
               <LinearGradient
@@ -279,16 +283,13 @@ function MainStackScreen() {
           }}
         />
 
-        <MainStack.Screen
-          name="Profile"
-          component={ProfileScreen as any}
-        />
+        <MainStack.Screen name="Profile" component={ProfileScreen as any} />
       </MainStack.Navigator>
 
       {/* GrowDock schwebend über allem */}
       <View
         pointerEvents="box-none"
-        style={{ position: 'absolute', left: 0, right: 0, bottom: 0 }}
+        style={{ position: "absolute", left: 0, right: 0, bottom: 0 }}
       >
         <GrowDock />
       </View>
@@ -308,19 +309,19 @@ export const RootNavigator: React.FC = () => {
     (async () => {
       try {
         if (DEV_FORCE_INTRO) {
-          setInitial('Intro');
+          setInitial("Intro");
           return;
         }
 
         const introSeen = await AsyncStorage.getItem(INTRO_FLAG);
         if (!introSeen) {
-          setInitial('Intro');
+          setInitial("Intro");
           return;
         }
 
         const token = await AsyncStorage.getItem(STORAGE_KEYS.TOKEN);
         if (!token) {
-          setInitial('Auth');
+          setInitial("Auth");
           return;
         }
 
@@ -330,10 +331,10 @@ export const RootNavigator: React.FC = () => {
           : undefined;
 
         const ack = await getComplianceAck(userId ?? null);
-        setInitial(ack ? 'Main' : 'WelcomeCompliance');
+        setInitial(ack ? "Main" : "WelcomeCompliance");
       } catch (e: any) {
-        console.warn('boot route failed:', e?.message || e);
-        setInitial('Auth');
+        console.warn("boot route failed:", e?.message || e);
+        setInitial("Auth");
       }
     })();
   }, []);
@@ -357,31 +358,31 @@ export const RootNavigator: React.FC = () => {
       <RootStack.Screen
         name="WaitlistSignup"
         component={WaitlistSignupScreen as any}
-        options={{ headerShown: true, title: 'GrowGram Waitlist' }}
+        options={{ headerShown: true, title: "GrowGram Waitlist" }}
       />
       <RootStack.Screen
         name="WaitlistStatus"
         component={WaitlistStatusScreen as any}
-        options={{ headerShown: true, title: 'Waitlist Status' }}
+        options={{ headerShown: true, title: "Waitlist Status" }}
       />
 
       {/* Rechtliches */}
       <RootStack.Screen
         name="Terms"
         component={LegalTextScreen as any}
-        options={{ headerShown: true, title: 'Nutzungsbedingungen' }}
+        options={{ headerShown: true, title: "Nutzungsbedingungen" }}
         initialParams={{
-          kind: 'terms',
-          title: 'Nutzungsbedingungen',
+          kind: "terms",
+          title: "Nutzungsbedingungen",
         }}
       />
       <RootStack.Screen
         name="Guidelines"
         component={LegalTextScreen as any}
-        options={{ headerShown: true, title: 'Community-Richtlinien' }}
+        options={{ headerShown: true, title: "Community-Richtlinien" }}
         initialParams={{
-          kind: 'guidelines',
-          title: 'Community-Richtlinien',
+          kind: "guidelines",
+          title: "Community-Richtlinien",
         }}
       />
     </RootStack.Navigator>

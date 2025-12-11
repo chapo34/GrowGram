@@ -6,7 +6,10 @@ import * as ctrl from "../../controllers/auth/registerController.js";
 
 const r = Router();
 
-/** POST /auth/register (public) */
+/**
+ * POST /auth/register (public)
+ * Erwartet Body gemäß Auth.RegisterBody (STEP 1 – Basisdaten)
+ */
 r.post("/register", validate.body(Auth.RegisterBody), ctrl.register);
 
 export default r;

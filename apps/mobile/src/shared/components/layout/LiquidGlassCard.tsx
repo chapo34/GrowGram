@@ -1,83 +1,125 @@
-// src/shared/components/layout/LiquidGlassCard.tsx
-import React from 'react';
-import { StyleSheet, ViewStyle } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import GlassCard from './GlassCard';
+// apps/mobile/src/shared/components/layout/LiquidGlassCard.tsx
 
-export interface LiquidGlassCardProps {
-  children: React.ReactNode;
-  style?: ViewStyle;
-}
+import React, { PropsWithChildren } from 'react';
+import {
+  View,
+  StyleSheet,
+  ViewStyle,
+  StyleProp,
+} from 'react-native';
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
+
+export type LiquidGlassCardProps = PropsWithChildren<{
+  style?: StyleProp<ViewStyle>;
+  contentStyle?: StyleProp<ViewStyle>;
+  blurIntensity?: number;
+  radius?: number;
+  borderColors?: [string, string, ...string[]];
+  backgroundColor?: string;
+  showHighlight?: boolean;
+}>;
 
 /**
- * LiquidGlassCard:
- * - nutzt deine zentrale GlassCard als Basis
- * - fügt oben ein Lichtband + seitliche Highlights hinzu
- * - erzeugt den "liquid / 3D" Glass-Effekt
+ * Reusable "Liquid Glass" Card – Basis für alle Glasscards.
  */
 const LiquidGlassCard: React.FC<LiquidGlassCardProps> = ({
   children,
   style,
+  contentStyle,
+  blurIntensity = 90,
+  radius = 24,
+  borderColors = [
+    'rgba(240,255,250,0.55)',
+    'rgba(140,255,205,0.30)',
+    'rgba(0,35,22,0.90)',
+  ],
+  // etwas dunkler, damit Inputs nicht im „Milchbalken“ schwimmen
+  backgroundColor = 'rgba(4,16,11,0.78)',
+  showHighlight = true,
 }) => {
   return (
-    <GlassCard style={[styles.baseCard, style]}>
-      {/* oberes Lichtband */}
+    <View
+      style={[
+        styles.outer,
+        { borderRadius: radius },
+        style,
+      ]}
+    >
+      {/* zarter Rand mit leichtem 3D-Licht */}
       <LinearGradient
-        pointerEvents="none"
-        colors={['rgba(255,255,255,0.08)', 'transparent']}
+        colors={borderColors}
         start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 0.7 }}
-        style={styles.topSheen}
-      />
+        end={{ x: 1, y: 1 }}
+        style={[styles.border, { borderRadius: radius }]}
+      >
+        <BlurView
+          intensity={blurIntensity}
+          tint="dark"
+          style={[
+            styles.blur,
+            {
+              borderRadius: radius,
+              backgroundColor,
+            },
+          ]}
+        >
+          {/* sehr subtiler Top-Edge-Glanz (NICHT mehr über die Felder) */}
+          {showHighlight && (
+            <LinearGradient
+              colors={[
+                'rgba(255,255,255,0.26)',
+                'rgba(255,255,255,0.06)',
+                'transparent',
+              ]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0.9 }}
+              style={[
+                styles.shine,
+                {
+                  borderTopLeftRadius: radius,
+                  borderTopRightRadius: radius,
+                },
+              ]}
+            />
+          )}
 
-      {/* leichtes linkes Highlight */}
-      <LinearGradient
-        pointerEvents="none"
-        colors={['rgba(160,255,170,0.45)', 'transparent']}
-        start={{ x: 0, y: 0.2 }}
-        end={{ x: 1, y: 0.8 }}
-        style={styles.leftEdgeLight}
-      />
-
-      {/* leichtes rechtes Highlight */}
-      <LinearGradient
-        pointerEvents="none"
-        colors={['rgba(120,255,160,0.3)', 'transparent']}
-        start={{ x: 1, y: 0.1 }}
-        end={{ x: 0, y: 0.9 }}
-        style={styles.rightEdgeLight}
-      />
-
-      {children}
-    </GlassCard>
+          <View style={[styles.content, contentStyle]}>
+            {children}
+          </View>
+        </BlurView>
+      </LinearGradient>
+    </View>
   );
 };
 
+export default LiquidGlassCard;
+
 const styles = StyleSheet.create({
-  baseCard: {
+  outer: {
+    overflow: 'hidden',
+    shadowColor: '#16FF7A',
+    shadowOpacity: 0.20,
+    shadowRadius: 22,
+    shadowOffset: { width: 0, height: 12 },
+    elevation: 8,
+  },
+  border: {
+    padding: 1.4,
+  },
+  blur: {
     overflow: 'hidden',
   },
-  topSheen: {
+  shine: {
     position: 'absolute',
-    top: -20,
-    left: -40,
-    right: -40,
-    height: 80,
+    left: -16,
+    right: -16,
+    top: -42,     // weiter nach oben, damit der Glanz NICHT mehr hinter dem Label sitzt
+    height: 72,   // geringer, nur Kante + etwas Verlauf
+    pointerEvents: 'none',
   },
-  leftEdgeLight: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    left: -60,
-    width: 160,
-  },
-  rightEdgeLight: {
-    position: 'absolute',
-    top: 0,
-    bottom: 0,
-    right: -60,
-    width: 160,
+  content: {
+    paddingHorizontal: 16,
+    paddingVertical: 16,
   },
 });
-
-export default LiquidGlassCard;

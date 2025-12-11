@@ -4,18 +4,29 @@ import { z } from "zod";
 /** ---------- Register / Login ---------- */
 
 /**
- * Registrierung:
- * - email / password (mind. 8 Zeichen)
- * - firstName Pflicht, Rest optional
- * - username optional (3–20, a-zA-Z0-9._)
+ * Registrierung (First Flow):
+ * - username: optional im Backend (Frontend darf ihn verpflichtend machen)
+ * - email: Pflicht
+ * - password: Pflicht (mind. 8 Zeichen)
+ * - birthDate: optionaler ISO-String (YYYY-MM-DD)
+ * - firstName / lastName / city: komplett optional → späteres Setup Profile
  */
 export const RegisterBody = z.object({
   email: z.string().email(),
   password: z.string().min(8),
-  firstName: z.string().min(1),
+
+  // alles für Setup Profile → optional
+  firstName: z.string().optional(),
   lastName: z.string().optional(),
   city: z.string().optional(),
-  birthDate: z.string().optional(), // ISO (YYYY-MM-DD) oder leer
+
+  // ISO (YYYY-MM-DD) oder leer
+  birthDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Geburtsdatum muss YYYY-MM-DD sein")
+    .optional(),
+
+  // Username darf fehlen (Backend), Frontend erzwingt ihn
   username: z
     .string()
     .regex(/^[a-zA-Z0-9._]{3,20}$/)
@@ -38,15 +49,7 @@ export const VerifyEmailQuery = z.object({
 });
 
 /** ---------- Compliance (16+/18+) ---------- */
-/**
- * Idee:
- * - over16: true  → "Ich bin mindestens 16 Jahre alt"
- * - over18: true? → optional "Ich bin 18+"
- *
- * Frontend:
- * - 16+ Modus: { agree: true, over16: true, over18: false }
- * - 18+ Modus: { agree: true, over16: true, over18: true }
- */
+
 export const ComplianceAckBody = z.object({
   agree: z.literal(true),
   over16: z.literal(true),

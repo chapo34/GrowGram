@@ -15,7 +15,12 @@ import type { RegisterBodyT } from "../../validators/auth.schema.js";
  * POST /api/auth/register
  *
  * Body wird bereits via Zod (RegisterBody) validiert.
- * Diese Funktion kümmert sich nur um:
+ *
+ * STEP 1:
+ *  - Pflicht: email, password
+ *  - Optional: username, firstName, lastName, city, birthDate
+ *
+ * Diese Funktion kümmert sich um:
  *  - User in Firebase Auth
  *  - Profildokument in Firestore
  *  - Verify-Token + E-Mail
@@ -30,7 +35,7 @@ export async function register(req: Request, res: Response) {
     const firstName = body.firstName?.trim();
     const lastName = body.lastName?.trim() || undefined;
     const city = body.city?.trim() || undefined;
-    const birthDate = body.birthDate?.trim() || undefined;
+    const birthDate = body.birthDate?.trim() || undefined; // "YYYY-MM-DD"
     const username = body.username?.trim() || undefined;
 
     // User in Firebase Auth anlegen / holen

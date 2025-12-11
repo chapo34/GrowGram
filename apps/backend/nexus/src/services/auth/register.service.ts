@@ -1,45 +1,53 @@
 // src/services/auth/register.service.ts
-import bcrypt from 'bcryptjs';
-import { createUser, getUserByEmailLower, isUsernameTaken } from '../../repositories/users.repo.js';
-import { signAccessToken } from './jwt.service.js';
+import bcrypt from "bcryptjs";
+import {
+  createUser,
+  getUserByEmailLower,
+  isUsernameTaken,
+} from "../../repositories/users.repo.js";
+import { signAccessToken } from "./jwt.service.js";
 import {
   buildVerifyUrlForFrontend,
   buildVerifyUrlFromBackend,
   sendVerificationEmail,
-} from './email.service.js';
+} from "./email.service.js";
 
 type Input = {
   email: string;
   password: string;
+
+  // alles optional – kann in späteren Flows ergänzt werden
   firstName?: string | null;
   lastName?: string | null;
   city?: string | null;
-  birthDate?: string | null;
+  birthDate?: string | null; // "YYYY-MM-DD"
   username?: string | null;
 };
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const USERNAME_RE = /^[a-zA-Z0-9._]{3,20}$/;
 
-export async function register(input: Input): Promise<{ userId: string; verifyUrl: string }> {
-  const email = String(input.email || '').trim();
-  const password = String(input.password || '');
+export async function register(
+  input: Input,
+): Promise<{ userId: string; verifyUrl: string }> {
+  const email = String(input.email || "").trim();
+  const password = String(input.password || "");
 
-  if (!EMAIL_RE.test(email)) throw new Error('invalid_email');
-  if (password.length < 8) throw new Error('weak_password');
+  if (!EMAIL_RE.test(email)) throw new Error("invalid_email");
+  if (password.length < 8) throw new Error("weak_password");
 
   const emailLower = email.toLowerCase();
   const existing = await getUserByEmailLower(emailLower);
-  if (existing) throw new Error('email_exists');
+  if (existing) throw new Error("email_exists");
 
   // optionaler Username
   let username: string | null = input.username ?? null;
   let usernameLower: string | null = null;
   if (username && username.trim()) {
     username = username.trim();
-    if (!USERNAME_RE.test(username)) throw new Error('invalid_username');
+    if (!USERNAME_RE.test(username)) throw new Error("invalid_username");
     usernameLower = username.toLowerCase();
-    if (await isUsernameTaken(usernameLower)) throw new Error('username_exists');
+    if (await isUsernameTaken(usernameLower)) throw new Error("username_exists");
   }
 
   const passwordHash = await bcrypt.hash(password, 12);
@@ -59,24 +67,23 @@ export async function register(input: Input): Promise<{ userId: string; verifyUr
   });
 
   // Verify-Token (eigenes JWT) – Ablauf konfigurierbar via VERIFY_EXPIRES (z.B. "1d")
-  const verifyExpires = process.env.VERIFY_EXPIRES || '1d';
+  const verifyExpires = process.env.VERIFY_EXPIRES || "1d";
   const token = signAccessToken({ userId: saved.id, email: emailLower }, verifyExpires);
 
   // Bevorzugt hübsche Frontend-URL, sonst direkte Function-URL
   const verifyUrl =
-    buildVerifyUrlForFrontend(token) ||
-    buildVerifyUrlFromBackend(token);
+    buildVerifyUrlForFrontend(token) || buildVerifyUrlFromBackend(token);
 
   // E-Mail senden (nicht blockierend – Fehler loggen, Flow nicht abbrechen)
   try {
     await sendVerificationEmail({
       to: emailLower,
-      firstName: input.firstName || 'Friend',
+      firstName: input.firstName || "Friend",
       verificationUrl: verifyUrl,
-      userId: saved.id,                 // <-- jetzt korrekt typisiert
+      userId: saved.id,
     });
   } catch (e: any) {
-    console.warn('[register] verification email skipped/failed:', e?.message || e);
+    console.warn("[register] verification email skipped/failed:", e?.message || e);
   }
 
   return { userId: saved.id, verifyUrl };
