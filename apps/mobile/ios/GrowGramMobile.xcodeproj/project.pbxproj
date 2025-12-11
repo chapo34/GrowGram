@@ -7,11 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		100977F99771316FDC1BC209 /* libPods-GrowGramMobile.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CA123BFB3097FE764723816D /* libPods-GrowGramMobile.a */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		15B41A324C69A026D089FDA1 /* libPods-GrowGramMobile.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 954C6C07821B5C409B056D8C /* libPods-GrowGramMobile.a */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
-		77D39FEED181F17B67037379 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = A45FB6AA660EE8581C0EF5BD /* PrivacyInfo.xcprivacy */; };
-		9550DE47B9EECFF00016D8F0 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EDB955381CB5E59815A41DF /* ExpoModulesProvider.swift */; };
+		44E3E56B641BDFDC592F9E25 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 4F32C1892E89ED4410CE543E /* PrivacyInfo.xcprivacy */; };
+		B5FC4B6349EA251FC431E8E6 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98A1681E0822F53940ABAD1D /* ExpoModulesProvider.swift */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
 /* End PBXBuildFile section */
@@ -20,16 +20,16 @@
 		13B07F961A680F5B00A75B9A /* GrowGramMobile.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GrowGramMobile.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = GrowGramMobile/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = GrowGramMobile/Info.plist; sourceTree = "<group>"; };
-		8EDB955381CB5E59815A41DF /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-GrowGramMobile/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
-		954C6C07821B5C409B056D8C /* libPods-GrowGramMobile.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-GrowGramMobile.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		A45FB6AA660EE8581C0EF5BD /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = GrowGramMobile/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		4F32C1892E89ED4410CE543E /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = GrowGramMobile/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		5F8C4321CB4A384891BF6833 /* Pods-GrowGramMobile.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GrowGramMobile.release.xcconfig"; path = "Target Support Files/Pods-GrowGramMobile/Pods-GrowGramMobile.release.xcconfig"; sourceTree = "<group>"; };
+		6AF0FD395F5771DED6B028BC /* Pods-GrowGramMobile.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GrowGramMobile.debug.xcconfig"; path = "Target Support Files/Pods-GrowGramMobile/Pods-GrowGramMobile.debug.xcconfig"; sourceTree = "<group>"; };
+		98A1681E0822F53940ABAD1D /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-GrowGramMobile/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = GrowGramMobile/SplashScreen.storyboard; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
+		CA123BFB3097FE764723816D /* libPods-GrowGramMobile.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-GrowGramMobile.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = GrowGramMobile/AppDelegate.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* GrowGramMobile-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "GrowGramMobile-Bridging-Header.h"; path = "GrowGramMobile/GrowGramMobile-Bridging-Header.h"; sourceTree = "<group>"; };
-		F2D8A1BCD150C3EE382566C4 /* Pods-GrowGramMobile.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GrowGramMobile.release.xcconfig"; path = "Target Support Files/Pods-GrowGramMobile/Pods-GrowGramMobile.release.xcconfig"; sourceTree = "<group>"; };
-		F64B4AAD198A76A939161DA2 /* Pods-GrowGramMobile.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GrowGramMobile.debug.xcconfig"; path = "Target Support Files/Pods-GrowGramMobile/Pods-GrowGramMobile.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -37,7 +37,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				15B41A324C69A026D089FDA1 /* libPods-GrowGramMobile.a in Frameworks */,
+				100977F99771316FDC1BC209 /* libPods-GrowGramMobile.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -53,7 +53,15 @@
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				A45FB6AA660EE8581C0EF5BD /* PrivacyInfo.xcprivacy */,
+				4F32C1892E89ED4410CE543E /* PrivacyInfo.xcprivacy */,
+			);
+			name = GrowGramMobile;
+			sourceTree = "<group>";
+		};
+		1BDC4C534E433799AC2637E9 /* GrowGramMobile */ = {
+			isa = PBXGroup;
+			children = (
+				98A1681E0822F53940ABAD1D /* ExpoModulesProvider.swift */,
 			);
 			name = GrowGramMobile;
 			sourceTree = "<group>";
@@ -62,25 +70,9 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				954C6C07821B5C409B056D8C /* libPods-GrowGramMobile.a */,
+				CA123BFB3097FE764723816D /* libPods-GrowGramMobile.a */,
 			);
 			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		4EC8A2519A8C7D214B155180 /* GrowGramMobile */ = {
-			isa = PBXGroup;
-			children = (
-				8EDB955381CB5E59815A41DF /* ExpoModulesProvider.swift */,
-			);
-			name = GrowGramMobile;
-			sourceTree = "<group>";
-		};
-		53E123304B36F5C57CD3F066 /* ExpoModulesProviders */ = {
-			isa = PBXGroup;
-			children = (
-				4EC8A2519A8C7D214B155180 /* GrowGramMobile */,
-			);
-			name = ExpoModulesProviders;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -97,8 +89,8 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				D14647303DC10FF5EB21FF70 /* Pods */,
-				53E123304B36F5C57CD3F066 /* ExpoModulesProviders */,
+				F965E968487911F855FC2D37 /* Pods */,
+				FF6DB74504390BD4A5F3BF40 /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -122,13 +114,22 @@
 			path = GrowGramMobile/Supporting;
 			sourceTree = "<group>";
 		};
-		D14647303DC10FF5EB21FF70 /* Pods */ = {
+		F965E968487911F855FC2D37 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				F64B4AAD198A76A939161DA2 /* Pods-GrowGramMobile.debug.xcconfig */,
-				F2D8A1BCD150C3EE382566C4 /* Pods-GrowGramMobile.release.xcconfig */,
+				6AF0FD395F5771DED6B028BC /* Pods-GrowGramMobile.debug.xcconfig */,
+				5F8C4321CB4A384891BF6833 /* Pods-GrowGramMobile.release.xcconfig */,
 			);
+			name = Pods;
 			path = Pods;
+			sourceTree = "<group>";
+		};
+		FF6DB74504390BD4A5F3BF40 /* ExpoModulesProviders */ = {
+			isa = PBXGroup;
+			children = (
+				1BDC4C534E433799AC2637E9 /* GrowGramMobile */,
+			);
+			name = ExpoModulesProviders;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -139,13 +140,13 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "GrowGramMobile" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				18A4ED3BF2C219497F5AA907 /* [Expo] Configure project */,
+				7521E01A9408634CCC913729 /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				40B5C6E4F6A61323A8D8C9F5 /* [CP] Embed Pods Frameworks */,
+				BDEE6EDA935E08E4DC60ADAB /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -195,7 +196,7 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				77D39FEED181F17B67037379 /* PrivacyInfo.xcprivacy in Resources */,
+				44E3E56B641BDFDC592F9E25 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -241,7 +242,7 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		18A4ED3BF2C219497F5AA907 /* [Expo] Configure project */ = {
+		7521E01A9408634CCC913729 /* [Expo] Configure project */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -264,28 +265,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-GrowGramMobile/expo-configure-project.sh\"\n";
-		};
-		40B5C6E4F6A61323A8D8C9F5 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-GrowGramMobile/Pods-GrowGramMobile-frameworks.sh",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/React-Core-prebuilt/React.framework/React",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ReactNativeDependencies/ReactNativeDependencies.framework/ReactNativeDependencies",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/React.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ReactNativeDependencies.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-GrowGramMobile/Pods-GrowGramMobile-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
 		};
 		800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -331,6 +310,28 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-GrowGramMobile/Pods-GrowGramMobile-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
+		BDEE6EDA935E08E4DC60ADAB /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-GrowGramMobile/Pods-GrowGramMobile-frameworks.sh",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/React-Core-prebuilt/React.framework/React",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ReactNativeDependencies/ReactNativeDependencies.framework/ReactNativeDependencies",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/React.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ReactNativeDependencies.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-GrowGramMobile/Pods-GrowGramMobile-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -339,7 +340,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
-				9550DE47B9EECFF00016D8F0 /* ExpoModulesProvider.swift in Sources */,
+				B5FC4B6349EA251FC431E8E6 /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -348,13 +349,12 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = F64B4AAD198A76A939161DA2 /* Pods-GrowGramMobile.debug.xcconfig */;
+			baseConfigurationReference = 6AF0FD395F5771DED6B028BC /* Pods-GrowGramMobile.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = GrowGramMobile/GrowGramMobile.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 3P8DL32TSW;
 				ENABLE_BITCODE = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -385,13 +385,12 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = F2D8A1BCD150C3EE382566C4 /* Pods-GrowGramMobile.release.xcconfig */;
+			baseConfigurationReference = 5F8C4321CB4A384891BF6833 /* Pods-GrowGramMobile.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = GrowGramMobile/GrowGramMobile.entitlements;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 3P8DL32TSW;
 				INFOPLIST_FILE = GrowGramMobile/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
 				LD_RUNPATH_SEARCH_PATHS = (
